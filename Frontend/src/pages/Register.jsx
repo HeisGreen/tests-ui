@@ -34,7 +34,7 @@ function Register() {
 
     const success = register(formData)
     if (success) {
-      navigate('/home')
+      navigate('/onboarding')
     } else {
       setError('Registration failed. Please try again.')
     }

@@ -18,13 +18,20 @@ export function AuthProvider({ children }) {
     const savedUser = localStorage.getItem('user')
     return savedUser ? JSON.parse(savedUser) : null
   })
+  const [onboardingData, setOnboardingData] = useState(() => {
+    const savedData = localStorage.getItem('onboardingData')
+    return savedData ? JSON.parse(savedData) : null
+  })
 
   useEffect(() => {
     localStorage.setItem('isAuthenticated', isAuthenticated)
     if (user) {
       localStorage.setItem('user', JSON.stringify(user))
     }
-  }, [isAuthenticated, user])
+    if (onboardingData) {
+      localStorage.setItem('onboardingData', JSON.stringify(onboardingData))
+    }
+  }, [isAuthenticated, user, onboardingData])
 
   const login = (email, password) => {
     // Dummy authentication
@@ -54,17 +61,26 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     setUser(null)
+    setOnboardingData(null)
     setIsAuthenticated(false)
     localStorage.removeItem('isAuthenticated')
     localStorage.removeItem('user')
+    localStorage.removeItem('onboardingData')
+  }
+
+  const updateOnboardingData = (data) => {
+    setOnboardingData(data)
+    localStorage.setItem('onboardingData', JSON.stringify(data))
   }
 
   const value = {
     isAuthenticated,
     user,
+    onboardingData,
     login,
     register,
-    logout
+    logout,
+    updateOnboardingData
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
