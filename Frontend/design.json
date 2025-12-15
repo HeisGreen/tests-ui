@@ -1,0 +1,844 @@
+{
+    "meta": {
+      "image_quality": "High",
+      "image_type": "Illustration/UI Mockup",
+      "resolution_estimation": "Web/Desktop Display Resolution"
+    },
+    "global_context": {
+      "scene_description": "A comprehensive web design mockup for a scheduling application named 'Picktime.' The overall design is clean, professional, and utilizes a light, airy aesthetic with white space and soft pastel accents. The page showcases the application's key value proposition, core features, pricing, and social proof, primarily using text, simplified icons, and embedded mockups of the app's interface elements.",
+      "time_of_day": "Daytime/Neutral (Conceptual UI design)",
+      "weather_atmosphere": "Clean/Digital/Minimalist",
+      "lighting": {
+        "source": "Artificial/Screen light",
+        "direction": "Even",
+        "quality": "Soft",
+        "color_temp": "Neutral/Cool"
+      }
+    },
+    "color_palette": {
+      "dominant_hex_estimates": [
+        "#FFFFFF",
+        "#E8F1FF",
+        "#4A90E2",
+        "#333333",
+        "#FFD0D6"
+      ],
+      "accent_colors": [
+        "Light Blue",
+        "Soft Pink",
+        "Purple",
+        "Dark Gray/Black",
+        "Teal"
+      ],
+      "contrast_level": "Medium"
+    },
+    "composition": {
+      "camera_angle": "Flat/Direct (UI view)",
+      "framing": "Wide-shot (showing a full web page scroll view)",
+      "depth_of_field": "Deep (everything is in focus)",
+      "focal_point": "The main headline 'The better way to schedule your meetings'"
+    },
+    "objects": [
+      {
+        "id": "obj_001",
+        "label": "Global Background Canvas",
+        "category": "Design Element",
+        "location": "Global",
+        "prominence": "Background",
+        "visual_attributes": {
+          "color": "White/Very light gray",
+          "texture": "Smooth/Digital",
+          "material": "Digital Canvas",
+          "state": "Clean",
+          "dimensions_relative": "Very large"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Flat",
+        "text_content": "null"
+      },
+      {
+        "id": "obj_002",
+        "label": "Brand Logo Text 'Picktime'",
+        "category": "Text/Brand Mark",
+        "location": "Top-Left Header",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Dark Gray/Black",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal",
+          "dimensions_relative": "Small"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Flat",
+        "text_content": "Picktime"
+      },
+      {
+        "id": "obj_003",
+        "label": "Navigation Link 'Products'",
+        "category": "UI Element/Text",
+        "location": "Top Center Header",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Dark Gray",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal (with dropdown arrow)",
+          "dimensions_relative": "Very small"
+        },
+        "micro_details": [
+          "Small downward-pointing chevron icon"
+        ],
+        "pose_or_orientation": "Flat",
+        "text_content": "Products"
+      },
+      {
+        "id": "obj_004",
+        "label": "Navigation Link 'Solutions'",
+        "category": "UI Element/Text",
+        "location": "Top Center Header",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Dark Gray",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal (with dropdown arrow)",
+          "dimensions_relative": "Very small"
+        },
+        "micro_details": [
+          "Small downward-pointing chevron icon"
+        ],
+        "pose_or_orientation": "Flat",
+        "text_content": "Solutions"
+      },
+      {
+        "id": "obj_005",
+        "label": "Navigation Link 'Enterprise'",
+        "category": "UI Element/Text",
+        "location": "Top Center Header",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Dark Gray",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal",
+          "dimensions_relative": "Very small"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Flat",
+        "text_content": "Enterprise"
+      },
+      {
+        "id": "obj_006",
+        "label": "Navigation Link 'Pricing'",
+        "category": "UI Element/Text",
+        "location": "Top Center Header",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Dark Gray",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal",
+          "dimensions_relative": "Very small"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Flat",
+        "text_content": "Pricing"
+      },
+      {
+        "id": "obj_007",
+        "label": "Login Link",
+        "category": "UI Element/Text",
+        "location": "Top-Right Header",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Dark Gray",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal",
+          "dimensions_relative": "Very small"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Flat",
+        "text_content": "Log in"
+      },
+      {
+        "id": "obj_008",
+        "label": "Signup Button",
+        "category": "UI Element/Button",
+        "location": "Top-Right Header",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Light Blue background, white text, rounded corners",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Call to action/Solid",
+          "dimensions_relative": "Small"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Flat",
+        "text_content": "Signup"
+      },
+      {
+        "id": "obj_009",
+        "label": "Hero Headline Text",
+        "category": "Text/Headline",
+        "location": "Center-Top",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Dark Gray/Black",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal",
+          "dimensions_relative": "Large/Dominant"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Stacked text lines",
+        "text_content": "The better way to\nschedule your meetings"
+      },
+      {
+        "id": "obj_010",
+        "label": "Hero Subheadline Text",
+        "category": "Text/Body Content",
+        "location": "Below Headline",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Gray",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal",
+          "dimensions_relative": "Medium"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Flat",
+        "text_content": "A fully customizable scheduling experience for individuals, businesses."
+      },
+      {
+        "id": "obj_011",
+        "label": "Get Started Button (Hero CTA)",
+        "category": "UI Element/Button",
+        "location": "Below Subheadline",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Transparent background, Dark Gray text, light gray border, rounded corners",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Call to action/Outlined",
+          "dimensions_relative": "Medium"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Flat",
+        "text_content": "Get started"
+      },
+      {
+        "id": "obj_012",
+        "label": "Floating Icon (Calendar)",
+        "category": "Icon/Graphic",
+        "location": "Top-Left of Hero section",
+        "prominence": "Mid-ground",
+        "visual_attributes": {
+          "color": "Light gray/White, faint outline",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Decorative",
+          "dimensions_relative": "Very small"
+        },
+        "micro_details": [
+          "Illustrative of a calendar sheet."
+        ],
+        "pose_or_orientation": "Tilted",
+        "text_content": "null"
+      },
+      {
+        "id": "obj_013",
+        "label": "Floating Icon (Envelope/Mail)",
+        "category": "Icon/Graphic",
+        "location": "Top-Center of Hero section",
+        "prominence": "Mid-ground",
+        "visual_attributes": {
+          "color": "Light gray/White, faint outline",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Decorative",
+          "dimensions_relative": "Very small"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Tilted",
+        "text_content": "null"
+      },
+      {
+        "id": "obj_014",
+        "label": "Floating Icon (Clock/Alarm)",
+        "category": "Icon/Graphic",
+        "location": "Top-Right of Hero section",
+        "prominence": "Mid-ground",
+        "visual_attributes": {
+          "color": "Light gray/White, faint outline",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Decorative",
+          "dimensions_relative": "Very small"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Tilted",
+        "text_content": "null"
+      },
+      {
+        "id": "obj_015",
+        "label": "Floating Icon (Meeting Cube)",
+        "category": "Icon/Graphic",
+        "location": "Left of Hero section",
+        "prominence": "Mid-ground",
+        "visual_attributes": {
+          "color": "Light gray/White, faint outline",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Decorative",
+          "dimensions_relative": "Very small"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Tilted",
+        "text_content": "null"
+      },
+      {
+        "id": "obj_016",
+        "label": "Floating Icon (People Group)",
+        "category": "Icon/Graphic",
+        "location": "Bottom-Right of Hero section",
+        "prominence": "Mid-ground",
+        "visual_attributes": {
+          "color": "Light gray/White, faint outline",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Decorative",
+          "dimensions_relative": "Very small"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Tilted",
+        "text_content": "null"
+      },
+      {
+        "id": "obj_017",
+        "label": "Mockup: Who Should Join Form (Left)",
+        "category": "UI Mockup/Form",
+        "location": "Center-Left, below Hero",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "White card with light shadow",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Informational/Process Step",
+          "dimensions_relative": "Medium rectangle"
+        },
+        "micro_details": [
+          "Contains user avatar placeholders and multiple radio button options (Consult guests list, Add other invitees, Suggest another date)."
+        ],
+        "pose_or_orientation": "Slightly tilted left",
+        "text_content": "Who Should Join? Guests Consult guests list Add other invitees Suggest another date Next Finish"
+      },
+      {
+        "id": "obj_018",
+        "label": "Mockup: New Reporting Availability Form (Center)",
+        "category": "UI Mockup/Form",
+        "location": "Center-Center, below Hero",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "White card with light shadow",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Informational/Process Step",
+          "dimensions_relative": "Large rectangle"
+        },
+        "micro_details": [
+          "Contains multiple input fields (Date, Duration, Video Conferencing, Location Calendar, Additional Information)."
+        ],
+        "pose_or_orientation": "Flat",
+        "text_content": "New Reporting Availability Detail Event Name Video Conferencing Zoom Meeting Duration 1 Hour Location Calendar Add Location Additional Information (Optional) Anything else you want to add about this event? Next"
+      },
+      {
+        "id": "obj_019",
+        "label": "Mockup: Time Selection Card (Right)",
+        "category": "UI Mockup/Form",
+        "location": "Center-Right, below Hero",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "White card with soft pink highlight border and light shadow",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Informational/Process Step",
+          "dimensions_relative": "Medium rectangle"
+        },
+        "micro_details": [
+          "Shows time slots (1:00 PM, 2:00 PM, 3:00 PM, etc.)."
+        ],
+        "pose_or_orientation": "Slightly tilted right",
+        "text_content": "Booking 1:00 PM 2:00 PM 3:00 PM"
+      },
+      {
+        "id": "obj_020",
+        "label": "Section Headline: 'With us, scheduling is easy'",
+        "category": "Text/Headline",
+        "location": "Bottom-Center",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Dark Gray/Black",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal",
+          "dimensions_relative": "Medium/Bold"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Flat",
+        "text_content": "With us, scheduling is easy"
+      },
+      {
+        "id": "obj_021",
+        "label": "Section Subheadline: 'Effortless scheduling...'",
+        "category": "Text/Body Content",
+        "location": "Below obj_020",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Gray",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal",
+          "dimensions_relative": "Small"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Flat",
+        "text_content": "Effortless scheduling for individuals, powerful solutions for fast-growing modern companies."
+      },
+      {
+        "id": "obj_022",
+        "label": "Feature Card 1 (Calendar)",
+        "category": "UI Element/Card",
+        "location": "Bottom-Left",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Light blue/White gradient background, white text, rounded corners",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Informational",
+          "dimensions_relative": "Small rectangle"
+        },
+        "micro_details": [
+          "Small icon of linked calendars at the top."
+        ],
+        "pose_or_orientation": "Flat",
+        "text_content": "Connect your calendar We'll handle all the cross-referencing, so you don't have to worry about double bookings. See pricing"
+      },
+      {
+        "id": "obj_023",
+        "label": "Feature Card 2 (Notification)",
+        "category": "UI Element/Card",
+        "location": "Bottom-Center",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Light purple/White gradient background, white text, rounded corners",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Informational",
+          "dimensions_relative": "Small rectangle"
+        },
+        "micro_details": [
+          "Small icon of a bell/notification at the top."
+        ],
+        "pose_or_orientation": "Flat",
+        "text_content": "Notify automatically Picktime automatically reminds your clients of upcoming bookings. Get started"
+      },
+      {
+        "id": "obj_024",
+        "label": "Sidebar Section: 'Your all-purpose scheduling app'",
+        "category": "Text/Headline",
+        "location": "Top-Right Sidebar",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Dark Gray/Black",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal",
+          "dimensions_relative": "Medium"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Flat",
+        "text_content": "Your all-purpose scheduling app"
+      },
+      {
+        "id": "obj_025",
+        "label": "Feature Box (Avoid meeting overload)",
+        "category": "UI Element/Card",
+        "location": "Right Sidebar",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "White card, light blue border/text",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Informational",
+          "dimensions_relative": "Very small"
+        },
+        "micro_details": [
+          "Icon of a clock/time."
+        ],
+        "pose_or_orientation": "Flat",
+        "text_content": "Avoid meeting overload Get started"
+      },
+      {
+        "id": "obj_026",
+        "label": "Feature Box (Reduce no-shows)",
+        "category": "UI Element/Card",
+        "location": "Right Sidebar",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "White card, light red border/text",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Informational",
+          "dimensions_relative": "Very small"
+        },
+        "micro_details": [
+          "Icon of a calendar checkbox."
+        ],
+        "pose_or_orientation": "Flat",
+        "text_content": "Reduce no-shows with Get started"
+      },
+      {
+        "id": "obj_027",
+        "label": "Feature Box (Notice and buffers)",
+        "category": "UI Element/Card",
+        "location": "Right Sidebar",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "White card, dark blue/gray text",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Informational",
+          "dimensions_relative": "Small"
+        },
+        "micro_details": [
+          "Contains input fields for minimum notice and buffer time."
+        ],
+        "pose_or_orientation": "Flat",
+        "text_content": "Notice and buffers Minimum notice 3 hours Buffer time Buffer after event 30 mins"
+      },
+      {
+        "id": "obj_028",
+        "label": "Feature Box (Stand out with a custom theme)",
+        "category": "UI Element/Card",
+        "location": "Right Sidebar",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "White card, dark blue/gray text",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Informational",
+          "dimensions_relative": "Small"
+        },
+        "micro_details": [
+          "Small graphic of a theme selection interface."
+        ],
+        "pose_or_orientation": "Flat",
+        "text_content": "Stand out with a custom theme"
+      },
+      {
+        "id": "obj_029",
+        "label": "Text '... and so much more!'",
+        "category": "Text/Section Separator",
+        "location": "Mid-Right Sidebar",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Gray",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal",
+          "dimensions_relative": "Medium/Italic"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Flat",
+        "text_content": "... and so much more!"
+      },
+      {
+        "id": "obj_030",
+        "label": "Small Feature Icons (Payments, Embeds, Language)",
+        "category": "Icon/UI Element",
+        "location": "Below obj_029",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Small colored circles with white icons",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Informational",
+          "dimensions_relative": "Very small"
+        },
+        "micro_details": [
+          "Blue circle for accepting payments, Red for deep embeds, Teal for language/translation."
+        ],
+        "pose_or_orientation": "Horizontal array",
+        "text_content": "Accept payments Deep embeds Multi-language"
+      },
+      {
+        "id": "obj_031",
+        "label": "Sidebar Section: 'Simple pricing based on your needs'",
+        "category": "Text/Headline",
+        "location": "Bottom-Right Sidebar",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Dark Gray/Black",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal",
+          "dimensions_relative": "Medium"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Flat",
+        "text_content": "Simple pricing based on your needs"
+      },
+      {
+        "id": "obj_032",
+        "label": "Pricing Card (Individual)",
+        "category": "UI Element/Card",
+        "location": "Bottom-Right Sidebar",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "White card, light blue accent",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Informational",
+          "dimensions_relative": "Small"
+        },
+        "micro_details": [
+          "Price: $12 per month, billed annually."
+        ],
+        "pose_or_orientation": "Flat",
+        "text_content": "Individual $12"
+      },
+      {
+        "id": "obj_033",
+        "label": "Pricing Card (Team)",
+        "category": "UI Element/Card",
+        "location": "Bottom-Right Sidebar",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "White card, light blue accent",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Informational",
+          "dimensions_relative": "Small"
+        },
+        "micro_details": [
+          "Price: $12 per user per month."
+        ],
+        "pose_or_orientation": "Flat",
+        "text_content": "Team $12"
+      },
+      {
+        "id": "obj_034",
+        "label": "Pricing Card (Enterprise)",
+        "category": "UI Element/Card",
+        "location": "Bottom-Right Sidebar",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "White card, light blue accent",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Informational",
+          "dimensions_relative": "Small"
+        },
+        "micro_details": [
+          "Price: $15K annually (implied)."
+        ],
+        "pose_or_orientation": "Flat",
+        "text_content": "Enterprise $15K"
+      },
+      {
+        "id": "obj_035",
+        "label": "Text 'Trusted by around the world'",
+        "category": "Text/Social Proof",
+        "location": "Far Bottom Right",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Gray",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal",
+          "dimensions_relative": "Very small"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Flat",
+        "text_content": "Trusted by around the world"
+      },
+      {
+        "id": "obj_036",
+        "label": "Logos of client companies",
+        "category": "Logo/Brand Mark",
+        "location": "Far Bottom Right",
+        "prominence": "Foreground",
+        "visual_attributes": {
+          "color": "Colored logos (Amazon, Rakuten, L'Oréal, Airbnb, etc.)",
+          "texture": "Smooth",
+          "material": "Digital",
+          "state": "Normal",
+          "dimensions_relative": "Tiny"
+        },
+        "micro_details": [],
+        "pose_or_orientation": "Horizontal array",
+        "text_content": "null (logos are visual)"
+      }
+    ],
+    "text_ocr": {
+      "present": true,
+      "content": [
+        {
+          "text": "Picktime",
+          "location": "Logo/Header",
+          "font_style": "Sans-serif/Bold",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Products Solutions Enterprise Pricing Log in Signup",
+          "location": "Header Navigation",
+          "font_style": "Sans-serif/Regular",
+          "legibility": "Clear"
+        },
+        {
+          "text": "The better way to schedule your meetings",
+          "location": "Hero Headline",
+          "font_style": "Sans-serif/Bold/Large",
+          "legibility": "Clear"
+        },
+        {
+          "text": "A fully customizable scheduling experience for individuals, businesses.",
+          "location": "Hero Subheadline",
+          "font_style": "Sans-serif/Regular",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Get started",
+          "location": "Hero CTA Button",
+          "font_style": "Sans-serif/Regular",
+          "legibility": "Clear"
+        },
+        {
+          "text": "New Reporting Availability",
+          "location": "Center Mockup Title",
+          "font_style": "Sans-serif/Bold",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Who Should Join? Guests Consult guests list Add other invitees Suggest another date Next Finish",
+          "location": "Left Mockup Content",
+          "font_style": "Sans-serif/Mixed",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Detail Event Name Duration 1 Hour Video Conferencing Zoom Meeting Location Calendar Add Location Additional Information (Optional) Anything else you want to add about this event? Previous Next",
+          "location": "Center Mockup Content",
+          "font_style": "Sans-serif/Mixed",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Meeting 1:00 PM 2:00 PM 3:00 PM",
+          "location": "Right Mockup Content",
+          "font_style": "Sans-serif/Mixed",
+          "legibility": "Clear"
+        },
+        {
+          "text": "With us, scheduling is easy",
+          "location": "Mid-Page Headline",
+          "font_style": "Sans-serif/Bold/Medium",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Effortless scheduling for individuals, powerful solutions for fast-growing modern companies.",
+          "location": "Mid-Page Subheadline",
+          "font_style": "Sans-serif/Regular/Small",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Connect your calendar We'll handle all the cross-referencing, so you don't have to worry about double bookings. See pricing",
+          "location": "Bottom-Left Feature Card",
+          "font_style": "Sans-serif/Mixed",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Notify automatically Picktime automatically reminds your clients of upcoming bookings. Get started",
+          "location": "Bottom-Center Feature Card",
+          "font_style": "Sans-serif/Mixed",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Your all-purpose scheduling app",
+          "location": "Sidebar Headline 1",
+          "font_style": "Sans-serif/Bold",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Avoid meeting overload Get started",
+          "location": "Sidebar Feature Card 1",
+          "font_style": "Sans-serif/Mixed",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Reduce no-shows with Get started",
+          "location": "Sidebar Feature Card 2",
+          "font_style": "Sans-serif/Mixed",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Notice and buffers Minimum notice 3 hours Buffer time Buffer after event 30 mins",
+          "location": "Sidebar Feature Card 3",
+          "font_style": "Sans-serif/Mixed",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Stand out with a custom theme",
+          "location": "Sidebar Feature Card 4",
+          "font_style": "Sans-serif/Mixed",
+          "legibility": "Clear"
+        },
+        {
+          "text": "... and so much more!",
+          "location": "Sidebar Separator",
+          "font_style": "Sans-serif/Italic",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Accept payments Deep embeds Multi-language",
+          "location": "Sidebar Icons Text",
+          "font_style": "Sans-serif/Regular/Small",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Simple pricing based on your needs",
+          "location": "Sidebar Headline 2",
+          "font_style": "Sans-serif/Bold",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Individual $12 Team $12 Enterprise $15K",
+          "location": "Pricing Cards (Selected text)",
+          "font_style": "Sans-serif/Mixed",
+          "legibility": "Clear"
+        },
+        {
+          "text": "Trusted by around the world",
+          "location": "Social Proof Text",
+          "font_style": "Sans-serif/Regular/Tiny",
+          "legibility": "Clear"
+        },
+        {
+          "text": "See why our users loves Picktime?",
+          "location": "Bottom of Sidebar",
+          "font_style": "Sans-serif/Bold",
+          "legibility": "Clear"
+        }
+      ]
+    },
+    "semantic_relationships": [
+      "The Hero section mockups (obj_017, obj_018, obj_019) are positioned as sequential steps in the scheduling process, from left to right.",
+      "The floating icons (obj_012 to obj_016) are scattered decoratively around the main Hero text (obj_009).",
+      "The two feature cards (obj_022, obj_023) at the bottom left are horizontally aligned, showcasing different product benefits.",
+      "The right sidebar contains clustered information about features (obj_024 to obj_030), pricing (obj_031 to obj_034), and social proof (obj_035, obj_036), separated vertically.",
+      "The 'Connect your calendar' feature (obj_022) directs the user to 'See pricing', linking it to the monetization strategy."
+    ]
+  }
+  
