@@ -1,12 +1,18 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { countries } from '../data/countries'
 import './Onboarding.css'
 
 function Onboarding() {
   const navigate = useNavigate()
   const { user, updateOnboardingData } = useAuth()
   const [currentStep, setCurrentStep] = useState(1)
+  
+  // Sort countries alphabetically by name
+  const sortedCountries = useMemo(() => {
+    return [...countries].sort((a, b) => a.name.localeCompare(b.name))
+  }, [])
   const [formData, setFormData] = useState({
     // Personal & Contact Details
     nationality: '',
@@ -179,30 +185,45 @@ function Onboarding() {
             <h2>Personal & Contact Details</h2>
             <div className="form-group">
               <label>Nationality *</label>
-              <input
-                type="text"
+              <select
                 value={formData.nationality || ''}
                 onChange={(e) => handleChange('nationality', e.target.value)}
-                placeholder="e.g., NG"
-              />
+              >
+                <option value="">Select a country...</option>
+                {sortedCountries.map((country) => (
+                  <option key={country.code} value={country.code}>
+                    {country.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="form-group">
               <label>Current Residence Country</label>
-              <input
-                type="text"
+              <select
                 value={formData.current_residence_country || ''}
                 onChange={(e) => handleChange('current_residence_country', e.target.value)}
-                placeholder="e.g., NG"
-              />
+              >
+                <option value="">Select a country...</option>
+                {sortedCountries.map((country) => (
+                  <option key={country.code} value={country.code}>
+                    {country.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="form-group">
               <label>Applying From Country</label>
-              <input
-                type="text"
+              <select
                 value={formData.applying_from_country || ''}
                 onChange={(e) => handleChange('applying_from_country', e.target.value)}
-                placeholder="e.g., NG"
-              />
+              >
+                <option value="">Select a country...</option>
+                {sortedCountries.map((country) => (
+                  <option key={country.code} value={country.code}>
+                    {country.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="form-row">
               <div className="form-group">
@@ -233,12 +254,17 @@ function Onboarding() {
                 <div className="form-row">
                   <div className="form-group">
                     <label>Spouse Nationality</label>
-                    <input
-                      type="text"
+                    <select
                       value={formData.spouse_nationality || ''}
                       onChange={(e) => handleChange('spouse_nationality', e.target.value)}
-                      placeholder="e.g., NG"
-                    />
+                    >
+                      <option value="">Select a country...</option>
+                      {sortedCountries.map((country) => (
+                        <option key={country.code} value={country.code}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="form-group">
                     <label>Spouse Profession</label>
@@ -270,12 +296,24 @@ function Onboarding() {
             <h2>Destination & Timeline</h2>
             <div className="form-group">
               <label>Preferred Destination(s) *</label>
-              <input
-                type="text"
-                value={formData.preferred_destinations || ''}
-                onChange={(e) => handleChange('preferred_destinations', e.target.value)}
-                placeholder="e.g., US, CA, UK"
-              />
+              <select
+                multiple
+                value={formData.preferred_destinations ? formData.preferred_destinations.split(',').map(d => d.trim()) : []}
+                onChange={(e) => {
+                  const selected = Array.from(e.target.selectedOptions, option => option.value)
+                  handleChange('preferred_destinations', selected.join(', '))
+                }}
+                style={{ minHeight: '100px' }}
+              >
+                {sortedCountries.map((country) => (
+                  <option key={country.code} value={country.code}>
+                    {country.name}
+                  </option>
+                ))}
+              </select>
+              <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
+                Hold Ctrl (Cmd on Mac) to select multiple countries
+              </small>
             </div>
             <div className="form-group">
               <label>Target Timeline *</label>
@@ -363,12 +401,24 @@ function Onboarding() {
             {formData.willing_to_consider_alternatives && (
               <div className="form-group">
                 <label>Alternative Countries</label>
-                <input
-                  type="text"
-                  value={formData.alternative_countries || ''}
-                  onChange={(e) => handleChange('alternative_countries', e.target.value)}
-                  placeholder="e.g., CA, AU"
-                />
+                <select
+                  multiple
+                  value={formData.alternative_countries ? (Array.isArray(formData.alternative_countries) ? formData.alternative_countries : formData.alternative_countries.split(',').map(d => d.trim())) : []}
+                  onChange={(e) => {
+                    const selected = Array.from(e.target.selectedOptions, option => option.value)
+                    handleChange('alternative_countries', selected.join(', '))
+                  }}
+                  style={{ minHeight: '100px' }}
+                >
+                  {sortedCountries.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.name}
+                    </option>
+                  ))}
+                </select>
+                <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
+                  Hold Ctrl (Cmd on Mac) to select multiple countries
+                </small>
               </div>
             )}
           </div>
@@ -763,12 +813,17 @@ function Onboarding() {
                 <div className="form-row">
                   <div className="form-group">
                     <label>Current Visa Country</label>
-                    <input
-                      type="text"
+                    <select
                       value={formData.current_visa_country || ''}
                       onChange={(e) => handleChange('current_visa_country', e.target.value)}
-                      placeholder="e.g., US"
-                    />
+                    >
+                      <option value="">Select a country...</option>
+                      {sortedCountries.map((country) => (
+                        <option key={country.code} value={country.code}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="form-group">
                     <label>Visa Expiry Date</label>

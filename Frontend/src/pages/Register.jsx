@@ -7,10 +7,7 @@ function Register() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: '',
-    country: '',
-    age: '',
-    occupation: ''
+    password: ''
   })
   const [error, setError] = useState('')
   const { register } = useAuth()
@@ -27,7 +24,7 @@ function Register() {
     e.preventDefault()
     setError('')
     
-    if (!formData.name || !formData.email || !formData.password || !formData.country) {
+    if (!formData.name || !formData.email || !formData.password) {
       setError('Please fill in all required fields')
       return
     }
@@ -89,45 +86,6 @@ function Register() {
               placeholder="Create a password"
               required
             />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="country">Country</label>
-            <input
-              type="text"
-              id="country"
-              name="country"
-              value={formData.country}
-              onChange={handleChange}
-              placeholder="United States"
-              required
-            />
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="age">Age</label>
-              <input
-                type="number"
-                id="age"
-                name="age"
-                value={formData.age}
-                onChange={handleChange}
-                placeholder="28"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="occupation">Occupation</label>
-              <input
-                type="text"
-                id="occupation"
-                name="occupation"
-                value={formData.occupation}
-                onChange={handleChange}
-                placeholder="Software Engineer"
-              />
-            </div>
           </div>
 
           <button type="submit" className="btn-auth">
