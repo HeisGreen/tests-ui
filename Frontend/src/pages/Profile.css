@@ -120,8 +120,21 @@
   align-self: flex-start;
 }
 
-.btn-save:hover {
+.btn-save:hover:not(:disabled) {
   background-color: #357ABD;
+}
+
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background-color: #FFD0D6;
+  color: #c0392b;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
 }
 
 .account-info {

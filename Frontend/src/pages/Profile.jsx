@@ -2,18 +2,32 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { FiUser, FiMail, FiMapPin, FiBriefcase, FiSave } from 'react-icons/fi'
 import { initScrollAnimations } from '../utils/scrollAnimation'
+import OnboardingDataSection from '../components/OnboardingDataSection'
+import { authAPI } from '../utils/api'
 import './Profile.css'
 
 function Profile() {
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
   const [formData, setFormData] = useState({
     name: user?.name || '',
-    email: user?.email || '',
-    country: user?.country || '',
-    age: user?.age || '',
-    occupation: user?.occupation || ''
+    email: user?.email || ''
   })
+  const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || ''
+      })
+    }
+  }, [user])
+
+  useEffect(() => {
+    initScrollAnimations()
+  }, [])
 
   const handleChange = (e) => {
     setFormData({
@@ -21,17 +35,32 @@ function Profile() {
       [e.target.name]: e.target.value
     })
     setSaved(false)
+    setError('')
   }
 
-  useEffect(() => {
-    initScrollAnimations()
-  }, [])
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // In a real app, this would update the user profile
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+    setSaving(true)
+    setError('')
+    
+    try {
+      // Update user info via API
+      await authAPI.updateCurrentUser({
+        name: formData.name,
+        email: formData.email
+      })
+      
+      // Refresh user data in context
+      await refreshUser()
+      
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    } catch (err) {
+      setError(err.message || 'Failed to save profile')
+      console.error('Error saving profile:', err)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -81,56 +110,11 @@ function Profile() {
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="country">
-                <FiMapPin className="label-icon" />
-                Country
-              </label>
-              <input
-                type="text"
-                id="country"
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-                placeholder="United States"
-              />
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="age">
-                  <FiUser className="label-icon" />
-                  Age
-                </label>
-                <input
-                  type="number"
-                  id="age"
-                  name="age"
-                  value={formData.age}
-                  onChange={handleChange}
-                  placeholder="28"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="occupation">
-                  <FiBriefcase className="label-icon" />
-                  Occupation
-                </label>
-                <input
-                  type="text"
-                  id="occupation"
-                  name="occupation"
-                  value={formData.occupation}
-                  onChange={handleChange}
-                  placeholder="Software Engineer"
-                />
-              </div>
-            </div>
-
-            <button type="submit" className="btn-save">
+            {error && <div className="error-message">{error}</div>}
+            
+            <button type="submit" className="btn-save" disabled={saving}>
               <FiSave />
-              {saved ? 'Saved!' : 'Save Changes'}
+              {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
             </button>
           </form>
         </div>
@@ -142,17 +126,22 @@ function Profile() {
           <div className="account-info">
             <div className="info-item">
               <span className="info-label">Member Since</span>
-              <span className="info-value">January 2024</span>
+              <span className="info-value">
+                {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}
+              </span>
             </div>
             <div className="info-item">
               <span className="info-label">Account Status</span>
-              <span className="info-value status-active">Active</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Total Applications</span>
-              <span className="info-value">2</span>
+              <span className="info-value status-active">
+                {user?.is_active ? 'Active' : 'Inactive'}
+              </span>
             </div>
           </div>
+        </div>
+
+        {/* Onboarding Data Section */}
+        <div className="profile-card scroll-animate scroll-animate-delay-3">
+          <OnboardingDataSection />
         </div>
       </div>
     </div>

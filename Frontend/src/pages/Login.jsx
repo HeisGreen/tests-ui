@@ -10,7 +10,7 @@ function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     
@@ -19,11 +19,11 @@ function Login() {
       return
     }
 
-    const success = login(email, password)
-    if (success) {
+    try {
+      await login(email, password)
       navigate('/home')
-    } else {
-      setError('Invalid credentials')
+    } catch (err) {
+      setError(err.message || 'Invalid credentials')
     }
   }
 

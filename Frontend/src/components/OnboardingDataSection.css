@@ -1,0 +1,180 @@
+.onboarding-data-section {
+  width: 100%;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #E8F1FF;
+}
+
+.section-header h2 {
+  font-size: 1.5rem;
+  color: #333333;
+  margin: 0;
+}
+
+.section-header p {
+  color: #666666;
+  margin: 0.5rem 0 0 0;
+}
+
+.section-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-edit,
+.btn-save,
+.btn-cancel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-edit {
+  background-color: #4A90E2;
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #357ABD;
+}
+
+.btn-save {
+  background-color: #4A90E2;
+  color: white;
+}
+
+.btn-save:hover:not(:disabled) {
+  background-color: #357ABD;
+}
+
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background-color: #f0f0f0;
+  color: #333333;
+}
+
+.btn-cancel:hover {
+  background-color: #e0e0e0;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.error-message {
+  background-color: #FFD0D6;
+  color: #c0392b;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.onboarding-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.form-section {
+  background-color: #F8F9FA;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.form-section h3 {
+  font-size: 1.2rem;
+  color: #333333;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #E8F1FF;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  color: #333333;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid #E8F1FF;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+  background-color: white;
+}
+
+.form-group input:disabled,
+.form-group select:disabled,
+.form-group textarea:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  color: #666666;
+}
+
+.form-group input:focus:not(:disabled),
+.form-group select:focus:not(:disabled),
+.form-group textarea:focus:not(:disabled) {
+  outline: none;
+  border-color: #4A90E2;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .section-actions {
+    width: 100%;
+  }
+
+  .edit-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .btn-edit,
+  .btn-save,
+  .btn-cancel {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .onboarding-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

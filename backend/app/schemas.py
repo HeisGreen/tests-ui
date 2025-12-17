@@ -158,3 +158,62 @@ class RecommendationRequest(BaseModel):
         if not self.intake_id and not self.intake:
             raise ValueError("Provide either intake_id or intake payload.")
         return self
+
+
+# Authentication schemas
+class UserCreate(BaseModel):
+    email: str
+    name: str
+    password: str
+
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    name: str
+    is_active: bool
+    created_at: datetime
+
+    model_config = {
+        "json_encoders": {datetime: lambda v: v.isoformat() + "Z"},
+    }
+
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    email: Optional[str] = None
+
+
+# User Profile schemas
+class UserProfileCreate(BaseModel):
+    onboarding_data: Optional[IntakeData] = None
+
+
+class UserProfileUpdate(BaseModel):
+    onboarding_data: Optional[IntakeData] = None
+
+
+class UserProfileResponse(BaseModel):
+    id: int
+    user_id: int
+    onboarding_data: Optional[IntakeData] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "json_encoders": {datetime: lambda v: v.isoformat() + "Z"},
+    }

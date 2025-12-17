@@ -1,11 +1,16 @@
 import json
 from typing import Any, Dict, Optional
+from datetime import datetime, timedelta
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
 from openai import OpenAI
+from sqlalchemy.orm import Session
 
 from app.config import Settings, get_settings
+from app.database import engine, get_db
+from app.models import Base, User, UserProfile
 from app.schemas import (
     IntakeCreate,
     IntakeData,
@@ -13,9 +18,27 @@ from app.schemas import (
     RecommendationOption,
     RecommendationRequest,
     RecommendationResponse,
+    UserCreate,
+    UserResponse,
+    UserUpdate,
+    Token,
+    UserProfileCreate,
+    UserProfileUpdate,
+    UserProfileResponse,
 )
 from app.storage import IntakeStore
+from app.auth import (
+    get_password_hash,
+    authenticate_user,
+    create_access_token,
+    get_user_by_email,
+    get_current_active_user,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+)
 
+
+# Create database tables
+Base.metadata.create_all(bind=engine)
 
 # Single in-memory store so intakes persist across requests during runtime
 store = IntakeStore()
@@ -56,6 +79,177 @@ app.add_middleware(
 @app.get("/health")
 def health() -> Dict[str, str]:
     return {"status": "ok"}
+
+
+# Authentication endpoints
+@app.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def register(user_data: UserCreate, db: Session = Depends(get_db)):
+    """Register a new user"""
+    # Check if user already exists
+    db_user = get_user_by_email(db, email=user_data.email)
+    if db_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    # Create new user
+    hashed_password = get_password_hash(user_data.password)
+    db_user = User(
+        email=user_data.email,
+        name=user_data.name,
+        hashed_password=hashed_password
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    
+    return db_user
+
+
+@app.post("/auth/login", response_model=Token)
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+    """Login and get access token"""
+    user = authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.email}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.get("/auth/me", response_model=UserResponse)
+def get_current_user_info(current_user: User = Depends(get_current_active_user)):
+    """Get current user information"""
+    return current_user
+
+
+@app.put("/auth/me", response_model=UserResponse)
+def update_current_user_info(
+    user_update: UserUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Update current user information"""
+    # Check if email is being changed and if it's already taken
+    if user_update.email and user_update.email != current_user.email:
+        existing_user = get_user_by_email(db, email=user_update.email)
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered"
+            )
+        current_user.email = user_update.email
+    
+    if user_update.name:
+        current_user.name = user_update.name
+    
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+# User Profile endpoints
+@app.get("/profile", response_model=UserProfileResponse)
+def get_user_profile(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get user profile with onboarding data"""
+    profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
+    if not profile:
+        # Create empty profile if it doesn't exist
+        profile = UserProfile(user_id=current_user.id, onboarding_data=None)
+        db.add(profile)
+        db.commit()
+        db.refresh(profile)
+    return profile
+
+
+@app.post("/profile", response_model=UserProfileResponse, status_code=status.HTTP_201_CREATED)
+def create_user_profile(
+    profile_data: UserProfileCreate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Create or update user profile with onboarding data"""
+    # Check if profile already exists
+    existing_profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
+    
+    if existing_profile:
+        # Update existing profile
+        if profile_data.onboarding_data:
+            # Keep existing data and merge with new data, preserving all fields including nulls
+            existing_data = existing_profile.onboarding_data or {}
+            new_data = profile_data.onboarding_data.model_dump(exclude_none=False)
+            # Merge: new_data overwrites existing_data, but we keep all fields
+            merged_data = {**existing_data, **new_data}
+            existing_profile.onboarding_data = merged_data
+        existing_profile.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(existing_profile)
+        return existing_profile
+    else:
+        # Create new profile
+        onboarding_dict = None
+        if profile_data.onboarding_data:
+            # Store all fields including nulls so users can fill them in later
+            onboarding_dict = profile_data.onboarding_data.model_dump(exclude_none=False)
+        
+        new_profile = UserProfile(
+            user_id=current_user.id,
+            onboarding_data=onboarding_dict
+        )
+        db.add(new_profile)
+        db.commit()
+        db.refresh(new_profile)
+        return new_profile
+
+
+@app.put("/profile", response_model=UserProfileResponse)
+def update_user_profile(
+    profile_data: UserProfileUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Update user profile onboarding data"""
+    profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
+    
+    if not profile:
+        # Create profile if it doesn't exist
+        onboarding_dict = None
+        if profile_data.onboarding_data:
+            # Store all fields including nulls so users can fill them in later
+            onboarding_dict = profile_data.onboarding_data.model_dump(exclude_none=False)
+        
+        profile = UserProfile(
+            user_id=current_user.id,
+            onboarding_data=onboarding_dict
+        )
+        db.add(profile)
+    else:
+        # Update existing profile
+        if profile_data.onboarding_data:
+            # Merge with existing data, preserving all fields including nulls
+            existing_data = profile.onboarding_data or {}
+            new_data = profile_data.onboarding_data.model_dump(exclude_none=False)
+            # Merge: new_data overwrites existing_data, preserving all fields
+            merged_data = {**existing_data, **new_data}
+            profile.onboarding_data = merged_data
+        profile.updated_at = datetime.utcnow()
+    
+    db.commit()
+    db.refresh(profile)
+    return profile
 
 
 @app.post("/intakes", response_model=IntakeRecord, status_code=status.HTTP_201_CREATED)

@@ -2,11 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { countries } from '../data/countries'
+import { transformToBackendFormat, transformToFormFormat } from '../utils/dataTransform'
 import './Onboarding.css'
 
 function Onboarding() {
   const navigate = useNavigate()
-  const { user, updateOnboardingData } = useAuth()
+  const { user, onboardingData, updateOnboardingData } = useAuth()
   const [currentStep, setCurrentStep] = useState(1)
   
   // Sort countries alphabetically by name
@@ -116,16 +117,17 @@ function Onboarding() {
   const totalSteps = 9
 
   useEffect(() => {
-    // Load saved data from localStorage
-    const savedData = localStorage.getItem('onboardingData')
-    if (savedData) {
-      try {
-        setFormData(JSON.parse(savedData))
-      } catch (e) {
-        console.error('Error loading saved data:', e)
-      }
+    // Load saved data from auth context (which loads from backend)
+    if (onboardingData) {
+      // Transform backend data (arrays) to form format (strings)
+      const formDataFromBackend = transformToFormFormat(onboardingData)
+      // Merge onboarding data into form, keeping form defaults for missing fields
+      setFormData(prev => ({
+        ...prev,
+        ...formDataFromBackend
+      }))
     }
-  }, [])
+  }, [onboardingData])
 
   const handleChange = (field, value) => {
     const updatedData = {
@@ -156,25 +158,23 @@ function Onboarding() {
     }
   }
 
-  const handleSubmit = () => {
-    // Save to localStorage
-    const dataToSave = {
-      id: user?.id || Date.now(),
-      user_id: user?.id || Date.now(),
-      ...formData,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+  const handleSubmit = async () => {
+    // Transform form data (strings) to backend format (arrays)
+    const dataToSave = transformToBackendFormat(formData)
+    
+    // Save to backend via auth context (which will also update localStorage)
+    try {
+      if (updateOnboardingData) {
+        await updateOnboardingData(dataToSave)
+      }
+      
+      // Navigate to home after successful save
+      navigate('/home')
+    } catch (error) {
+      console.error('Error saving onboarding data:', error)
+      // Still navigate even if save fails (data is in localStorage)
+      navigate('/home')
     }
-    
-    localStorage.setItem('onboardingData', JSON.stringify(dataToSave))
-    
-    // Update auth context
-    if (updateOnboardingData) {
-      updateOnboardingData(dataToSave)
-    }
-    
-    // Navigate to home
-    navigate('/home')
   }
 
   const renderStep = () => {
@@ -403,10 +403,19 @@ function Onboarding() {
                 <label>Alternative Countries</label>
                 <select
                   multiple
-                  value={formData.alternative_countries ? (Array.isArray(formData.alternative_countries) ? formData.alternative_countries : formData.alternative_countries.split(',').map(d => d.trim())) : []}
+                  value={(() => {
+                    // Handle both array and string formats for alternative_countries
+                    if (!formData.alternative_countries) return []
+                    if (Array.isArray(formData.alternative_countries)) {
+                      return formData.alternative_countries
+                    }
+                    // Convert comma-separated string to array
+                    return formData.alternative_countries.split(',').map(d => d.trim()).filter(d => d)
+                  })()}
                   onChange={(e) => {
                     const selected = Array.from(e.target.selectedOptions, option => option.value)
-                    handleChange('alternative_countries', selected.join(', '))
+                    // Store as comma-separated string (will be converted to array by transform function)
+                    handleChange('alternative_countries', selected.length > 0 ? selected.join(', ') : null)
                   }}
                   style={{ minHeight: '100px' }}
                 >

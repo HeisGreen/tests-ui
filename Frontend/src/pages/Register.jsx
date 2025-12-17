@@ -20,7 +20,7 @@ function Register() {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     
@@ -29,11 +29,11 @@ function Register() {
       return
     }
 
-    const success = register(formData)
-    if (success) {
+    try {
+      await register(formData)
       navigate('/onboarding')
-    } else {
-      setError('Registration failed. Please try again.')
+    } catch (err) {
+      setError(err.message || 'Registration failed. Please try again.')
     }
   }
 
