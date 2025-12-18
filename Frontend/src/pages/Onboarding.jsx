@@ -1,22 +1,28 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import { countries } from '../data/countries'
-import { transformToBackendFormat, transformToFormFormat } from '../utils/dataTransform'
-import './Onboarding.css'
+import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { countries } from "../data/countries";
+import { recommendationsAPI } from "../utils/api";
+import {
+  transformToBackendFormat,
+  transformToFormFormat,
+} from "../utils/dataTransform";
+import "./Onboarding.css";
 
 function Onboarding() {
-  const navigate = useNavigate()
-  const { user, onboardingData, updateOnboardingData } = useAuth()
-  const [currentStep, setCurrentStep] = useState(1)
-  
+  const navigate = useNavigate();
+  const { user, onboardingData, updateOnboardingData } = useAuth();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
+
   // Sort countries alphabetically by name
   const sortedCountries = useMemo(() => {
-    return [...countries].sort((a, b) => a.name.localeCompare(b.name))
-  }, [])
+    return [...countries].sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
   const [formData, setFormData] = useState({
     // Personal & Contact Details
-    nationality: '',
+    nationality: "",
     citizenship_country: null,
     current_residence_country: null,
     applying_from_country: null,
@@ -29,10 +35,10 @@ function Onboarding() {
     wants_lawyer_consultation: null,
 
     // Destination & Timeline
-    preferred_destinations: '',
+    preferred_destinations: "",
     migration_timeline: null,
     commitment_level: null,
-    target_timeline: '',
+    target_timeline: "",
     target_move_date: null,
     deadline_hard: null,
     deadline_reason: null,
@@ -40,7 +46,7 @@ function Onboarding() {
     alternative_countries: null,
 
     // Education
-    education_level: '',
+    education_level: "",
     field_of_study: null,
     degrees: null,
     has_academic_transcripts: null,
@@ -112,70 +118,84 @@ function Onboarding() {
     // Meta
     risk_tolerance: null,
     prefers_diy_or_guided: null,
-  })
+  });
 
-  const totalSteps = 9
+  const totalSteps = 9;
 
   useEffect(() => {
     // Load saved data from auth context (which loads from backend)
     if (onboardingData) {
       // Transform backend data (arrays) to form format (strings)
-      const formDataFromBackend = transformToFormFormat(onboardingData)
+      const formDataFromBackend = transformToFormFormat(onboardingData);
       // Merge onboarding data into form, keeping form defaults for missing fields
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        ...formDataFromBackend
-      }))
+        ...formDataFromBackend,
+      }));
     }
-  }, [onboardingData])
+  }, [onboardingData]);
 
   const handleChange = (field, value) => {
     const updatedData = {
       ...formData,
-      [field]: value === '' ? null : value
-    }
-    setFormData(updatedData)
-    
+      [field]: value === "" ? null : value,
+    };
+    setFormData(updatedData);
+
     // Auto-save to localStorage
     const dataToSave = {
       id: user?.id || Date.now(),
       user_id: user?.id || Date.now(),
       ...updatedData,
-      updated_at: new Date().toISOString()
-    }
-    localStorage.setItem('onboardingData', JSON.stringify(dataToSave))
-  }
+      updated_at: new Date().toISOString(),
+    };
+    localStorage.setItem("onboardingData", JSON.stringify(dataToSave));
+  };
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(currentStep + 1);
     }
-  }
+  };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
+      setCurrentStep(currentStep - 1);
     }
-  }
+  };
 
   const handleSubmit = async () => {
     // Transform form data (strings) to backend format (arrays)
-    const dataToSave = transformToBackendFormat(formData)
-    
-    // Save to backend via auth context (which will also update localStorage)
+    const dataToSave = transformToBackendFormat(formData);
+
+    // Save to backend via auth context (which will also update localStorage),
+    // then generate and persist the user's recommendation.
     try {
+      setSubmitting(true);
+      setSubmitMessage("Saving your onboarding details...");
       if (updateOnboardingData) {
-        await updateOnboardingData(dataToSave)
+        await updateOnboardingData(dataToSave);
       }
-      
-      // Navigate to home after successful save
-      navigate('/home')
+
+      // Call AI once after onboarding so the result is saved for this user.
+      // Passing intake explicitly makes it robust even if profile sync is delayed.
+      setSubmitMessage("Generating your personalized recommendations...");
+      const recs = await recommendationsAPI.getRecommendations(
+        false,
+        dataToSave
+      );
+
+      // Navigate to recommendations and hydrate the page immediately.
+      navigate("/recommendation", { state: { initialRecommendations: recs } });
     } catch (error) {
-      console.error('Error saving onboarding data:', error)
+      console.error("Error saving onboarding data:", error);
       // Still navigate even if save fails (data is in localStorage)
-      navigate('/home')
+      navigate("/home");
+    } finally {
+      setSubmitting(false);
+      setSubmitMessage("");
     }
-  }
+  };
 
   const renderStep = () => {
     switch (currentStep) {
@@ -186,8 +206,8 @@ function Onboarding() {
             <div className="form-group">
               <label>Nationality *</label>
               <select
-                value={formData.nationality || ''}
-                onChange={(e) => handleChange('nationality', e.target.value)}
+                value={formData.nationality || ""}
+                onChange={(e) => handleChange("nationality", e.target.value)}
               >
                 <option value="">Select a country...</option>
                 {sortedCountries.map((country) => (
@@ -200,8 +220,10 @@ function Onboarding() {
             <div className="form-group">
               <label>Current Residence Country</label>
               <select
-                value={formData.current_residence_country || ''}
-                onChange={(e) => handleChange('current_residence_country', e.target.value)}
+                value={formData.current_residence_country || ""}
+                onChange={(e) =>
+                  handleChange("current_residence_country", e.target.value)
+                }
               >
                 <option value="">Select a country...</option>
                 {sortedCountries.map((country) => (
@@ -214,8 +236,10 @@ function Onboarding() {
             <div className="form-group">
               <label>Applying From Country</label>
               <select
-                value={formData.applying_from_country || ''}
-                onChange={(e) => handleChange('applying_from_country', e.target.value)}
+                value={formData.applying_from_country || ""}
+                onChange={(e) =>
+                  handleChange("applying_from_country", e.target.value)
+                }
               >
                 <option value="">Select a country...</option>
                 {sortedCountries.map((country) => (
@@ -230,16 +254,23 @@ function Onboarding() {
                 <label>Age</label>
                 <input
                   type="number"
-                  value={formData.age || ''}
-                  onChange={(e) => handleChange('age', e.target.value ? parseInt(e.target.value) : null)}
+                  value={formData.age || ""}
+                  onChange={(e) =>
+                    handleChange(
+                      "age",
+                      e.target.value ? parseInt(e.target.value) : null
+                    )
+                  }
                   placeholder="28"
                 />
               </div>
               <div className="form-group">
                 <label>Marital Status</label>
                 <select
-                  value={formData.marital_status || ''}
-                  onChange={(e) => handleChange('marital_status', e.target.value)}
+                  value={formData.marital_status || ""}
+                  onChange={(e) =>
+                    handleChange("marital_status", e.target.value)
+                  }
                 >
                   <option value="">Select...</option>
                   <option value="single">Single</option>
@@ -249,14 +280,16 @@ function Onboarding() {
                 </select>
               </div>
             </div>
-            {formData.marital_status === 'married' && (
+            {formData.marital_status === "married" && (
               <>
                 <div className="form-row">
                   <div className="form-group">
                     <label>Spouse Nationality</label>
                     <select
-                      value={formData.spouse_nationality || ''}
-                      onChange={(e) => handleChange('spouse_nationality', e.target.value)}
+                      value={formData.spouse_nationality || ""}
+                      onChange={(e) =>
+                        handleChange("spouse_nationality", e.target.value)
+                      }
                     >
                       <option value="">Select a country...</option>
                       {sortedCountries.map((country) => (
@@ -270,8 +303,10 @@ function Onboarding() {
                     <label>Spouse Profession</label>
                     <input
                       type="text"
-                      value={formData.spouse_profession || ''}
-                      onChange={(e) => handleChange('spouse_profession', e.target.value)}
+                      value={formData.spouse_profession || ""}
+                      onChange={(e) =>
+                        handleChange("spouse_profession", e.target.value)
+                      }
                       placeholder="e.g., Engineer"
                     />
                   </div>
@@ -282,13 +317,18 @@ function Onboarding() {
               <label>Number of Dependents</label>
               <input
                 type="number"
-                value={formData.dependents || ''}
-                onChange={(e) => handleChange('dependents', e.target.value ? parseInt(e.target.value) : null)}
+                value={formData.dependents || ""}
+                onChange={(e) =>
+                  handleChange(
+                    "dependents",
+                    e.target.value ? parseInt(e.target.value) : null
+                  )
+                }
                 placeholder="0"
               />
             </div>
           </div>
-        )
+        );
 
       case 2:
         return (
@@ -298,12 +338,21 @@ function Onboarding() {
               <label>Preferred Destination(s) *</label>
               <select
                 multiple
-                value={formData.preferred_destinations ? formData.preferred_destinations.split(',').map(d => d.trim()) : []}
+                value={
+                  formData.preferred_destinations
+                    ? formData.preferred_destinations
+                        .split(",")
+                        .map((d) => d.trim())
+                    : []
+                }
                 onChange={(e) => {
-                  const selected = Array.from(e.target.selectedOptions, option => option.value)
-                  handleChange('preferred_destinations', selected.join(', '))
+                  const selected = Array.from(
+                    e.target.selectedOptions,
+                    (option) => option.value
+                  );
+                  handleChange("preferred_destinations", selected.join(", "));
                 }}
-                style={{ minHeight: '100px' }}
+                style={{ minHeight: "100px" }}
               >
                 {sortedCountries.map((country) => (
                   <option key={country.code} value={country.code}>
@@ -311,15 +360,19 @@ function Onboarding() {
                   </option>
                 ))}
               </select>
-              <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
+              <small
+                style={{ display: "block", marginTop: "5px", color: "#666" }}
+              >
                 Hold Ctrl (Cmd on Mac) to select multiple countries
               </small>
             </div>
             <div className="form-group">
               <label>Target Timeline *</label>
               <select
-                value={formData.target_timeline || ''}
-                onChange={(e) => handleChange('target_timeline', e.target.value)}
+                value={formData.target_timeline || ""}
+                onChange={(e) =>
+                  handleChange("target_timeline", e.target.value)
+                }
               >
                 <option value="">Select...</option>
                 <option value="immediate">Immediate</option>
@@ -333,8 +386,10 @@ function Onboarding() {
               <label>Target Move Date</label>
               <input
                 type="date"
-                value={formData.target_move_date || ''}
-                onChange={(e) => handleChange('target_move_date', e.target.value)}
+                value={formData.target_move_date || ""}
+                onChange={(e) =>
+                  handleChange("target_move_date", e.target.value)
+                }
               />
             </div>
             <div className="form-group">
@@ -346,7 +401,7 @@ function Onboarding() {
                     name="deadline_hard"
                     value="true"
                     checked={formData.deadline_hard === true}
-                    onChange={() => handleChange('deadline_hard', true)}
+                    onChange={() => handleChange("deadline_hard", true)}
                   />
                   Yes
                 </label>
@@ -356,7 +411,7 @@ function Onboarding() {
                     name="deadline_hard"
                     value="false"
                     checked={formData.deadline_hard === false}
-                    onChange={() => handleChange('deadline_hard', false)}
+                    onChange={() => handleChange("deadline_hard", false)}
                   />
                   No
                 </label>
@@ -366,8 +421,10 @@ function Onboarding() {
               <div className="form-group">
                 <label>Deadline Reason</label>
                 <textarea
-                  value={formData.deadline_reason || ''}
-                  onChange={(e) => handleChange('deadline_reason', e.target.value)}
+                  value={formData.deadline_reason || ""}
+                  onChange={(e) =>
+                    handleChange("deadline_reason", e.target.value)
+                  }
                   placeholder="Explain your deadline..."
                   rows="3"
                 />
@@ -382,7 +439,9 @@ function Onboarding() {
                     name="willing_to_consider_alternatives"
                     value="true"
                     checked={formData.willing_to_consider_alternatives === true}
-                    onChange={() => handleChange('willing_to_consider_alternatives', true)}
+                    onChange={() =>
+                      handleChange("willing_to_consider_alternatives", true)
+                    }
                   />
                   Yes
                 </label>
@@ -391,8 +450,12 @@ function Onboarding() {
                     type="radio"
                     name="willing_to_consider_alternatives"
                     value="false"
-                    checked={formData.willing_to_consider_alternatives === false}
-                    onChange={() => handleChange('willing_to_consider_alternatives', false)}
+                    checked={
+                      formData.willing_to_consider_alternatives === false
+                    }
+                    onChange={() =>
+                      handleChange("willing_to_consider_alternatives", false)
+                    }
                   />
                   No
                 </label>
@@ -405,19 +468,28 @@ function Onboarding() {
                   multiple
                   value={(() => {
                     // Handle both array and string formats for alternative_countries
-                    if (!formData.alternative_countries) return []
+                    if (!formData.alternative_countries) return [];
                     if (Array.isArray(formData.alternative_countries)) {
-                      return formData.alternative_countries
+                      return formData.alternative_countries;
                     }
                     // Convert comma-separated string to array
-                    return formData.alternative_countries.split(',').map(d => d.trim()).filter(d => d)
+                    return formData.alternative_countries
+                      .split(",")
+                      .map((d) => d.trim())
+                      .filter((d) => d);
                   })()}
                   onChange={(e) => {
-                    const selected = Array.from(e.target.selectedOptions, option => option.value)
+                    const selected = Array.from(
+                      e.target.selectedOptions,
+                      (option) => option.value
+                    );
                     // Store as comma-separated string (will be converted to array by transform function)
-                    handleChange('alternative_countries', selected.length > 0 ? selected.join(', ') : null)
+                    handleChange(
+                      "alternative_countries",
+                      selected.length > 0 ? selected.join(", ") : null
+                    );
                   }}
-                  style={{ minHeight: '100px' }}
+                  style={{ minHeight: "100px" }}
                 >
                   {sortedCountries.map((country) => (
                     <option key={country.code} value={country.code}>
@@ -425,13 +497,15 @@ function Onboarding() {
                     </option>
                   ))}
                 </select>
-                <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
+                <small
+                  style={{ display: "block", marginTop: "5px", color: "#666" }}
+                >
                   Hold Ctrl (Cmd on Mac) to select multiple countries
                 </small>
               </div>
             )}
           </div>
-        )
+        );
 
       case 3:
         return (
@@ -440,8 +514,10 @@ function Onboarding() {
             <div className="form-group">
               <label>Education Level *</label>
               <select
-                value={formData.education_level || ''}
-                onChange={(e) => handleChange('education_level', e.target.value)}
+                value={formData.education_level || ""}
+                onChange={(e) =>
+                  handleChange("education_level", e.target.value)
+                }
               >
                 <option value="">Select...</option>
                 <option value="high_school">High School</option>
@@ -455,8 +531,8 @@ function Onboarding() {
               <label>Field of Study</label>
               <input
                 type="text"
-                value={formData.field_of_study || ''}
-                onChange={(e) => handleChange('field_of_study', e.target.value)}
+                value={formData.field_of_study || ""}
+                onChange={(e) => handleChange("field_of_study", e.target.value)}
                 placeholder="e.g., Computer Science"
               />
             </div>
@@ -469,7 +545,9 @@ function Onboarding() {
                     name="has_academic_transcripts"
                     value="true"
                     checked={formData.has_academic_transcripts === true}
-                    onChange={() => handleChange('has_academic_transcripts', true)}
+                    onChange={() =>
+                      handleChange("has_academic_transcripts", true)
+                    }
                   />
                   Yes
                 </label>
@@ -479,7 +557,9 @@ function Onboarding() {
                     name="has_academic_transcripts"
                     value="false"
                     checked={formData.has_academic_transcripts === false}
-                    onChange={() => handleChange('has_academic_transcripts', false)}
+                    onChange={() =>
+                      handleChange("has_academic_transcripts", false)
+                    }
                   />
                   No
                 </label>
@@ -494,7 +574,7 @@ function Onboarding() {
                     name="has_admission_offer"
                     value="true"
                     checked={formData.has_admission_offer === true}
-                    onChange={() => handleChange('has_admission_offer', true)}
+                    onChange={() => handleChange("has_admission_offer", true)}
                   />
                   Yes
                 </label>
@@ -504,7 +584,7 @@ function Onboarding() {
                     name="has_admission_offer"
                     value="false"
                     checked={formData.has_admission_offer === false}
-                    onChange={() => handleChange('has_admission_offer', false)}
+                    onChange={() => handleChange("has_admission_offer", false)}
                   />
                   No
                 </label>
@@ -514,8 +594,10 @@ function Onboarding() {
               <div className="form-group">
                 <label>Admission Details</label>
                 <textarea
-                  value={formData.admission_details || ''}
-                  onChange={(e) => handleChange('admission_details', e.target.value)}
+                  value={formData.admission_details || ""}
+                  onChange={(e) =>
+                    handleChange("admission_details", e.target.value)
+                  }
                   placeholder="University name, program, start date..."
                   rows="3"
                 />
@@ -524,14 +606,16 @@ function Onboarding() {
             <div className="form-group">
               <label>Professional Certifications</label>
               <textarea
-                value={formData.professional_certifications || ''}
-                onChange={(e) => handleChange('professional_certifications', e.target.value)}
+                value={formData.professional_certifications || ""}
+                onChange={(e) =>
+                  handleChange("professional_certifications", e.target.value)
+                }
                 placeholder="List your certifications..."
                 rows="3"
               />
             </div>
           </div>
-        )
+        );
 
       case 4:
         return (
@@ -542,8 +626,10 @@ function Onboarding() {
                 <label>Current Job Title</label>
                 <input
                   type="text"
-                  value={formData.current_job_title || ''}
-                  onChange={(e) => handleChange('current_job_title', e.target.value)}
+                  value={formData.current_job_title || ""}
+                  onChange={(e) =>
+                    handleChange("current_job_title", e.target.value)
+                  }
                   placeholder="e.g., Software Engineer"
                 />
               </div>
@@ -551,8 +637,10 @@ function Onboarding() {
                 <label>Current Employer</label>
                 <input
                   type="text"
-                  value={formData.current_employer || ''}
-                  onChange={(e) => handleChange('current_employer', e.target.value)}
+                  value={formData.current_employer || ""}
+                  onChange={(e) =>
+                    handleChange("current_employer", e.target.value)
+                  }
                   placeholder="Company name"
                 />
               </div>
@@ -561,8 +649,8 @@ function Onboarding() {
               <label>Industry</label>
               <input
                 type="text"
-                value={formData.industry || ''}
-                onChange={(e) => handleChange('industry', e.target.value)}
+                value={formData.industry || ""}
+                onChange={(e) => handleChange("industry", e.target.value)}
                 placeholder="e.g., Technology"
               />
             </div>
@@ -571,8 +659,13 @@ function Onboarding() {
                 <label>Total Experience (Years)</label>
                 <input
                   type="number"
-                  value={formData.total_experience_years || ''}
-                  onChange={(e) => handleChange('total_experience_years', e.target.value ? parseInt(e.target.value) : null)}
+                  value={formData.total_experience_years || ""}
+                  onChange={(e) =>
+                    handleChange(
+                      "total_experience_years",
+                      e.target.value ? parseInt(e.target.value) : null
+                    )
+                  }
                   placeholder="5"
                 />
               </div>
@@ -580,8 +673,13 @@ function Onboarding() {
                 <label>Experience in Current Position (Years)</label>
                 <input
                   type="number"
-                  value={formData.experience_years_in_position || ''}
-                  onChange={(e) => handleChange('experience_years_in_position', e.target.value ? parseInt(e.target.value) : null)}
+                  value={formData.experience_years_in_position || ""}
+                  onChange={(e) =>
+                    handleChange(
+                      "experience_years_in_position",
+                      e.target.value ? parseInt(e.target.value) : null
+                    )
+                  }
                   placeholder="2"
                 />
               </div>
@@ -595,7 +693,7 @@ function Onboarding() {
                     name="is_self_employed"
                     value="true"
                     checked={formData.is_self_employed === true}
-                    onChange={() => handleChange('is_self_employed', true)}
+                    onChange={() => handleChange("is_self_employed", true)}
                   />
                   Yes
                 </label>
@@ -605,7 +703,7 @@ function Onboarding() {
                     name="is_self_employed"
                     value="false"
                     checked={formData.is_self_employed === false}
-                    onChange={() => handleChange('is_self_employed', false)}
+                    onChange={() => handleChange("is_self_employed", false)}
                   />
                   No
                 </label>
@@ -620,7 +718,7 @@ function Onboarding() {
                     name="is_business_owner"
                     value="true"
                     checked={formData.is_business_owner === true}
-                    onChange={() => handleChange('is_business_owner', true)}
+                    onChange={() => handleChange("is_business_owner", true)}
                   />
                   Yes
                 </label>
@@ -630,7 +728,7 @@ function Onboarding() {
                     name="is_business_owner"
                     value="false"
                     checked={formData.is_business_owner === false}
-                    onChange={() => handleChange('is_business_owner', false)}
+                    onChange={() => handleChange("is_business_owner", false)}
                   />
                   No
                 </label>
@@ -641,8 +739,13 @@ function Onboarding() {
                 <label>Business Management Experience (Years)</label>
                 <input
                   type="number"
-                  value={formData.business_management_experience || ''}
-                  onChange={(e) => handleChange('business_management_experience', e.target.value ? parseInt(e.target.value) : null)}
+                  value={formData.business_management_experience || ""}
+                  onChange={(e) =>
+                    handleChange(
+                      "business_management_experience",
+                      e.target.value ? parseInt(e.target.value) : null
+                    )
+                  }
                   placeholder="3"
                 />
               </div>
@@ -656,7 +759,9 @@ function Onboarding() {
                     name="employer_willing_to_sponsor"
                     value="true"
                     checked={formData.employer_willing_to_sponsor === true}
-                    onChange={() => handleChange('employer_willing_to_sponsor', true)}
+                    onChange={() =>
+                      handleChange("employer_willing_to_sponsor", true)
+                    }
                   />
                   Yes
                 </label>
@@ -666,7 +771,9 @@ function Onboarding() {
                     name="employer_willing_to_sponsor"
                     value="false"
                     checked={formData.employer_willing_to_sponsor === false}
-                    onChange={() => handleChange('employer_willing_to_sponsor', false)}
+                    onChange={() =>
+                      handleChange("employer_willing_to_sponsor", false)
+                    }
                   />
                   No
                 </label>
@@ -681,7 +788,9 @@ function Onboarding() {
                     name="has_job_offer_international"
                     value="true"
                     checked={formData.has_job_offer_international === true}
-                    onChange={() => handleChange('has_job_offer_international', true)}
+                    onChange={() =>
+                      handleChange("has_job_offer_international", true)
+                    }
                   />
                   Yes
                 </label>
@@ -691,14 +800,16 @@ function Onboarding() {
                     name="has_job_offer_international"
                     value="false"
                     checked={formData.has_job_offer_international === false}
-                    onChange={() => handleChange('has_job_offer_international', false)}
+                    onChange={() =>
+                      handleChange("has_job_offer_international", false)
+                    }
                   />
                   No
                 </label>
               </div>
             </div>
           </div>
-        )
+        );
 
       case 5:
         return (
@@ -707,8 +818,8 @@ function Onboarding() {
             <div className="form-group">
               <label>Skills</label>
               <textarea
-                value={formData.skills || ''}
-                onChange={(e) => handleChange('skills', e.target.value)}
+                value={formData.skills || ""}
+                onChange={(e) => handleChange("skills", e.target.value)}
                 placeholder="List your key skills..."
                 rows="3"
               />
@@ -717,8 +828,10 @@ function Onboarding() {
               <label>Languages Known</label>
               <input
                 type="text"
-                value={formData.languages_known || ''}
-                onChange={(e) => handleChange('languages_known', e.target.value)}
+                value={formData.languages_known || ""}
+                onChange={(e) =>
+                  handleChange("languages_known", e.target.value)
+                }
                 placeholder="e.g., English, French, Spanish"
               />
             </div>
@@ -726,22 +839,26 @@ function Onboarding() {
               <label>Language Tests Taken</label>
               <input
                 type="text"
-                value={formData.language_tests_taken || ''}
-                onChange={(e) => handleChange('language_tests_taken', e.target.value)}
+                value={formData.language_tests_taken || ""}
+                onChange={(e) =>
+                  handleChange("language_tests_taken", e.target.value)
+                }
                 placeholder="e.g., IELTS, TOEFL"
               />
             </div>
             <div className="form-group">
               <label>Language Test Scores</label>
               <textarea
-                value={formData.language_scores || ''}
-                onChange={(e) => handleChange('language_scores', e.target.value)}
+                value={formData.language_scores || ""}
+                onChange={(e) =>
+                  handleChange("language_scores", e.target.value)
+                }
                 placeholder="Test name and scores..."
                 rows="3"
               />
             </div>
           </div>
-        )
+        );
 
       case 6:
         return (
@@ -756,7 +873,9 @@ function Onboarding() {
                     name="has_prior_visa_applications"
                     value="true"
                     checked={formData.has_prior_visa_applications === true}
-                    onChange={() => handleChange('has_prior_visa_applications', true)}
+                    onChange={() =>
+                      handleChange("has_prior_visa_applications", true)
+                    }
                   />
                   Yes
                 </label>
@@ -766,7 +885,9 @@ function Onboarding() {
                     name="has_prior_visa_applications"
                     value="false"
                     checked={formData.has_prior_visa_applications === false}
-                    onChange={() => handleChange('has_prior_visa_applications', false)}
+                    onChange={() =>
+                      handleChange("has_prior_visa_applications", false)
+                    }
                   />
                   No
                 </label>
@@ -776,8 +897,8 @@ function Onboarding() {
               <div className="form-group">
                 <label>Prior Visas</label>
                 <textarea
-                  value={formData.prior_visas || ''}
-                  onChange={(e) => handleChange('prior_visas', e.target.value)}
+                  value={formData.prior_visas || ""}
+                  onChange={(e) => handleChange("prior_visas", e.target.value)}
                   placeholder="List previous visa applications..."
                   rows="3"
                 />
@@ -792,7 +913,7 @@ function Onboarding() {
                     name="has_active_visas"
                     value="true"
                     checked={formData.has_active_visas === true}
-                    onChange={() => handleChange('has_active_visas', true)}
+                    onChange={() => handleChange("has_active_visas", true)}
                   />
                   Yes
                 </label>
@@ -802,7 +923,7 @@ function Onboarding() {
                     name="has_active_visas"
                     value="false"
                     checked={formData.has_active_visas === false}
-                    onChange={() => handleChange('has_active_visas', false)}
+                    onChange={() => handleChange("has_active_visas", false)}
                   />
                   No
                 </label>
@@ -814,8 +935,10 @@ function Onboarding() {
                   <label>Current Visa Status</label>
                   <input
                     type="text"
-                    value={formData.current_visa_status || ''}
-                    onChange={(e) => handleChange('current_visa_status', e.target.value)}
+                    value={formData.current_visa_status || ""}
+                    onChange={(e) =>
+                      handleChange("current_visa_status", e.target.value)
+                    }
                     placeholder="e.g., Tourist, Student"
                   />
                 </div>
@@ -823,8 +946,10 @@ function Onboarding() {
                   <div className="form-group">
                     <label>Current Visa Country</label>
                     <select
-                      value={formData.current_visa_country || ''}
-                      onChange={(e) => handleChange('current_visa_country', e.target.value)}
+                      value={formData.current_visa_country || ""}
+                      onChange={(e) =>
+                        handleChange("current_visa_country", e.target.value)
+                      }
                     >
                       <option value="">Select a country...</option>
                       {sortedCountries.map((country) => (
@@ -838,8 +963,10 @@ function Onboarding() {
                     <label>Visa Expiry Date</label>
                     <input
                       type="date"
-                      value={formData.current_visa_expiry || ''}
-                      onChange={(e) => handleChange('current_visa_expiry', e.target.value)}
+                      value={formData.current_visa_expiry || ""}
+                      onChange={(e) =>
+                        handleChange("current_visa_expiry", e.target.value)
+                      }
                     />
                   </div>
                 </div>
@@ -854,7 +981,7 @@ function Onboarding() {
                     name="has_overstays"
                     value="true"
                     checked={formData.has_overstays === true}
-                    onChange={() => handleChange('has_overstays', true)}
+                    onChange={() => handleChange("has_overstays", true)}
                   />
                   Yes
                 </label>
@@ -864,7 +991,7 @@ function Onboarding() {
                     name="has_overstays"
                     value="false"
                     checked={formData.has_overstays === false}
-                    onChange={() => handleChange('has_overstays', false)}
+                    onChange={() => handleChange("has_overstays", false)}
                   />
                   No
                 </label>
@@ -874,8 +1001,10 @@ function Onboarding() {
               <div className="form-group">
                 <label>Overstay Details</label>
                 <textarea
-                  value={formData.overstay_details || ''}
-                  onChange={(e) => handleChange('overstay_details', e.target.value)}
+                  value={formData.overstay_details || ""}
+                  onChange={(e) =>
+                    handleChange("overstay_details", e.target.value)
+                  }
                   placeholder="Provide details..."
                   rows="3"
                 />
@@ -890,7 +1019,7 @@ function Onboarding() {
                     name="criminal_records"
                     value="true"
                     checked={formData.criminal_records === true}
-                    onChange={() => handleChange('criminal_records', true)}
+                    onChange={() => handleChange("criminal_records", true)}
                   />
                   Yes
                 </label>
@@ -900,7 +1029,7 @@ function Onboarding() {
                     name="criminal_records"
                     value="false"
                     checked={formData.criminal_records === false}
-                    onChange={() => handleChange('criminal_records', false)}
+                    onChange={() => handleChange("criminal_records", false)}
                   />
                   No
                 </label>
@@ -915,7 +1044,9 @@ function Onboarding() {
                     name="has_relatives_in_destination"
                     value="true"
                     checked={formData.has_relatives_in_destination === true}
-                    onChange={() => handleChange('has_relatives_in_destination', true)}
+                    onChange={() =>
+                      handleChange("has_relatives_in_destination", true)
+                    }
                   />
                   Yes
                 </label>
@@ -925,14 +1056,16 @@ function Onboarding() {
                     name="has_relatives_in_destination"
                     value="false"
                     checked={formData.has_relatives_in_destination === false}
-                    onChange={() => handleChange('has_relatives_in_destination', false)}
+                    onChange={() =>
+                      handleChange("has_relatives_in_destination", false)
+                    }
                   />
                   No
                 </label>
               </div>
             </div>
           </div>
-        )
+        );
 
       case 7:
         return (
@@ -942,8 +1075,13 @@ function Onboarding() {
               <label>Maximum Budget (USD)</label>
               <input
                 type="number"
-                value={formData.max_budget_usd || ''}
-                onChange={(e) => handleChange('max_budget_usd', e.target.value ? parseFloat(e.target.value) : null)}
+                value={formData.max_budget_usd || ""}
+                onChange={(e) =>
+                  handleChange(
+                    "max_budget_usd",
+                    e.target.value ? parseFloat(e.target.value) : null
+                  )
+                }
                 placeholder="5000"
               />
             </div>
@@ -952,8 +1090,10 @@ function Onboarding() {
                 <label>Budget Currency</label>
                 <input
                   type="text"
-                  value={formData.budget_currency || ''}
-                  onChange={(e) => handleChange('budget_currency', e.target.value)}
+                  value={formData.budget_currency || ""}
+                  onChange={(e) =>
+                    handleChange("budget_currency", e.target.value)
+                  }
                   placeholder="USD"
                 />
               </div>
@@ -961,8 +1101,13 @@ function Onboarding() {
                 <label>Budget Amount</label>
                 <input
                   type="number"
-                  value={formData.budget_amount || ''}
-                  onChange={(e) => handleChange('budget_amount', e.target.value ? parseFloat(e.target.value) : null)}
+                  value={formData.budget_amount || ""}
+                  onChange={(e) =>
+                    handleChange(
+                      "budget_amount",
+                      e.target.value ? parseFloat(e.target.value) : null
+                    )
+                  }
                   placeholder="5000"
                 />
               </div>
@@ -970,8 +1115,10 @@ function Onboarding() {
             <div className="form-group">
               <label>Proof of Funds Source</label>
               <textarea
-                value={formData.proof_of_funds_source || ''}
-                onChange={(e) => handleChange('proof_of_funds_source', e.target.value)}
+                value={formData.proof_of_funds_source || ""}
+                onChange={(e) =>
+                  handleChange("proof_of_funds_source", e.target.value)
+                }
                 placeholder="e.g., Savings, Loan, Sponsor..."
                 rows="2"
               />
@@ -980,8 +1127,13 @@ function Onboarding() {
               <label>Liquid Assets (USD)</label>
               <input
                 type="number"
-                value={formData.liquid_assets_usd || ''}
-                onChange={(e) => handleChange('liquid_assets_usd', e.target.value ? parseFloat(e.target.value) : null)}
+                value={formData.liquid_assets_usd || ""}
+                onChange={(e) =>
+                  handleChange(
+                    "liquid_assets_usd",
+                    e.target.value ? parseFloat(e.target.value) : null
+                  )
+                }
                 placeholder="10000"
               />
             </div>
@@ -994,7 +1146,7 @@ function Onboarding() {
                     name="has_property"
                     value="true"
                     checked={formData.has_property === true}
-                    onChange={() => handleChange('has_property', true)}
+                    onChange={() => handleChange("has_property", true)}
                   />
                   Yes
                 </label>
@@ -1004,7 +1156,7 @@ function Onboarding() {
                     name="has_property"
                     value="false"
                     checked={formData.has_property === false}
-                    onChange={() => handleChange('has_property', false)}
+                    onChange={() => handleChange("has_property", false)}
                   />
                   No
                 </label>
@@ -1015,8 +1167,13 @@ function Onboarding() {
                 <label>Total Assets (USD)</label>
                 <input
                   type="number"
-                  value={formData.total_assets_usd || ''}
-                  onChange={(e) => handleChange('total_assets_usd', e.target.value ? parseFloat(e.target.value) : null)}
+                  value={formData.total_assets_usd || ""}
+                  onChange={(e) =>
+                    handleChange(
+                      "total_assets_usd",
+                      e.target.value ? parseFloat(e.target.value) : null
+                    )
+                  }
                   placeholder="50000"
                 />
               </div>
@@ -1024,8 +1181,13 @@ function Onboarding() {
                 <label>Annual Income (USD)</label>
                 <input
                   type="number"
-                  value={formData.annual_income_usd || ''}
-                  onChange={(e) => handleChange('annual_income_usd', e.target.value ? parseFloat(e.target.value) : null)}
+                  value={formData.annual_income_usd || ""}
+                  onChange={(e) =>
+                    handleChange(
+                      "annual_income_usd",
+                      e.target.value ? parseFloat(e.target.value) : null
+                    )
+                  }
                   placeholder="50000"
                 />
               </div>
@@ -1034,13 +1196,18 @@ function Onboarding() {
               <label>Monthly Salary (USD)</label>
               <input
                 type="number"
-                value={formData.salary_usd || ''}
-                onChange={(e) => handleChange('salary_usd', e.target.value ? parseFloat(e.target.value) : null)}
+                value={formData.salary_usd || ""}
+                onChange={(e) =>
+                  handleChange(
+                    "salary_usd",
+                    e.target.value ? parseFloat(e.target.value) : null
+                  )
+                }
                 placeholder="4000"
               />
             </div>
           </div>
-        )
+        );
 
       case 8:
         return (
@@ -1055,7 +1222,7 @@ function Onboarding() {
                     name="has_special_needs"
                     value="true"
                     checked={formData.has_special_needs === true}
-                    onChange={() => handleChange('has_special_needs', true)}
+                    onChange={() => handleChange("has_special_needs", true)}
                   />
                   Yes
                 </label>
@@ -1065,7 +1232,7 @@ function Onboarding() {
                     name="has_special_needs"
                     value="false"
                     checked={formData.has_special_needs === false}
-                    onChange={() => handleChange('has_special_needs', false)}
+                    onChange={() => handleChange("has_special_needs", false)}
                   />
                   No
                 </label>
@@ -1080,7 +1247,9 @@ function Onboarding() {
                     name="has_medical_conditions"
                     value="true"
                     checked={formData.has_medical_conditions === true}
-                    onChange={() => handleChange('has_medical_conditions', true)}
+                    onChange={() =>
+                      handleChange("has_medical_conditions", true)
+                    }
                   />
                   Yes
                 </label>
@@ -1090,7 +1259,9 @@ function Onboarding() {
                     name="has_medical_conditions"
                     value="false"
                     checked={formData.has_medical_conditions === false}
-                    onChange={() => handleChange('has_medical_conditions', false)}
+                    onChange={() =>
+                      handleChange("has_medical_conditions", false)
+                    }
                   />
                   No
                 </label>
@@ -1105,7 +1276,7 @@ function Onboarding() {
                     name="has_invitation"
                     value="true"
                     checked={formData.has_invitation === true}
-                    onChange={() => handleChange('has_invitation', true)}
+                    onChange={() => handleChange("has_invitation", true)}
                   />
                   Yes
                 </label>
@@ -1115,7 +1286,7 @@ function Onboarding() {
                     name="has_invitation"
                     value="false"
                     checked={formData.has_invitation === false}
-                    onChange={() => handleChange('has_invitation', false)}
+                    onChange={() => handleChange("has_invitation", false)}
                   />
                   No
                 </label>
@@ -1130,7 +1301,9 @@ function Onboarding() {
                     name="sponsor_in_destination"
                     value="true"
                     checked={formData.sponsor_in_destination === true}
-                    onChange={() => handleChange('sponsor_in_destination', true)}
+                    onChange={() =>
+                      handleChange("sponsor_in_destination", true)
+                    }
                   />
                   Yes
                 </label>
@@ -1140,7 +1313,9 @@ function Onboarding() {
                     name="sponsor_in_destination"
                     value="false"
                     checked={formData.sponsor_in_destination === false}
-                    onChange={() => handleChange('sponsor_in_destination', false)}
+                    onChange={() =>
+                      handleChange("sponsor_in_destination", false)
+                    }
                   />
                   No
                 </label>
@@ -1149,8 +1324,10 @@ function Onboarding() {
             <div className="form-group">
               <label>International Achievements</label>
               <textarea
-                value={formData.international_achievements || ''}
-                onChange={(e) => handleChange('international_achievements', e.target.value)}
+                value={formData.international_achievements || ""}
+                onChange={(e) =>
+                  handleChange("international_achievements", e.target.value)
+                }
                 placeholder="Research, patents, awards, etc."
                 rows="3"
               />
@@ -1160,8 +1337,13 @@ function Onboarding() {
                 <label>Publications Count</label>
                 <input
                   type="number"
-                  value={formData.publications_count || ''}
-                  onChange={(e) => handleChange('publications_count', e.target.value ? parseInt(e.target.value) : null)}
+                  value={formData.publications_count || ""}
+                  onChange={(e) =>
+                    handleChange(
+                      "publications_count",
+                      e.target.value ? parseInt(e.target.value) : null
+                    )
+                  }
                   placeholder="0"
                 />
               </div>
@@ -1169,8 +1351,13 @@ function Onboarding() {
                 <label>Patents Count</label>
                 <input
                   type="number"
-                  value={formData.patents_count || ''}
-                  onChange={(e) => handleChange('patents_count', e.target.value ? parseInt(e.target.value) : null)}
+                  value={formData.patents_count || ""}
+                  onChange={(e) =>
+                    handleChange(
+                      "patents_count",
+                      e.target.value ? parseInt(e.target.value) : null
+                    )
+                  }
                   placeholder="0"
                 />
               </div>
@@ -1178,8 +1365,8 @@ function Onboarding() {
             <div className="form-group">
               <label>Awards</label>
               <textarea
-                value={formData.awards || ''}
-                onChange={(e) => handleChange('awards', e.target.value)}
+                value={formData.awards || ""}
+                onChange={(e) => handleChange("awards", e.target.value)}
                 placeholder="List your awards..."
                 rows="2"
               />
@@ -1187,8 +1374,8 @@ function Onboarding() {
             <div className="form-group">
               <label>Media Features</label>
               <textarea
-                value={formData.media_features || ''}
-                onChange={(e) => handleChange('media_features', e.target.value)}
+                value={formData.media_features || ""}
+                onChange={(e) => handleChange("media_features", e.target.value)}
                 placeholder="Media mentions, features..."
                 rows="2"
               />
@@ -1196,8 +1383,10 @@ function Onboarding() {
             <div className="form-group">
               <label>Professional Memberships</label>
               <textarea
-                value={formData.professional_memberships || ''}
-                onChange={(e) => handleChange('professional_memberships', e.target.value)}
+                value={formData.professional_memberships || ""}
+                onChange={(e) =>
+                  handleChange("professional_memberships", e.target.value)
+                }
                 placeholder="Professional organizations..."
                 rows="2"
               />
@@ -1206,13 +1395,18 @@ function Onboarding() {
               <label>Recommendation Letters Count</label>
               <input
                 type="number"
-                value={formData.recommendation_letters_count || ''}
-                onChange={(e) => handleChange('recommendation_letters_count', e.target.value ? parseInt(e.target.value) : null)}
+                value={formData.recommendation_letters_count || ""}
+                onChange={(e) =>
+                  handleChange(
+                    "recommendation_letters_count",
+                    e.target.value ? parseInt(e.target.value) : null
+                  )
+                }
                 placeholder="0"
               />
             </div>
           </div>
-        )
+        );
 
       case 9:
         return (
@@ -1222,8 +1416,10 @@ function Onboarding() {
               <label>Passport Expiry Date</label>
               <input
                 type="date"
-                value={formData.passport_expiry || ''}
-                onChange={(e) => handleChange('passport_expiry', e.target.value)}
+                value={formData.passport_expiry || ""}
+                onChange={(e) =>
+                  handleChange("passport_expiry", e.target.value)
+                }
               />
             </div>
             <div className="form-group">
@@ -1235,7 +1431,7 @@ function Onboarding() {
                     name="has_birth_certificate"
                     value="true"
                     checked={formData.has_birth_certificate === true}
-                    onChange={() => handleChange('has_birth_certificate', true)}
+                    onChange={() => handleChange("has_birth_certificate", true)}
                   />
                   Yes
                 </label>
@@ -1245,7 +1441,9 @@ function Onboarding() {
                     name="has_birth_certificate"
                     value="false"
                     checked={formData.has_birth_certificate === false}
-                    onChange={() => handleChange('has_birth_certificate', false)}
+                    onChange={() =>
+                      handleChange("has_birth_certificate", false)
+                    }
                   />
                   No
                 </label>
@@ -1260,7 +1458,9 @@ function Onboarding() {
                     name="has_financial_statements"
                     value="true"
                     checked={formData.has_financial_statements === true}
-                    onChange={() => handleChange('has_financial_statements', true)}
+                    onChange={() =>
+                      handleChange("has_financial_statements", true)
+                    }
                   />
                   Yes
                 </label>
@@ -1270,7 +1470,9 @@ function Onboarding() {
                     name="has_financial_statements"
                     value="false"
                     checked={formData.has_financial_statements === false}
-                    onChange={() => handleChange('has_financial_statements', false)}
+                    onChange={() =>
+                      handleChange("has_financial_statements", false)
+                    }
                   />
                   No
                 </label>
@@ -1285,7 +1487,7 @@ function Onboarding() {
                     name="has_police_clearance"
                     value="true"
                     checked={formData.has_police_clearance === true}
-                    onChange={() => handleChange('has_police_clearance', true)}
+                    onChange={() => handleChange("has_police_clearance", true)}
                   />
                   Yes
                 </label>
@@ -1295,7 +1497,7 @@ function Onboarding() {
                     name="has_police_clearance"
                     value="false"
                     checked={formData.has_police_clearance === false}
-                    onChange={() => handleChange('has_police_clearance', false)}
+                    onChange={() => handleChange("has_police_clearance", false)}
                   />
                   No
                 </label>
@@ -1310,7 +1512,7 @@ function Onboarding() {
                     name="has_medical_exam"
                     value="true"
                     checked={formData.has_medical_exam === true}
-                    onChange={() => handleChange('has_medical_exam', true)}
+                    onChange={() => handleChange("has_medical_exam", true)}
                   />
                   Yes
                 </label>
@@ -1320,7 +1522,7 @@ function Onboarding() {
                     name="has_medical_exam"
                     value="false"
                     checked={formData.has_medical_exam === false}
-                    onChange={() => handleChange('has_medical_exam', false)}
+                    onChange={() => handleChange("has_medical_exam", false)}
                   />
                   No
                 </label>
@@ -1329,8 +1531,8 @@ function Onboarding() {
             <div className="form-group">
               <label>Risk Tolerance</label>
               <select
-                value={formData.risk_tolerance || ''}
-                onChange={(e) => handleChange('risk_tolerance', e.target.value)}
+                value={formData.risk_tolerance || ""}
+                onChange={(e) => handleChange("risk_tolerance", e.target.value)}
               >
                 <option value="">Select...</option>
                 <option value="low">Low</option>
@@ -1341,8 +1543,10 @@ function Onboarding() {
             <div className="form-group">
               <label>Do you prefer DIY or guided assistance?</label>
               <select
-                value={formData.prefers_diy_or_guided || ''}
-                onChange={(e) => handleChange('prefers_diy_or_guided', e.target.value)}
+                value={formData.prefers_diy_or_guided || ""}
+                onChange={(e) =>
+                  handleChange("prefers_diy_or_guided", e.target.value)
+                }
               >
                 <option value="">Select...</option>
                 <option value="diy">DIY (Do It Yourself)</option>
@@ -1351,15 +1555,29 @@ function Onboarding() {
               </select>
             </div>
           </div>
-        )
+        );
 
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <div className="onboarding-page">
+      {submitting && (
+        <div
+          className="onboarding-loading-overlay"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <div className="onboarding-loading-card">
+            <div className="onboarding-spinner" />
+            <h3>Working on it…</h3>
+            <p>{submitMessage || "Please wait"}</p>
+          </div>
+        </div>
+      )}
       <div className="onboarding-container">
         <div className="onboarding-header">
           <h1>Let's get to know you</h1>
@@ -1367,37 +1585,49 @@ function Onboarding() {
         </div>
 
         <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${(currentStep / totalSteps) * 100}%` }}></div>
+          <div
+            className="progress-fill"
+            style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+          ></div>
         </div>
         <div className="progress-text">
           Step {currentStep} of {totalSteps}
         </div>
 
-        <div className="onboarding-content">
-          {renderStep()}
-        </div>
+        <div className="onboarding-content">{renderStep()}</div>
 
         <div className="onboarding-actions">
           {currentStep > 1 && (
-            <button onClick={handlePrevious} className="btn-secondary">
+            <button
+              onClick={handlePrevious}
+              className="btn-secondary"
+              disabled={submitting}
+            >
               Previous
             </button>
           )}
           <div className="spacer"></div>
           {currentStep < totalSteps ? (
-            <button onClick={handleNext} className="btn-primary">
+            <button
+              onClick={handleNext}
+              className="btn-primary"
+              disabled={submitting}
+            >
               Next
             </button>
           ) : (
-            <button onClick={handleSubmit} className="btn-primary">
-              Complete Onboarding
+            <button
+              onClick={handleSubmit}
+              className="btn-primary"
+              disabled={submitting}
+            >
+              {submitting ? "Generating…" : "Complete Onboarding"}
             </button>
           )}
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default Onboarding
-
+export default Onboarding;

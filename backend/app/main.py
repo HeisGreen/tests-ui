@@ -416,11 +416,26 @@ def parse_recommendation(raw: str) -> Optional[RecommendationResponse]:
             opt.get("fees")
         )
         
-        # Extract risk flags / requirements
+        # Extract requirements / documents (separate from risk flags)
+        requirements = (
+            opt.get("requirements") or
+            opt.get("documents") or
+            []
+        )
+        if isinstance(requirements, str):
+            requirements = [requirements]
+
+        # Extract checklist (structured tasks)
+        checklist = opt.get("checklist") or []
+        if isinstance(checklist, dict):
+            checklist = [checklist]
+        if not isinstance(checklist, list):
+            checklist = []
+
+        # Extract risk flags / key points
         risk_flags = (
             opt.get("risk_flags") or
             opt.get("quick_facts") or
-            opt.get("requirements") or
             opt.get("challenges") or
             []
         )
@@ -447,6 +462,8 @@ def parse_recommendation(raw: str) -> Optional[RecommendationResponse]:
                 estimated_costs=estimated_costs,
                 risk_flags=risk_flags if risk_flags else None,
                 next_steps=next_steps if next_steps else None,
+                checklist=checklist if checklist else None,
+                requirements=requirements if requirements else None,
             )
         )
     

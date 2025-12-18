@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { recommendationsAPI } from "../utils/api";
 import {
   FiCheckCircle,
@@ -23,10 +23,20 @@ function Recommendation() {
   const [useCached, setUseCached] = useState(true); // Toggle state
   const scrollObserverRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const options = Array.isArray(recommendations?.options)
     ? recommendations.options
     : [];
+
+  useEffect(() => {
+    // If we navigated here from onboarding (or elsewhere) with pre-fetched data,
+    // hydrate the page immediately.
+    const initial = location?.state?.initialRecommendations;
+    if (initial) {
+      setRecommendations(initial);
+    }
+  }, [location?.state]);
 
   const fetchRecommendations = async (cached) => {
     try {
@@ -65,8 +75,11 @@ function Recommendation() {
     scrollObserverRef.current = initScrollAnimations();
   }, [options.length]);
 
-  const handleViewChecklist = (visaType) => {
-    navigate(`/checklist/${encodeURIComponent(visaType)}`);
+  const handleViewChecklist = (visa) => {
+    const visaType = visa?.visa_type || "";
+    navigate(`/checklist/${encodeURIComponent(visaType)}`, {
+      state: { visaOption: visa },
+    });
   };
 
   const handleFetch = () => {
@@ -320,7 +333,7 @@ function Recommendation() {
 
               <div className="visa-actions">
                 <button
-                  onClick={() => handleViewChecklist(visa.visa_type)}
+                  onClick={() => handleViewChecklist(visa)}
                   className="btn-primary"
                 >
                   View Checklist <FiArrowRight />

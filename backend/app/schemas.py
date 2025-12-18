@@ -139,6 +139,9 @@ class RecommendationOption(BaseModel):
     estimated_costs: Optional[str] = None
     risk_flags: Optional[List[str]] = None
     next_steps: Optional[List[str]] = None
+    # Optional rich fields returned by the AI prompt schema (kept flexible)
+    checklist: Optional[List[dict]] = None
+    requirements: Optional[List[str]] = None
 
 
 class RecommendationResponse(BaseModel):
