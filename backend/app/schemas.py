@@ -152,12 +152,24 @@ class RecommendationResponse(BaseModel):
 class RecommendationRequest(BaseModel):
     intake_id: Optional[str] = Field(default=None, description="Existing intake id to reuse")
     intake: Optional[IntakeData] = Field(default=None, description="Inline intake payload")
+    use_cached: bool = Field(default=True, description="If true, return stored recommendation instead of calling ChatGPT")
+    # Note: When use_cached=False and no intake_id/intake provided,
+    # the backend will automatically fetch from the user's profile (onboarding_data)
 
-    @model_validator(mode="after")
-    def validate_input(self):
-        if not self.intake_id and not self.intake:
-            raise ValueError("Provide either intake_id or intake payload.")
-        return self
+
+class RecommendationRecord(BaseModel):
+    """Schema for stored recommendation records"""
+    id: int
+    user_id: Optional[int] = None
+    input_data: Optional[dict] = None
+    output_data: Optional[dict] = None
+    raw_response: Optional[str] = None
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+        "json_encoders": {datetime: lambda v: v.isoformat() + "Z"},
+    }
 
 
 # Authentication schemas

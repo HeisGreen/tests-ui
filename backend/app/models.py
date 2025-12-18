@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, JSON, Text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -30,3 +30,17 @@ class UserProfile(Base):
     
     # Relationship back to user
     user = relationship("User", back_populates="profile")
+
+
+class Recommendation(Base):
+    __tablename__ = "recommendations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    input_data = Column(JSON, nullable=True)  # The intake JSON sent to OpenAI
+    output_data = Column(JSON, nullable=True)  # The parsed recommendation response
+    raw_response = Column(Text, nullable=True)  # Raw ChatGPT response string
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationship to user
+    user = relationship("User")

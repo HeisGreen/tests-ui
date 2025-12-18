@@ -1,5 +1,6 @@
 import json
-from typing import Any, Dict, Optional
+import logging
+from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -10,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.config import Settings, get_settings
 from app.database import engine, get_db
-from app.models import Base, User, UserProfile
+from app.models import Base, User, UserProfile, Recommendation
 from app.schemas import (
     IntakeCreate,
     IntakeData,
@@ -18,6 +19,7 @@ from app.schemas import (
     RecommendationOption,
     RecommendationRequest,
     RecommendationResponse,
+    RecommendationRecord,
     UserCreate,
     UserResponse,
     UserUpdate,
@@ -26,6 +28,10 @@ from app.schemas import (
     UserProfileUpdate,
     UserProfileResponse,
 )
+
+# Setup logging for recommendations
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("recommendations")
 from app.storage import IntakeStore
 from app.auth import (
     get_password_hash,
@@ -344,41 +350,120 @@ def parse_recommendation(raw: str) -> Optional[RecommendationResponse]:
     try:
         data: Dict[str, Any] = json.loads(raw)
     except json.JSONDecodeError:
+        logger.warning(f"Failed to parse JSON from ChatGPT response")
         return None
 
-    if "current_score" in data and "recommendations" in data:
-        recs = []
-        for opt in data.get("recommendations", []):
-            if not isinstance(opt, dict):
-                continue
-            recs.append(
-                RecommendationOption(
-                    visa_type=opt.get("visa_name") or opt.get("visa_type_code") or "Visa option",
-                    reasoning=opt.get("match_summary")
-                    or opt.get("eligibility_summary")
-                    or opt.get("overview")
-                    or "See details",
-                    likelihood=opt.get("status"),
-                    estimated_timeline=opt.get("processing_time"),
-                    estimated_costs=opt.get("estimated_cost"),
-                    risk_flags=opt.get("quick_facts") or opt.get("requirements"),
-                    next_steps=opt.get("success_boost") or opt.get("improvement_actions"),
-                )
-            )
-
-        return RecommendationResponse(
-            summary=data.get("insight_summary") or data.get("summary") or "Recommendation draft",
-            options=recs,
-            notes=data.get("notes"),
-            raw_message=raw,
+    logger.info(f"Parsing ChatGPT response with keys: {list(data.keys())}")
+    
+    # Try to find recommendations in various possible locations
+    recommendations_list = (
+        data.get("recommendations") or 
+        data.get("options") or 
+        data.get("visa_options") or
+        []
+    )
+    
+    if not recommendations_list and "top_recommendation" in data:
+        # If only top_recommendation exists, use it as a single-item list
+        recommendations_list = [data["top_recommendation"]]
+    
+    recs = []
+    for opt in recommendations_list:
+        if not isinstance(opt, dict):
+            continue
+        
+        # Extract visa type from various possible field names
+        visa_type = (
+            opt.get("visa_type") or
+            opt.get("visa_name") or 
+            opt.get("visa_type_code") or 
+            opt.get("name") or
+            opt.get("title") or
+            "Visa option"
         )
+        
+        # Extract reasoning/description
+        reasoning = (
+            opt.get("reasoning") or
+            opt.get("match_summary") or
+            opt.get("eligibility_summary") or
+            opt.get("overview") or
+            opt.get("description") or
+            opt.get("summary") or
+            "See details"
+        )
+        
+        # Extract likelihood/status
+        likelihood = (
+            opt.get("likelihood") or
+            opt.get("status") or
+            opt.get("eligibility") or
+            "possible"
+        )
+        
+        # Extract timeline
+        estimated_timeline = (
+            opt.get("estimated_timeline") or
+            opt.get("processing_time") or
+            opt.get("timeline") if isinstance(opt.get("timeline"), str) else None
+        )
+        
+        # Extract costs
+        estimated_costs = (
+            opt.get("estimated_costs") or
+            opt.get("estimated_cost") or
+            opt.get("cost") or
+            opt.get("fees")
+        )
+        
+        # Extract risk flags / requirements
+        risk_flags = (
+            opt.get("risk_flags") or
+            opt.get("quick_facts") or
+            opt.get("requirements") or
+            opt.get("challenges") or
+            []
+        )
+        if isinstance(risk_flags, str):
+            risk_flags = [risk_flags]
+        
+        # Extract next steps
+        next_steps = (
+            opt.get("next_steps") or
+            opt.get("success_boost") or
+            opt.get("improvement_actions") or
+            opt.get("action_items") or
+            []
+        )
+        if isinstance(next_steps, str):
+            next_steps = [next_steps]
+        
+        recs.append(
+            RecommendationOption(
+                visa_type=visa_type,
+                reasoning=reasoning,
+                likelihood=likelihood,
+                estimated_timeline=estimated_timeline,
+                estimated_costs=estimated_costs,
+                risk_flags=risk_flags if risk_flags else None,
+                next_steps=next_steps if next_steps else None,
+            )
+        )
+    
+    logger.info(f"Parsed {len(recs)} recommendation options")
+    
+    # Extract summary
+    summary = (
+        data.get("summary") or
+        data.get("insight_summary") or
+        data.get("overview") or
+        data.get("introduction") or
+        "Based on your profile, here are your visa recommendations."
+    )
 
-    options = [
-        RecommendationOption(**opt) for opt in data.get("options", []) if isinstance(opt, dict)
-    ]
     return RecommendationResponse(
-        summary=data.get("summary", "Recommendation draft"),
-        options=options,
+        summary=summary,
+        options=recs,
         notes=data.get("notes"),
         raw_message=raw,
     )
@@ -389,9 +474,56 @@ def get_recommendation(
     request: RecommendationRequest,
     settings: Settings = Depends(get_settings),
     store: IntakeStore = Depends(get_store),
-    client: OpenAI = Depends(lambda settings=Depends(get_settings): get_openai_client(settings)),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ) -> RecommendationResponse:
+    """
+    Get visa recommendations.
+    
+    - use_cached=True (default): Return the most recent stored recommendation for this user
+    - use_cached=False: Call ChatGPT, store the response, then return it
+    """
+    user_id = current_user.id
+    
+    # If use_cached is True, try to return stored recommendation
+    if request.use_cached:
+        cached = db.query(Recommendation).filter(
+            Recommendation.user_id == user_id
+        ).order_by(Recommendation.created_at.desc()).first()
+        
+        if cached and cached.raw_response:
+            logger.info(f"Returning cached recommendation", extra={
+                "user_id": user_id,
+                "recommendation_id": cached.id,
+                "used_cache": True,
+            })
+            # Re-parse the raw response with the improved parser
+            # This ensures old cached data is parsed correctly too
+            parsed = parse_recommendation(cached.raw_response)
+            if parsed and parsed.options:
+                parsed.source = "cache"
+                return parsed
+            
+            # Fallback to stored output_data if parsing fails
+            if cached.output_data:
+                return RecommendationResponse(
+                    summary=cached.output_data.get("summary", "Cached recommendation"),
+                    options=[RecommendationOption(**opt) for opt in cached.output_data.get("options", [])],
+                    notes=cached.output_data.get("notes"),
+                    source="cache",
+                    raw_message=cached.raw_response,
+                )
+        
+        # No cached data exists, inform the user
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No cached recommendation found. Call with use_cached=False to generate one.",
+        )
+    
+    # use_cached is False - call OpenAI and store the result
     intake: Optional[IntakeData] = None
+    
+    # Try to get intake from request
     if request.intake_id:
         record = store.get(request.intake_id)
         if not record:
@@ -399,17 +531,36 @@ def get_recommendation(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Intake not found."
             )
         intake = record.payload
-    else:
+    elif request.intake:
         intake = request.intake
-
+    else:
+        # Try to get from user profile
+        profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+        if profile and profile.onboarding_data:
+            intake = IntakeData(**profile.onboarding_data)
+    
     if not intake:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No intake data provided.",
+            detail="No intake data provided. Provide intake, intake_id, or complete onboarding first.",
         )
-
+    
+    # Log the request
+    logger.info(f"Calling OpenAI for recommendation", extra={
+        "user_id": user_id,
+        "used_cache": False,
+        "input_summary": {
+            "nationality": intake.nationality,
+            "destinations": intake.preferred_destinations,
+            "education": intake.education_level,
+        },
+    })
+    
     prompt = build_prompt(intake)
-
+    
+    # Get OpenAI client
+    client = get_openai_client(settings)
+    
     try:
         completion = client.chat.completions.create(
             model=settings.openai_model,
@@ -421,20 +572,108 @@ def get_recommendation(
             timeout=60,
         )
         content = completion.choices[0].message.content or ""
-    except Exception as exc:  # pragma: no cover - network errors
+    except Exception as exc:
+        logger.error(f"OpenAI request failed: {exc}", extra={"user_id": user_id})
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"OpenAI request failed: {exc}",
         ) from exc
-
+    
+    # Log the raw ChatGPT response
+    logger.info("=" * 60)
+    logger.info("RAW CHATGPT RESPONSE:")
+    logger.info("=" * 60)
+    logger.info(content)
+    logger.info("=" * 60)
+    
+    # Parse the response
     parsed = parse_recommendation(content)
-    if parsed:
+    if not parsed:
+        logger.warning("Failed to parse ChatGPT response as JSON")
+        parsed = RecommendationResponse(
+            summary="Unable to parse structured response. Showing raw model output.",
+            options=[],
+            notes=["Model returned unstructured text; please retry."],
+            raw_message=content,
+        )
+    else:
         parsed.raw_message = content
-        return parsed
-
-    return RecommendationResponse(
-        summary="Unable to parse structured response. Showing raw model output.",
-        options=[],
-        notes=["Model returned unstructured text; please retry."],
-        raw_message=content,
+        # Log the parsed result
+        logger.info("PARSED RECOMMENDATION:")
+        logger.info(f"  Summary: {parsed.summary}")
+        logger.info(f"  Options count: {len(parsed.options)}")
+        for i, opt in enumerate(parsed.options):
+            logger.info(f"  Option {i+1}: {opt.visa_type} - {opt.likelihood}")
+    
+    # Store the recommendation in the database
+    recommendation_record = Recommendation(
+        user_id=user_id,
+        input_data=intake.model_dump(exclude_none=True),
+        output_data={
+            "summary": parsed.summary,
+            "options": [opt.model_dump() for opt in parsed.options],
+            "notes": parsed.notes,
+        },
+        raw_response=content,
     )
+    db.add(recommendation_record)
+    db.commit()
+    db.refresh(recommendation_record)
+    
+    logger.info(f"Stored new recommendation", extra={
+        "user_id": user_id,
+        "recommendation_id": recommendation_record.id,
+        "used_cache": False,
+    })
+    
+    parsed.source = "openai"
+    return parsed
+
+
+@app.get("/recommendations/history", response_model=List[RecommendationRecord])
+def get_recommendation_history(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+    limit: int = 10,
+) -> List[RecommendationRecord]:
+    """
+    Get all stored recommendations for the current user, ordered by most recent first.
+    """
+    recommendations = db.query(Recommendation).filter(
+        Recommendation.user_id == current_user.id
+    ).order_by(Recommendation.created_at.desc()).limit(limit).all()
+    
+    logger.info(f"Retrieved recommendation history", extra={
+        "user_id": current_user.id,
+        "count": len(recommendations),
+    })
+    
+    return recommendations
+
+
+@app.get("/recommendations/{recommendation_id}", response_model=RecommendationRecord)
+def get_recommendation_by_id(
+    recommendation_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+) -> RecommendationRecord:
+    """
+    Get a specific stored recommendation by ID.
+    """
+    recommendation = db.query(Recommendation).filter(
+        Recommendation.id == recommendation_id,
+        Recommendation.user_id == current_user.id,
+    ).first()
+    
+    if not recommendation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Recommendation not found.",
+        )
+    
+    logger.info(f"Retrieved recommendation by ID", extra={
+        "user_id": current_user.id,
+        "recommendation_id": recommendation_id,
+    })
+    
+    return recommendation
