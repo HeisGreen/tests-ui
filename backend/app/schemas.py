@@ -232,3 +232,42 @@ class UserProfileResponse(BaseModel):
     model_config = {
         "json_encoders": {datetime: lambda v: v.isoformat() + "Z"},
     }
+
+
+# Document schemas
+class DocumentCreate(BaseModel):
+    name: str
+    type: Optional[str] = None
+    file_url: str
+    file_path: str
+    size: Optional[str] = None
+    visa_id: Optional[int] = None
+    description: Optional[str] = None
+
+
+class DocumentUpdate(BaseModel):
+    name: Optional[str] = None
+    type: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[str] = None  # Only for admin updates
+    visa_id: Optional[int] = None
+
+
+class DocumentResponse(BaseModel):
+    id: int
+    user_id: int
+    name: str
+    type: Optional[str] = None
+    file_url: str
+    file_path: str
+    size: Optional[str] = None
+    status: str
+    visa_id: Optional[int] = None
+    description: Optional[str] = None
+    uploaded_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+        "json_encoders": {datetime: lambda v: v.isoformat() + "Z"},
+    }

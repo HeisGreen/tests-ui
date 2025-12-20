@@ -44,3 +44,23 @@ class Recommendation(Base):
 
     # Relationship to user
     user = relationship("User")
+
+
+class Document(Base):
+    __tablename__ = "documents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+    name = Column(String, nullable=False)
+    type = Column(String, nullable=True)  # e.g., "Passport", "Bank Statement", etc.
+    file_url = Column(String, nullable=False)  # Firebase Storage URL
+    file_path = Column(String, nullable=False)  # Firebase Storage path
+    size = Column(String, nullable=True)  # File size as string (e.g., "2.4 MB")
+    status = Column(String, default="pending", nullable=False)  # pending, verified, rejected
+    visa_id = Column(Integer, nullable=True)  # Optional reference to visa application
+    description = Column(Text, nullable=True)  # Additional details about the document
+    uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    # Relationship to user
+    user = relationship("User")

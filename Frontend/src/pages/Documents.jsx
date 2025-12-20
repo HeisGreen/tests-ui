@@ -1,20 +1,52 @@
 import React, { useState, useEffect } from 'react'
-import { dummyDocuments, dummyVisas } from '../data/dummyData'
 import { FiUpload, FiFileText, FiCheckCircle, FiClock, FiX, FiDownload } from 'react-icons/fi'
 import { initScrollAnimations } from '../utils/scrollAnimation'
+import { documentsAPI } from '../utils/api'
+import UploadDocumentModal from '../components/UploadDocumentModal'
 import './Documents.css'
 
 function Documents() {
-  const [documents] = useState(dummyDocuments)
+  const [documents, setDocuments] = useState([])
+  const [loading, setLoading] = useState(true)
   const [selectedFilter, setSelectedFilter] = useState('all')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
+    loadDocuments()
     initScrollAnimations()
-  }, [])
+  }, [selectedFilter])
 
-  const getVisaName = (visaId) => {
-    const visa = dummyVisas.find(v => v.id === visaId)
-    return visa ? `${visa.name} - ${visa.country}` : 'Unknown Visa'
+  const loadDocuments = async () => {
+    try {
+      setLoading(true)
+      setError('')
+      // Always fetch all documents, we'll filter on the frontend
+      const docs = await documentsAPI.getDocuments('all')
+      setDocuments(docs)
+    } catch (err) {
+      console.error('Error loading documents:', err)
+      setError('Failed to load documents. Please try again.')
+      setDocuments([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUploadSuccess = async (documentData) => {
+    try {
+      // Create document record in backend
+      await documentsAPI.createDocument(documentData)
+      // Reload documents
+      await loadDocuments()
+    } catch (err) {
+      console.error('Error creating document:', err)
+      throw err // Re-throw to let modal handle the error
+    }
+  }
+
+  const handleDownload = (fileUrl) => {
+    window.open(fileUrl, '_blank')
   }
 
   const getStatusIcon = (status) => {
@@ -47,11 +79,6 @@ function Documents() {
     ? documents
     : documents.filter(doc => doc.status === selectedFilter)
 
-  const handleUpload = () => {
-    // In a real app, this would open a file picker
-    alert('File upload functionality would be implemented here')
-  }
-
   return (
     <div className="documents-page">
       <div className="documents-header">
@@ -59,7 +86,7 @@ function Documents() {
           <h1>Documents</h1>
           <p>Manage and track all your visa application documents</p>
         </div>
-        <button onClick={handleUpload} className="btn-upload">
+        <button onClick={() => setIsModalOpen(true)} className="btn-upload">
           <FiUpload />
           Upload Document
         </button>
@@ -107,12 +134,27 @@ function Documents() {
         </div>
       </div>
 
+      {error && (
+        <div className="error-banner">
+          {error}
+        </div>
+      )}
+
       <div className="documents-list">
-        {filteredDocuments.length === 0 ? (
-          <div className="empty-state">
-            <FiFileText className="empty-icon" />
-            <p>No documents found</p>
-            <button onClick={handleUpload} className="btn-primary">
+        {loading ? (
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Loading documents...</p>
+          </div>
+        ) : filteredDocuments.length === 0 ? (
+          <div className="empty-state animated">
+            <div className="empty-icon-wrapper">
+              <FiFileText className="empty-icon" />
+            </div>
+            <h3>No documents yet</h3>
+            <p>Start by uploading your first document to get started with your visa application.</p>
+            <button onClick={() => setIsModalOpen(true)} className="btn-primary">
+              <FiUpload />
               Upload Your First Document
             </button>
           </div>
@@ -125,18 +167,25 @@ function Documents() {
               <div className="document-info">
                 <h3>{doc.name}</h3>
                 <div className="document-meta">
-                  <span className="document-type">{doc.type}</span>
-                  <span className="document-separator">•</span>
-                  <span className="document-size">{doc.size}</span>
-                  <span className="document-separator">•</span>
+                  {doc.type && (
+                    <>
+                      <span className="document-type">{doc.type}</span>
+                      <span className="document-separator">•</span>
+                    </>
+                  )}
+                  {doc.size && (
+                    <>
+                      <span className="document-size">{doc.size}</span>
+                      <span className="document-separator">•</span>
+                    </>
+                  )}
                   <span className="document-date">
-                    Uploaded {new Date(doc.uploadedAt).toLocaleDateString()}
+                    Uploaded {new Date(doc.uploaded_at).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="document-visa">
-                  <span className="visa-label">For:</span>
-                  <span className="visa-name">{getVisaName(doc.visaId)}</span>
-                </div>
+                {doc.description && (
+                  <p className="document-description">{doc.description}</p>
+                )}
               </div>
               <div className="document-actions">
                 <div
@@ -145,7 +194,11 @@ function Documents() {
                 >
                   {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
                 </div>
-                <button className="action-btn" title="Download">
+                <button 
+                  className="action-btn" 
+                  title="Download"
+                  onClick={() => handleDownload(doc.file_url)}
+                >
                   <FiDownload />
                 </button>
               </div>
@@ -164,9 +217,14 @@ function Documents() {
           <li>Documents are typically reviewed within 2-3 business days</li>
         </ul>
       </div>
+
+      <UploadDocumentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onUploadSuccess={handleUploadSuccess}
+      />
     </div>
   )
 }
 
 export default Documents
-

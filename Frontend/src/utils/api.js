@@ -166,3 +166,56 @@ export const recommendationsAPI = {
     return apiRequest(`/recommendations/${id}`);
   },
 };
+
+// Documents API functions
+export const documentsAPI = {
+  /**
+   * Create a new document
+   * @param {object} documentData - Document data including name, type, file_url, file_path, size, etc.
+   */
+  createDocument: async (documentData) => {
+    return apiRequest("/documents", {
+      method: "POST",
+      body: JSON.stringify(documentData),
+    });
+  },
+
+  /**
+   * Get all documents for the current user
+   * @param {string} statusFilter - Optional filter by status ('all', 'pending', 'verified', 'rejected')
+   */
+  getDocuments: async (statusFilter = "all") => {
+    const params = statusFilter !== "all" ? `?status_filter=${statusFilter}` : "";
+    return apiRequest(`/documents${params}`);
+  },
+
+  /**
+   * Get a specific document by ID
+   * @param {number} id - Document ID
+   */
+  getDocument: async (id) => {
+    return apiRequest(`/documents/${id}`);
+  },
+
+  /**
+   * Update a document
+   * @param {number} id - Document ID
+   * @param {object} updates - Document fields to update
+   */
+  updateDocument: async (id, updates) => {
+    return apiRequest(`/documents/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(updates),
+    });
+  },
+
+  /**
+   * Delete a document
+   * @param {number} id - Document ID
+   */
+  deleteDocument: async (id) => {
+    return apiRequest(`/documents/${id}`, {
+      method: "DELETE",
+    });
+  },
+};

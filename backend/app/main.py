@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.config import Settings, get_settings
 from app.database import engine, get_db
-from app.models import Base, User, UserProfile, Recommendation
+from app.models import Base, User, UserProfile, Recommendation, Document
 from app.schemas import (
     IntakeCreate,
     IntakeData,
@@ -27,6 +27,9 @@ from app.schemas import (
     UserProfileCreate,
     UserProfileUpdate,
     UserProfileResponse,
+    DocumentCreate,
+    DocumentUpdate,
+    DocumentResponse,
 )
 
 # Setup logging for recommendations
@@ -694,3 +697,128 @@ def get_recommendation_by_id(
     })
     
     return recommendation
+
+
+# Document endpoints
+@app.post("/documents", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
+def create_document(
+    document_data: DocumentCreate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new document record"""
+    new_document = Document(
+        user_id=current_user.id,
+        name=document_data.name,
+        type=document_data.type,
+        file_url=document_data.file_url,
+        file_path=document_data.file_path,
+        size=document_data.size,
+        status="pending",  # Always start as pending
+        visa_id=document_data.visa_id,
+        description=document_data.description
+    )
+    db.add(new_document)
+    db.commit()
+    db.refresh(new_document)
+    return new_document
+
+
+@app.get("/documents", response_model=List[DocumentResponse])
+def get_documents(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+    status_filter: Optional[str] = None
+):
+    """Get all documents for the current user"""
+    query = db.query(Document).filter(Document.user_id == current_user.id)
+    
+    if status_filter and status_filter != "all":
+        query = query.filter(Document.status == status_filter)
+    
+    documents = query.order_by(Document.uploaded_at.desc()).all()
+    return documents
+
+
+@app.get("/documents/{document_id}", response_model=DocumentResponse)
+def get_document(
+    document_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get a specific document by ID"""
+    document = db.query(Document).filter(
+        Document.id == document_id,
+        Document.user_id == current_user.id
+    ).first()
+    
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+    
+    return document
+
+
+@app.put("/documents/{document_id}", response_model=DocumentResponse)
+def update_document(
+    document_id: int,
+    document_update: DocumentUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Update a document (users can update their own documents, but not status)"""
+    document = db.query(Document).filter(
+        Document.id == document_id,
+        Document.user_id == current_user.id
+    ).first()
+    
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+    
+    # Users can update name, type, description, visa_id but not status
+    if document_update.name is not None:
+        document.name = document_update.name
+    if document_update.type is not None:
+        document.type = document_update.type
+    if document_update.description is not None:
+        document.description = document_update.description
+    if document_update.visa_id is not None:
+        document.visa_id = document_update.visa_id
+    
+    # Status updates would typically be done by admin/reviewer, not included here
+    # but we'll allow it for now if provided (can be restricted later)
+    if document_update.status is not None:
+        document.status = document_update.status
+    
+    document.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(document)
+    return document
+
+
+@app.delete("/documents/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_document(
+    document_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a document"""
+    document = db.query(Document).filter(
+        Document.id == document_id,
+        Document.user_id == current_user.id
+    ).first()
+    
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+    
+    db.delete(document)
+    db.commit()
+    return None
