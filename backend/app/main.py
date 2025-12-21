@@ -650,7 +650,12 @@ def get_recommendation(
     return parsed
 
 
-@app.get("/recommendations/history", response_model=List[RecommendationRecord])
+@app.get(
+    "/recommendations/history",
+    response_model=List[RecommendationRecord],
+    # History is used for UI lists; exclude large blobs to keep payload fast.
+    response_model_exclude={"__all__": {"raw_response", "input_data"}},
+)
 def get_recommendation_history(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),

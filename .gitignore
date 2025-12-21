@@ -33,3 +33,7 @@ env
 *.sln
 *.sw?
 
+node_modules/
+.npm/
+.npm-cache/
+**/_cacache/
