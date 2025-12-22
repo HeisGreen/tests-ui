@@ -192,6 +192,42 @@ export const recommendationsAPI = {
   },
 };
 
+// Checklist Progress API functions
+export const checklistProgressAPI = {
+  /**
+   * Get saved checklist progress for a visa type
+   * @param {string} visaType - The visa type identifier
+   * @returns {Promise<object|null>} Progress data or null if none exists
+   */
+  getProgress: async (visaType) => {
+    return apiRequest(`/checklist/progress?visa_type=${encodeURIComponent(visaType)}`);
+  },
+
+  /**
+   * Get all checklist progress records for the current user
+   * @returns {Promise<Array>} List of all checklist progress records
+   */
+  getAllProgress: async () => {
+    return apiRequest("/checklist/progress/all");
+  },
+
+  /**
+   * Save or update checklist progress for a visa type
+   * @param {string} visaType - The visa type identifier
+   * @param {object} progressJson - Progress map { "step-1": true, "step-2": false, ... }
+   * @returns {Promise<object>} Saved progress data
+   */
+  saveProgress: async (visaType, progressJson) => {
+    return apiRequest("/checklist/progress", {
+      method: "PUT",
+      body: JSON.stringify({
+        visa_type: visaType,
+        progress_json: progressJson,
+      }),
+    });
+  },
+};
+
 // Documents API functions
 export const documentsAPI = {
   /**

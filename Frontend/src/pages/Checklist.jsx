@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { recommendationsAPI } from "../utils/api";
+import { recommendationsAPI, checklistProgressAPI } from "../utils/api";
 import {
   FiAlertCircle,
   FiArrowLeft,
@@ -297,12 +297,46 @@ function Checklist() {
   }, [visaOption]);
 
   const [checklist, setChecklist] = useState([]);
+  const [savingProgress, setSavingProgress] = useState(false);
+  const saveTimeoutRef = useRef(null);
 
+  // Fetch and merge saved progress when checklist items are loaded
   useEffect(() => {
-    // Hydrate checklist state whenever the option changes.
-    console.log("Setting checklist state with items:", checklistItems);
-    setChecklist(checklistItems);
-  }, [checklistItems]);
+    if (!checklistItems.length || !visaType) {
+      setChecklist(checklistItems);
+      return;
+    }
+
+    // Fetch saved progress from backend
+    const loadProgress = async () => {
+      try {
+        const savedProgress = await checklistProgressAPI.getProgress(visaType);
+        
+        if (savedProgress && savedProgress.progress_json) {
+          // Merge saved progress into checklist items
+          const mergedChecklist = checklistItems.map((item) => {
+            const isCompleted = savedProgress.progress_json[item.id] === true;
+            return {
+              ...item,
+              completed: isCompleted,
+            };
+          });
+          console.log("Loaded saved progress:", savedProgress.progress_json);
+          setChecklist(mergedChecklist);
+        } else {
+          // No saved progress, use default (all incomplete)
+          console.log("No saved progress found, using default");
+          setChecklist(checklistItems);
+        }
+      } catch (error) {
+        console.warn("Failed to load checklist progress:", error);
+        // On error, just use the default checklist items
+        setChecklist(checklistItems);
+      }
+    };
+
+    loadProgress();
+  }, [checklistItems, visaType]);
 
   // Initialize scroll animations after checklist items are rendered
   useEffect(() => {
@@ -345,6 +379,43 @@ function Checklist() {
       )
     );
   };
+
+  // Save progress whenever checklist changes (debounced)
+  useEffect(() => {
+    if (checklist.length === 0 || !visaType) return;
+
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set new timeout to save after 500ms of inactivity
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        setSavingProgress(true);
+        const progressJson = {};
+        checklist.forEach((item) => {
+          if (item && item.id) {
+            progressJson[item.id] = item.completed || false;
+          }
+        });
+        
+        await checklistProgressAPI.saveProgress(visaType, progressJson);
+        console.log("Saved checklist progress:", progressJson);
+      } catch (error) {
+        console.error("Failed to save checklist progress:", error);
+      } finally {
+        setSavingProgress(false);
+      }
+    }, 500);
+
+    // Cleanup timeout on unmount or when dependencies change
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [checklist, visaType]);
 
   const completedCount = checklist.filter((item) => item && item.completed).length;
   const totalCount = checklist.length || 1;

@@ -293,3 +293,26 @@ class ChecklistRequest(BaseModel):
 
 class ChecklistResponse(BaseModel):
     checklist: List[dict]
+
+
+# Checklist Progress schemas
+class ChecklistProgressCreate(BaseModel):
+    visa_type: str
+    progress_json: dict  # { "step-1": true, "step-2": false, ... }
+
+
+class ChecklistProgressUpdate(BaseModel):
+    progress_json: dict  # { "step-1": true, "step-2": false, ... }
+
+
+class ChecklistProgressResponse(BaseModel):
+    id: int
+    user_id: int
+    visa_type: str
+    progress_json: dict
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    model_config = {
+        "from_attributes": True,
+    }

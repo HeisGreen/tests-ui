@@ -64,3 +64,17 @@ class Document(Base):
 
     # Relationship to user
     user = relationship("User")
+
+
+class ChecklistProgress(Base):
+    __tablename__ = "checklist_progress"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+    visa_type = Column(String, nullable=False, index=True)  # Visa type identifier
+    progress_json = Column(JSON, nullable=False)  # Stores { "step-1": true, "step-2": false, ... }
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    # Relationship to user
+    user = relationship("User")

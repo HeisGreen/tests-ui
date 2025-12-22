@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { recommendationsAPI } from "../utils/api";
+import { recommendationsAPI, checklistProgressAPI } from "../utils/api";
 import {
   FiAlertCircle,
   FiArrowRight,
   FiCheckCircle,
   FiClock,
   FiFileText,
+  FiList,
 } from "react-icons/fi";
 import { initScrollAnimations } from "../utils/scrollAnimation";
 import "./Home.css";
@@ -18,6 +19,8 @@ function Home() {
   const [error, setError] = useState(null);
   const [latest, setLatest] = useState(null); // latest RecommendationRecord
   const [historyCount, setHistoryCount] = useState(0);
+  const [activeChecklists, setActiveChecklists] = useState([]);
+  const [loadingChecklists, setLoadingChecklists] = useState(true);
 
   useEffect(() => {
     initScrollAnimations();
@@ -79,6 +82,50 @@ function Home() {
       cancelled = true;
     };
   }, []);
+
+  // Load active checklists (checklists with saved progress)
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadChecklists = async () => {
+      try {
+        setLoadingChecklists(true);
+        const progressList = await checklistProgressAPI.getAllProgress();
+        if (cancelled) return;
+        console.log("Loaded checklist progress:", progressList);
+        console.log("Progress list length:", progressList?.length);
+        if (progressList && Array.isArray(progressList)) {
+          console.log("Setting active checklists:", progressList);
+          setActiveChecklists(progressList);
+        } else {
+          console.warn("Progress list is not an array:", progressList);
+          setActiveChecklists([]);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        console.error("Error loading active checklists:", err);
+        setActiveChecklists([]);
+      } finally {
+        if (cancelled) return;
+        setLoadingChecklists(false);
+      }
+    };
+
+    loadChecklists();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Calculate progress percentage for a checklist
+  const getChecklistProgress = (progressJson) => {
+    if (!progressJson || typeof progressJson !== 'object') return 0;
+    const items = Object.values(progressJson);
+    if (items.length === 0) return 0;
+    const completed = items.filter(v => v === true).length;
+    return Math.round((completed / items.length) * 100);
+  };
 
   const getVisaStateText = (visa) => {
     const raw = visa?.state ?? visa?.status ?? visa?.likelihood ?? "";
@@ -340,6 +387,96 @@ function Home() {
           </div>
         )}
       </div>
+
+      {loadingChecklists ? (
+        <div className="home-section">
+          <div className="section-header">
+            <h2>Active Checklists</h2>
+          </div>
+          <div className="empty-state">
+            <p>Loading your checklists…</p>
+          </div>
+        </div>
+      ) : activeChecklists.length > 0 ? (
+        <div className="home-section">
+          <div className="section-header">
+            <h2>Active Checklists</h2>
+            <span className="section-subtitle">
+              {activeChecklists.length} checklist{activeChecklists.length !== 1 ? 's' : ''} in progress
+            </span>
+          </div>
+          <div className="checklists-grid">
+            {activeChecklists.length === 0 ? (
+              <div className="empty-state">
+                <p>No active checklists found.</p>
+              </div>
+            ) : activeChecklists.filter(c => c && (c.visa_type || c.visaType)).length === 0 ? (
+              <div className="empty-state">
+                <p>Checklists found but missing visa_type field.</p>
+                <pre style={{ fontSize: '0.8rem', textAlign: 'left', maxWidth: '100%', overflow: 'auto' }}>
+                  {JSON.stringify(activeChecklists, null, 2)}
+                </pre>
+              </div>
+            ) : (
+              activeChecklists.map((checklist, index) => {
+                console.log(`Rendering checklist card ${index}:`, checklist);
+                
+                // Handle missing or invalid data
+                if (!checklist) {
+                  console.warn(`Checklist at index ${index} is null/undefined`);
+                  return null;
+                }
+                
+                const visaType = checklist.visa_type || checklist.visaType || `Checklist ${index + 1}`;
+                const progressJson = checklist.progress_json || checklist.progressJson || {};
+                const progressPercent = getChecklistProgress(progressJson);
+                const completedCount = Object.values(progressJson).filter(v => v === true).length;
+                const totalCount = Object.keys(progressJson).length || 0;
+                
+                console.log(`Checklist ${index} details:`, {
+                  visaType,
+                  progressPercent,
+                  completedCount,
+                  totalCount,
+                  progressJson
+                });
+                
+                return (
+                  <Link
+                    key={checklist.id || `checklist-${index}`}
+                    to={`/checklist/${encodeURIComponent(visaType)}`}
+                    className="checklist-card scroll-animate"
+                  >
+                    <div className="checklist-card-header">
+                      <div className="checklist-icon">
+                        <FiList />
+                      </div>
+                      <div className="checklist-title-section">
+                        <h3>{visaType}</h3>
+                        <p className="checklist-meta">
+                          {totalCount > 0 
+                            ? `${completedCount} of ${totalCount} steps completed`
+                            : "No progress yet"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="checklist-progress-bar">
+                      <div 
+                        className="checklist-progress-fill"
+                        style={{ width: `${Math.max(progressPercent, 0)}%` }}
+                      />
+                    </div>
+                    <div className="checklist-progress-text">
+                      <span>{progressPercent}% Complete</span>
+                      <FiArrowRight className="arrow-icon" />
+                    </div>
+                  </Link>
+                );
+              }).filter(Boolean)
+            )}
+          </div>
+        </div>
+      ) : null}
 
       <div className="home-section">
         <div className="section-header">

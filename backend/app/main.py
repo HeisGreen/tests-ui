@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.config import Settings, get_settings
 from app.database import engine, get_db
-from app.models import Base, User, UserProfile, Recommendation, Document
+from app.models import Base, User, UserProfile, Recommendation, Document, ChecklistProgress
 from app.schemas import (
     IntakeCreate,
     IntakeData,
@@ -32,6 +32,9 @@ from app.schemas import (
     DocumentResponse,
     ChecklistRequest,
     ChecklistResponse,
+    ChecklistProgressCreate,
+    ChecklistProgressUpdate,
+    ChecklistProgressResponse,
 )
 
 # Setup logging for recommendations
@@ -822,6 +825,84 @@ Return only JSON, no explanations."""
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error processing checklist: {str(e)}",
         )
+
+
+# Checklist Progress endpoints
+@app.get("/checklist/progress", response_model=Optional[ChecklistProgressResponse])
+def get_checklist_progress(
+    visa_type: str,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get saved checklist progress for a specific visa type.
+    Returns None if no progress has been saved yet.
+    """
+    progress = db.query(ChecklistProgress).filter(
+        ChecklistProgress.user_id == current_user.id,
+        ChecklistProgress.visa_type == visa_type
+    ).first()
+    
+    if not progress:
+        return None
+    
+    return progress
+
+
+@app.get("/checklist/progress/all", response_model=List[ChecklistProgressResponse])
+def get_all_checklist_progress(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get all checklist progress records for the current user.
+    Returns a list of all checklists that have been started.
+    """
+    progress_list = db.query(ChecklistProgress).filter(
+        ChecklistProgress.user_id == current_user.id
+    ).order_by(ChecklistProgress.updated_at.desc()).all()
+    
+    return progress_list
+
+
+@app.put("/checklist/progress", response_model=ChecklistProgressResponse)
+def save_checklist_progress(
+    progress_data: ChecklistProgressCreate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Save or update checklist progress for a visa type.
+    Creates a new record if none exists, or updates existing one.
+    """
+    # Check if progress already exists
+    existing = db.query(ChecklistProgress).filter(
+        ChecklistProgress.user_id == current_user.id,
+        ChecklistProgress.visa_type == progress_data.visa_type
+    ).first()
+    
+    now = datetime.utcnow()
+    
+    if existing:
+        # Update existing progress
+        existing.progress_json = progress_data.progress_json
+        existing.updated_at = now
+        db.commit()
+        db.refresh(existing)
+        return existing
+    else:
+        # Create new progress record
+        new_progress = ChecklistProgress(
+            user_id=current_user.id,
+            visa_type=progress_data.visa_type,
+            progress_json=progress_data.progress_json,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(new_progress)
+        db.commit()
+        db.refresh(new_progress)
+        return new_progress
 
 
 # Document endpoints
