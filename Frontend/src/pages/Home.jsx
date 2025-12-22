@@ -49,7 +49,20 @@ function Home() {
         if (cancelled) return;
 
         setHistoryCount(history.length);
-        setLatest(history[0] || null);
+        const latestRecord = history[0] || null;
+        
+        // Debug: Check what we're getting
+        if (latestRecord) {
+          console.log('=== DEBUG: Latest record ===');
+          console.log('Full record:', JSON.stringify(latestRecord, null, 2));
+          console.log('created_at value:', latestRecord.created_at);
+          console.log('created_at type:', typeof latestRecord.created_at);
+          console.log('All keys:', Object.keys(latestRecord));
+        } else {
+          console.log('No latest record found. History length:', history.length);
+        }
+        
+        setLatest(latestRecord);
       } catch (err) {
         if (cancelled) return;
         console.error("Error loading recommendation history:", err);
@@ -181,9 +194,55 @@ function Home() {
         </div>
         <div className="stat-card scroll-animate scroll-animate-delay-3">
           <div className="stat-value">
-            {latest?.created_at
-              ? new Date(latest.created_at).toLocaleDateString()
-              : "—"}
+            {(() => {
+              if (!latest) {
+                return "—";
+              }
+              
+              // Log everything for debugging
+              console.log('Latest object:', latest);
+              console.log('Latest keys:', Object.keys(latest));
+              
+              // Try different possible field names
+              const dateValue = latest.created_at || latest.createdAt || latest.date || latest['created_at'];
+              
+              console.log('Date value found:', dateValue);
+              
+              if (!dateValue) {
+                console.warn('No date field found. Full object:', latest);
+                return "—";
+              }
+              
+              try {
+                // Handle string dates
+                let date;
+                if (typeof dateValue === 'string') {
+                  // Remove trailing Z if present for better compatibility
+                  const cleanDate = dateValue.replace(/Z$/, '');
+                  date = new Date(cleanDate);
+                } else if (dateValue instanceof Date) {
+                  date = dateValue;
+                } else {
+                  date = new Date(dateValue);
+                }
+                
+                if (isNaN(date.getTime())) {
+                  console.warn('Invalid date:', dateValue, 'parsed as:', date);
+                  return "—";
+                }
+                
+                const formatted = date.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric'
+                });
+                
+                console.log('Formatted date:', formatted);
+                return formatted;
+              } catch (e) {
+                console.error('Date parsing error:', e, 'value:', dateValue);
+                return "—";
+              }
+            })()}
           </div>
           <div className="stat-label">Last Generated</div>
         </div>

@@ -177,6 +177,19 @@ export const recommendationsAPI = {
   getById: async (id) => {
     return apiRequest(`/recommendations/${id}`);
   },
+
+  /**
+   * Generate a detailed step-by-step checklist for a visa recommendation
+   * @param {object} visaOption - The visa recommendation option
+   */
+  generateChecklist: async (visaOption) => {
+    return apiRequest("/recommendations/checklist", {
+      method: "POST",
+      body: JSON.stringify({
+        visa_option: visaOption,
+      }),
+    });
+  },
 };
 
 // Documents API functions

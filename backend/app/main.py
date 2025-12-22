@@ -30,6 +30,8 @@ from app.schemas import (
     DocumentCreate,
     DocumentUpdate,
     DocumentResponse,
+    ChecklistRequest,
+    ChecklistResponse,
 )
 
 # Setup logging for recommendations
@@ -682,6 +684,10 @@ def get_recommendation_history(
         "count": len(recommendations),
     })
     
+    # Debug: Log the first recommendation's created_at
+    if recommendations:
+        logger.info(f"First recommendation created_at: {recommendations[0].created_at}, type: {type(recommendations[0].created_at)}")
+    
     return recommendations
 
 
@@ -711,6 +717,111 @@ def get_recommendation_by_id(
     })
     
     return recommendation
+
+
+@app.post("/recommendations/checklist", response_model=ChecklistResponse)
+def generate_checklist(
+    request: ChecklistRequest,
+    settings: Settings = Depends(get_settings),
+    current_user: User = Depends(get_current_active_user),
+) -> ChecklistResponse:
+    """
+    Generate a detailed step-by-step checklist for a visa recommendation using ChatGPT.
+    """
+    visa_option = request.visa_option
+    
+    # Build prompt for checklist generation
+    prompt = f"""You are an expert immigration advisor. Generate a comprehensive, step-by-step application checklist for the following visa recommendation.
+
+Visa Type: {visa_option.visa_type}
+Reasoning: {visa_option.reasoning}
+Likelihood: {visa_option.likelihood or "possible"}
+Estimated Timeline: {visa_option.estimated_timeline or "varies"}
+Estimated Costs: {visa_option.estimated_costs or "varies"}
+
+Requirements: {', '.join(visa_option.requirements) if visa_option.requirements else "Standard requirements apply"}
+Next Steps: {', '.join(visa_option.next_steps) if visa_option.next_steps else "Standard application process"}
+
+Create a detailed, actionable step-by-step checklist with 8-12 steps that guides the applicant through the entire visa application process. Each step should be specific, actionable, and include:
+- Clear title
+- Detailed description of what needs to be done
+- Specific guidance/tips
+- Documents needed for that step
+- Who is responsible (applicant or JAPA)
+- Timeline/due date information
+
+Return ONLY valid JSON matching this exact schema:
+{{
+  "checklist": [
+    {{
+      "title": "Step title (e.g., 'Gather Required Documents')",
+      "description": "Detailed description of what needs to be done in this step",
+      "guidance": "Specific tips, warnings, or guidance for completing this step",
+      "documents": ["Document 1", "Document 2"],
+      "owner": "applicant",
+      "due_in": "Timeline information (e.g., 'Before application submission')"
+    }}
+  ]
+}}
+
+Make sure the checklist is comprehensive, covers the entire application process from start to finish, and is specific to {visa_option.visa_type}. Include steps for:
+1. Initial preparation and eligibility review
+2. Document gathering and preparation
+3. Form completion
+4. Application submission
+5. Follow-up actions
+6. Interview preparation (if applicable)
+7. Post-approval steps
+
+Return only JSON, no explanations."""
+
+    client = get_openai_client(settings)
+    
+    try:
+        completion = client.chat.completions.create(
+            model=settings.openai_model,
+            messages=[
+                {"role": "system", "content": "You are an expert immigration advisor. Return only valid JSON."},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.3,
+            timeout=60,
+        )
+        content = completion.choices[0].message.content or ""
+    except Exception as exc:
+        logger.error(f"OpenAI checklist generation failed: {exc}", extra={"user_id": current_user.id})
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Failed to generate checklist: {exc}",
+        ) from exc
+    
+    # Parse the response
+    try:
+        data = json.loads(content)
+        checklist = data.get("checklist", [])
+        
+        if not checklist:
+            raise ValueError("No checklist items returned")
+        
+        logger.info(f"Generated checklist with {len(checklist)} steps", extra={
+            "user_id": current_user.id,
+            "visa_type": visa_option.visa_type,
+            "steps_count": len(checklist),
+        })
+        
+        return ChecklistResponse(checklist=checklist)
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse checklist JSON: {e}", extra={"user_id": current_user.id})
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Failed to parse checklist response. Please try again.",
+        )
+    except Exception as e:
+        logger.error(f"Checklist generation error: {e}", extra={"user_id": current_user.id})
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error processing checklist: {str(e)}",
+        )
 
 
 # Document endpoints

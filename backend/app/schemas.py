@@ -285,3 +285,11 @@ class DocumentResponse(BaseModel):
         import json
         data = self.model_dump(**kwargs)
         return json.dumps(data)
+
+
+class ChecklistRequest(BaseModel):
+    visa_option: RecommendationOption
+
+
+class ChecklistResponse(BaseModel):
+    checklist: List[dict]
