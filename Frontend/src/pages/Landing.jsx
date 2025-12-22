@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { FiCheckCircle, FiGlobe, FiClock, FiShield } from 'react-icons/fi'
+import { FiCheckCircle, FiGlobe, FiClock, FiShield, FiMail, FiPhone, FiMapPin, FiGithub, FiTwitter, FiLinkedin, FiInstagram } from 'react-icons/fi'
 import { initScrollAnimations } from '../utils/scrollAnimation'
 import './Landing.css'
 
@@ -126,9 +126,79 @@ function Landing() {
         </div>
       </section>
 
-      <footer className="landing-footer">
+      <footer className="landing-footer scroll-animate">
         <div className="footer-container">
-          <p>&copy; 2024 VisaAgent. All rights reserved.</p>
+          <div className="footer-content">
+            <div className="footer-section scroll-animate scroll-animate-delay-1">
+              <h3 className="footer-logo">VisaAgent</h3>
+              <p className="footer-description">
+                Your trusted partner for seamless visa applications. Get personalized recommendations and track your progress with ease.
+              </p>
+              <div className="footer-social">
+                <a href="#" className="social-link" aria-label="Twitter">
+                  <FiTwitter />
+                </a>
+                <a href="#" className="social-link" aria-label="LinkedIn">
+                  <FiLinkedin />
+                </a>
+                <a href="#" className="social-link" aria-label="Instagram">
+                  <FiInstagram />
+                </a>
+                <a href="#" className="social-link" aria-label="GitHub">
+                  <FiGithub />
+                </a>
+              </div>
+            </div>
+            
+            <div className="footer-section scroll-animate scroll-animate-delay-2">
+              <h4 className="footer-title">Quick Links</h4>
+              <ul className="footer-links">
+                <li><Link to="/">Home</Link></li>
+                <li><Link to="/login">Login</Link></li>
+                <li><Link to="/register">Sign Up</Link></li>
+                {isAuthenticated && <li><Link to="/home">Dashboard</Link></li>}
+              </ul>
+            </div>
+            
+            <div className="footer-section scroll-animate scroll-animate-delay-3">
+              <h4 className="footer-title">Support</h4>
+              <ul className="footer-links">
+                <li><a href="#">Help Center</a></li>
+                <li><a href="#">FAQ</a></li>
+                <li><a href="#">Contact Us</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+              </ul>
+            </div>
+            
+            <div className="footer-section scroll-animate scroll-animate-delay-4">
+              <h4 className="footer-title">Contact</h4>
+              <ul className="footer-contact">
+                <li>
+                  <FiMail />
+                  <span>support@visaagent.com</span>
+                </li>
+                <li>
+                  <FiPhone />
+                  <span>+1 (555) 123-4567</span>
+                </li>
+                <li>
+                  <FiMapPin />
+                  <span>123 Travel Street, Global City</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="footer-bottom scroll-animate scroll-animate-delay-5">
+            <p>&copy; {new Date().getFullYear()} VisaAgent. All rights reserved.</p>
+            <div className="footer-bottom-links">
+              <a href="#">Terms of Service</a>
+              <span>•</span>
+              <a href="#">Privacy Policy</a>
+              <span>•</span>
+              <a href="#">Cookie Policy</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
