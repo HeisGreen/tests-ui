@@ -4,6 +4,7 @@ import { initScrollAnimations } from '../utils/scrollAnimation'
 import { documentsAPI } from '../utils/api'
 import { supabase } from '../config/firebase'
 import UploadDocumentModal from '../components/UploadDocumentModal'
+import DeleteConfirmModal from '../components/DeleteConfirmModal'
 import './Documents.css'
 
 function Documents() {
@@ -13,6 +14,7 @@ function Documents() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [error, setError] = useState('')
   const [deletingId, setDeletingId] = useState(null)
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, document: null })
 
   const loadDocuments = async () => {
     try {
@@ -46,23 +48,26 @@ function Documents() {
     window.open(fileUrl, '_blank')
   }
 
-  const handleDelete = async (documentId, documentName, filePath) => {
-    // Confirm deletion
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${documentName}"? This action cannot be undone.`
-    )
-    
-    if (!confirmed) return
+  const handleDeleteClick = (doc) => {
+    setDeleteModal({
+      isOpen: true,
+      document: doc
+    })
+  }
+
+  const handleDeleteConfirm = async () => {
+    const { document } = deleteModal
+    if (!document) return
 
     try {
-      setDeletingId(documentId)
+      setDeletingId(document.id)
       
       // Delete file from Supabase Storage if file path exists
-      if (filePath) {
+      if (document.file_path) {
         try {
           const { error: storageError } = await supabase.storage
             .from('documents')
-            .remove([filePath])
+            .remove([document.file_path])
           
           if (storageError) {
             console.warn('Error deleting file from storage:', storageError)
@@ -75,9 +80,10 @@ function Documents() {
       }
       
       // Delete document record from database
-      await documentsAPI.deleteDocument(documentId)
+      await documentsAPI.deleteDocument(document.id)
       
-      // Reload documents after successful deletion
+      // Close modal and reload documents after successful deletion
+      setDeleteModal({ isOpen: false, document: null })
       await loadDocuments()
     } catch (err) {
       console.error('Error deleting document:', err)
@@ -85,6 +91,10 @@ function Documents() {
     } finally {
       setDeletingId(null)
     }
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false, document: null })
   }
 
   const getStatusIcon = (status) => {
@@ -345,7 +355,7 @@ function Documents() {
                   <button 
                     className="action-btn action-btn-delete" 
                     title="Delete"
-                    onClick={() => handleDelete(doc.id, doc.name, doc.file_path)}
+                    onClick={() => handleDeleteClick(doc)}
                     disabled={deletingId === doc.id}
                   >
                     <FiTrash2 />
@@ -372,6 +382,14 @@ function Documents() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onUploadSuccess={handleUploadSuccess}
+      />
+
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        documentName={deleteModal.document?.name || ''}
+        isDeleting={deletingId === deleteModal.document?.id}
       />
     </div>
   )
