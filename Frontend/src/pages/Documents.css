@@ -237,11 +237,28 @@
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 6px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.action-btn:hover {
+.action-btn:hover:not(:disabled) {
   background-color: #E8F1FF;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn-delete {
+  color: #E74C3C;
+}
+
+.action-btn-delete:hover:not(:disabled) {
+  background-color: #FEE;
+  color: #C33;
 }
 
 .empty-state {

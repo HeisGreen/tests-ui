@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react'
-import { FiUpload, FiFileText, FiCheckCircle, FiClock, FiX, FiDownload } from 'react-icons/fi'
+import React, { useState, useEffect, useMemo } from 'react'
+import { FiUpload, FiFileText, FiCheckCircle, FiClock, FiX, FiDownload, FiTrash2 } from 'react-icons/fi'
 import { initScrollAnimations } from '../utils/scrollAnimation'
 import { documentsAPI } from '../utils/api'
+import { supabase } from '../config/firebase'
 import UploadDocumentModal from '../components/UploadDocumentModal'
 import './Documents.css'
 
@@ -11,11 +12,7 @@ function Documents() {
   const [selectedFilter, setSelectedFilter] = useState('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    loadDocuments()
-    initScrollAnimations()
-  }, [selectedFilter])
+  const [deletingId, setDeletingId] = useState(null)
 
   const loadDocuments = async () => {
     try {
@@ -47,6 +44,47 @@ function Documents() {
 
   const handleDownload = (fileUrl) => {
     window.open(fileUrl, '_blank')
+  }
+
+  const handleDelete = async (documentId, documentName, filePath) => {
+    // Confirm deletion
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${documentName}"? This action cannot be undone.`
+    )
+    
+    if (!confirmed) return
+
+    try {
+      setDeletingId(documentId)
+      
+      // Delete file from Supabase Storage if file path exists
+      if (filePath) {
+        try {
+          const { error: storageError } = await supabase.storage
+            .from('documents')
+            .remove([filePath])
+          
+          if (storageError) {
+            console.warn('Error deleting file from storage:', storageError)
+            // Continue with database deletion even if storage deletion fails
+          }
+        } catch (storageErr) {
+          console.warn('Error deleting file from storage:', storageErr)
+          // Continue with database deletion even if storage deletion fails
+        }
+      }
+      
+      // Delete document record from database
+      await documentsAPI.deleteDocument(documentId)
+      
+      // Reload documents after successful deletion
+      await loadDocuments()
+    } catch (err) {
+      console.error('Error deleting document:', err)
+      setError('Failed to delete document. Please try again.')
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   const getStatusIcon = (status) => {
@@ -126,9 +164,33 @@ function Documents() {
     }
   }
 
-  const filteredDocuments = selectedFilter === 'all'
-    ? documents
-    : documents.filter(doc => doc.status === selectedFilter)
+  const filteredDocuments = useMemo(() => {
+    if (selectedFilter === 'all') {
+      return documents
+    }
+    const filtered = documents.filter(doc => {
+      // Case-insensitive status matching
+      const docStatus = doc.status?.toLowerCase() || ''
+      const filterStatus = selectedFilter.toLowerCase()
+      const matches = docStatus === filterStatus
+      return matches
+    })
+    console.log('Filtering documents:', {
+      selectedFilter,
+      totalDocuments: documents.length,
+      filteredCount: filtered.length,
+      documentStatuses: documents.map(d => d.status)
+    })
+    return filtered
+  }, [documents, selectedFilter])
+
+  useEffect(() => {
+    loadDocuments()
+  }, []) // Only load once on mount
+
+  useEffect(() => {
+    initScrollAnimations()
+  }, [filteredDocuments]) // Re-init animations when filtered documents change
 
   return (
     <div className="documents-page">
@@ -202,12 +264,39 @@ function Documents() {
             <div className="empty-icon-wrapper">
               <FiFileText className="empty-icon" />
             </div>
-            <h3>No documents yet</h3>
-            <p>Start by uploading your first document to get started with your visa application.</p>
-            <button onClick={() => setIsModalOpen(true)} className="btn-primary">
-              <FiUpload />
-              Upload Your First Document
-            </button>
+            <h3>
+              {selectedFilter === 'all' 
+                ? 'No documents yet' 
+                : `No ${selectedFilter} documents`}
+            </h3>
+            <p>
+              {selectedFilter === 'all' 
+                ? 'Start by uploading your first document to get started with your visa application.'
+                : `You don't have any ${selectedFilter} documents. Try selecting a different filter or upload a new document.`}
+            </p>
+            {selectedFilter === 'all' && (
+              <button onClick={() => setIsModalOpen(true)} className="btn-primary">
+                <FiUpload />
+                Upload Your First Document
+              </button>
+            )}
+            {selectedFilter !== 'all' && (
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <button 
+                  onClick={() => setSelectedFilter('all')} 
+                  className="btn-primary"
+                >
+                  View All Documents
+                </button>
+                <button 
+                  onClick={() => setIsModalOpen(true)} 
+                  className="btn-primary"
+                >
+                  <FiUpload />
+                  Upload Document
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           filteredDocuments.map((doc, index) => (
@@ -245,13 +334,23 @@ function Documents() {
                 >
                   {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
                 </div>
-                <button 
-                  className="action-btn" 
-                  title="Download"
-                  onClick={() => handleDownload(doc.file_url)}
-                >
-                  <FiDownload />
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button 
+                    className="action-btn" 
+                    title="Download"
+                    onClick={() => handleDownload(doc.file_url)}
+                  >
+                    <FiDownload />
+                  </button>
+                  <button 
+                    className="action-btn action-btn-delete" 
+                    title="Delete"
+                    onClick={() => handleDelete(doc.id, doc.name, doc.file_path)}
+                    disabled={deletingId === doc.id}
+                  >
+                    <FiTrash2 />
+                  </button>
+                </div>
               </div>
             </div>
           ))
