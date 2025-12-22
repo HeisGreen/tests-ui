@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
-import { FiX, FiUpload, FiFileText } from 'react-icons/fi'
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
-import { storage } from '../config/firebase'
+import { FiX, FiUpload } from 'react-icons/fi'
+import { supabase } from '../config/firebase'
 import './UploadDocumentModal.css'
 
 function UploadDocumentModal({ isOpen, onClose, onUploadSuccess }) {
@@ -69,65 +68,79 @@ function UploadDocumentModal({ isOpen, onClose, onUploadSuccess }) {
     try {
       // Create a unique file path
       const timestamp = Date.now()
-      const fileName = `${timestamp}_${formData.file.name}`
+      const fileName = `${timestamp}_${formData.file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
       const filePath = `documents/${fileName}`
-      const storageRef = ref(storage, filePath)
 
-      // Upload file to Firebase Storage
-      const uploadTask = uploadBytesResumable(storageRef, formData.file)
+      // Upload file to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, formData.file, {
+          cacheControl: '3600',
+          upsert: false
+        })
 
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-          setUploadProgress(progress)
-        },
-        (error) => {
-          console.error('Upload error:', error)
-          setError('Failed to upload file. Please try again.')
-          setUploading(false)
-        },
-        async () => {
-          try {
-            // Get download URL
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
-            
-            // Prepare document data
-            const documentData = {
-              name: formData.name.trim(),
-              type: formData.type || null,
-              file_url: downloadURL,
-              file_path: filePath,
-              size: formatFileSize(formData.file.size),
-              visa_id: formData.visaId ? parseInt(formData.visaId) : null,
-              description: formData.description || null
-            }
-
-            // Call the success callback with document data
-            await onUploadSuccess(documentData)
-
-            // Reset form
-            setFormData({
-              name: '',
-              type: '',
-              description: '',
-              visaId: '',
-              file: null
-            })
-            setUploadProgress(0)
-            setUploading(false)
-            onClose()
-          } catch (error) {
-            console.error('Error getting download URL:', error)
-            setError('Failed to get file URL. Please try again.')
-            setUploading(false)
-          }
+      if (uploadError) {
+        // Provide helpful error message for RLS issues
+        if (uploadError.message && uploadError.message.includes('row-level security')) {
+          throw new Error('Storage access denied. Please check Supabase Storage policies. See SUPABASE_SETUP.md for instructions.')
         }
-      )
+        throw uploadError
+      }
+
+      // Simulate progress (Supabase doesn't provide progress callbacks in the JS client)
+      // We'll show a progress animation
+      let progress = 0
+      const progressInterval = setInterval(() => {
+        progress += 10
+        if (progress < 90) {
+          setUploadProgress(progress)
+        } else {
+          clearInterval(progressInterval)
+        }
+      }, 100)
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('documents')
+        .getPublicUrl(filePath)
+
+      if (!urlData?.publicUrl) {
+        throw new Error('Failed to get file URL')
+      }
+
+      clearInterval(progressInterval)
+      setUploadProgress(100)
+
+      // Prepare document data
+      const documentData = {
+        name: formData.name.trim(),
+        type: formData.type || null,
+        file_url: urlData.publicUrl,
+        file_path: filePath,
+        size: formatFileSize(formData.file.size),
+        visa_id: formData.visaId ? parseInt(formData.visaId) : null,
+        description: formData.description || null
+      }
+
+      // Call the success callback with document data
+      await onUploadSuccess(documentData)
+
+      // Reset form
+      setFormData({
+        name: '',
+        type: '',
+        description: '',
+        visaId: '',
+        file: null
+      })
+      setUploadProgress(0)
+      setUploading(false)
+      onClose()
     } catch (error) {
       console.error('Upload error:', error)
-      setError('Failed to upload file. Please try again.')
+      setError(error.message || 'Failed to upload file. Please try again.')
       setUploading(false)
+      setUploadProgress(0)
     }
   }
 

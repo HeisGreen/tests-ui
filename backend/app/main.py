@@ -66,7 +66,16 @@ def get_openai_client(settings: Settings) -> OpenAI:
     return OpenAI(api_key=settings.openai_api_key, timeout=60)
 
 
-app = FastAPI(title="Visa Recommendation API")
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+
+# Custom JSON encoder for datetime
+def custom_jsonable_encoder(obj):
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    return jsonable_encoder(obj)
+
+app = FastAPI(title="Visa Recommendation API", json_encoders={datetime: lambda v: v.isoformat()})
 
 # Allow local frontends during development
 app.add_middleware(
@@ -712,6 +721,7 @@ def create_document(
     db: Session = Depends(get_db)
 ):
     """Create a new document record"""
+    now = datetime.utcnow()
     new_document = Document(
         user_id=current_user.id,
         name=document_data.name,
@@ -721,7 +731,9 @@ def create_document(
         size=document_data.size,
         status="pending",  # Always start as pending
         visa_id=document_data.visa_id,
-        description=document_data.description
+        description=document_data.description,
+        uploaded_at=now,
+        updated_at=now
     )
     db.add(new_document)
     db.commit()

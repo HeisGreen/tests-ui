@@ -75,6 +75,57 @@ function Documents() {
     }
   }
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Unknown date'
+    try {
+      let date
+      if (typeof dateString === 'string') {
+        // Handle PostgreSQL datetime format: "2025-12-22 01:14:35.737178+01:00"
+        let isoString = dateString.trim()
+        
+        // Replace first space with T if it exists and T is not present
+        if (isoString.includes(' ') && !isoString.includes('T')) {
+          isoString = isoString.replace(' ', 'T')
+        }
+        
+        // Try parsing
+        date = new Date(isoString)
+        
+        // If still invalid, try removing microseconds (everything after the dot before timezone)
+        if (isNaN(date.getTime()) && isoString.includes('.')) {
+          // Format: "2025-12-22T01:14:35.737178+01:00" -> "2025-12-22T01:14:35+01:00"
+          const parts = isoString.split('.')
+          if (parts.length > 1) {
+            const beforeDot = parts[0]
+            const afterDot = parts[1]
+            // Find timezone offset (starts with + or -)
+            const tzMatch = afterDot.match(/^[\d]+([+-]\d{2}:\d{2})/)
+            if (tzMatch) {
+              isoString = beforeDot + tzMatch[1]
+              date = new Date(isoString)
+            }
+          }
+        }
+      } else {
+        date = new Date(dateString)
+      }
+      
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date format:', dateString)
+        return 'Invalid date'
+      }
+      
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      })
+    } catch (error) {
+      console.error('Error formatting date:', error, dateString)
+      return 'Invalid date'
+    }
+  }
+
   const filteredDocuments = selectedFilter === 'all'
     ? documents
     : documents.filter(doc => doc.status === selectedFilter)
@@ -180,7 +231,7 @@ function Documents() {
                     </>
                   )}
                   <span className="document-date">
-                    Uploaded {new Date(doc.uploaded_at).toLocaleDateString()}
+                    Uploaded {formatDate(doc.uploaded_at)}
                   </span>
                 </div>
                 {doc.description && (

@@ -265,9 +265,23 @@ class DocumentResponse(BaseModel):
     visa_id: Optional[int] = None
     description: Optional[str] = None
     uploaded_at: datetime
-    updated_at: datetime
+    updated_at: Optional[datetime] = None
 
     model_config = {
         "from_attributes": True,
-        "json_encoders": {datetime: lambda v: v.isoformat() + "Z"},
     }
+    
+    def model_dump(self, **kwargs):
+        """Override to ensure proper datetime serialization"""
+        data = super().model_dump(**kwargs)
+        # Convert datetime objects to ISO format strings
+        for key, value in data.items():
+            if isinstance(value, datetime):
+                data[key] = value.isoformat()
+        return data
+    
+    def model_dump_json(self, **kwargs):
+        """Override JSON serialization to ensure proper datetime formatting"""
+        import json
+        data = self.model_dump(**kwargs)
+        return json.dumps(data)
