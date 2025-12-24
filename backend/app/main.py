@@ -300,8 +300,12 @@ def build_prompt(intake: IntakeData) -> str:
     return (
         "You are JAPA Visa Strategist, an expert immigration recommender system.\n\n"
         "Your task:\n"
-        "Given structured or unstructured applicant data, analyze eligibility and recommend the top "
+        "Given structured or unstructured user data, analyze eligibility and recommend the top "
         "immigration or visa pathways.\n\n"
+        "CRITICAL LANGUAGE RULES:\n"
+        "- Always use 'you' and 'your' instead of 'the applicant', 'applicant', 'applicant's', etc.\n"
+        "- Write as if speaking directly to the user (second person)\n"
+        "- Example: 'You have a solid background' NOT 'The applicant has a solid background'\n\n"
         "Rules:\n"
         "1. You MUST return ONLY valid JSON matching the schema below.\n"
         "2. All fields are required and must never be omitted.\n"
@@ -315,7 +319,7 @@ def build_prompt(intake: IntakeData) -> str:
         "{\n"
         "  \"current_score\": 0-100,\n"
         "  \"boosted_score\": 0-100,\n"
-        "  \"insight_summary\": \"Short paragraph analysis of applicant readiness.\",\n"
+        "  \"insight_summary\": \"Short paragraph analysis of your readiness.\",\n"
         "  \"recommendations\": [\n"
         "    {\n"
         "      \"visa_name\": \"string\",\n"
@@ -325,8 +329,8 @@ def build_prompt(intake: IntakeData) -> str:
         "      \"score\": 0-100,\n"
         "      \"boosted_score\": 0-100,\n"
         "      \"status\": \"eligible | possible | unlikely | not_eligible\",\n"
-        "      \"estimated_cost\": \"string\",\n"
-        "      \"processing_time\": \"string\",\n"
+        "      \"estimated_cost\": \"string (e.g., '$1,500' or 'Varies')\",\n"
+        "      \"processing_time\": \"string (REQUIRED - e.g., '2-4 weeks', '3-6 months', '1-2 years')\",\n"
         "      \"eligibility_summary\": \"1-2 sentences explaining match level.\",\n"
         "      \"improvement_actions\": [\"string\", \"...\"],\n"
         "      \"overview\": \"Contextual summary of the visa/program.\",\n"
@@ -335,7 +339,7 @@ def build_prompt(intake: IntakeData) -> str:
         "      \"requirements\": [\"bullet\", \"...\"],\n"
         "      \"benefits\": [\"bullet\", \"...\"],\n"
         "      \"success_boost\": [\"bullet actions to increase eligibility\"],\n"
-        "      \"match_summary\": \"Sentence explaining why applicant fits or doesn't.\",\n"
+        "      \"match_summary\": \"Sentence explaining why you fit or don't fit.\",\n"
         "      \"timeline\": [\n"
         "        {\"stage\": \"string\", \"description\": \"string\", \"duration\": \"string\"}\n"
         "      ],\n"
@@ -359,7 +363,10 @@ def build_prompt(intake: IntakeData) -> str:
         "  \"top_recommendation\": { ...same object as first recommendation... }\n"
         "}\n\n"
         "Return only JSON. Do not add explanations outside the JSON.\n\n"
-        f"Applicant intake JSON: {json.dumps(payload, ensure_ascii=False)}"
+        "IMPORTANT: In all text fields (insight_summary, eligibility_summary, match_summary, reasoning, overview, description), "
+        "always use 'you' and 'your' instead of 'the applicant', 'applicant', 'applicant's', etc. "
+        "Write as if speaking directly to the user.\n\n"
+        f"User intake JSON: {json.dumps(payload, ensure_ascii=False)}"
     )
 
 
@@ -409,6 +416,13 @@ def parse_recommendation(raw: str) -> Optional[RecommendationResponse]:
             opt.get("summary") or
             "See details"
         )
+        # Replace "the applicant" / "applicant" with "you" / "your" for better user experience
+        if reasoning:
+            reasoning = reasoning.replace("the applicant", "you")
+            reasoning = reasoning.replace("The applicant", "You")
+            reasoning = reasoning.replace("applicant's", "your")
+            reasoning = reasoning.replace("Applicant's", "Your")
+            reasoning = reasoning.replace("applicant", "you")
         
         # Extract likelihood/status
         likelihood = (
@@ -418,10 +432,10 @@ def parse_recommendation(raw: str) -> Optional[RecommendationResponse]:
             "possible"
         )
         
-        # Extract timeline
+        # Extract timeline - prioritize processing_time from AI response
         estimated_timeline = (
-            opt.get("estimated_timeline") or
             opt.get("processing_time") or
+            opt.get("estimated_timeline") or
             opt.get("timeline") if isinstance(opt.get("timeline"), str) else None
         )
         
@@ -637,7 +651,7 @@ def get_recommendation(
         logger.info(f"  Summary: {parsed.summary}")
         logger.info(f"  Options count: {len(parsed.options)}")
         for i, opt in enumerate(parsed.options):
-            logger.info(f"  Option {i+1}: {opt.visa_type} - {opt.likelihood}")
+            logger.info(f"  Option {i+1}: {opt.visa_type} - {opt.likelihood} - Timeline: {opt.estimated_timeline or 'MISSING'}")
     
     # Store the recommendation in the database
     recommendation_record = Recommendation(
@@ -745,13 +759,21 @@ Estimated Costs: {visa_option.estimated_costs or "varies"}
 Requirements: {', '.join(visa_option.requirements) if visa_option.requirements else "Standard requirements apply"}
 Next Steps: {', '.join(visa_option.next_steps) if visa_option.next_steps else "Standard application process"}
 
-Create a detailed, actionable step-by-step checklist with 8-12 steps that guides the applicant through the entire visa application process. Each step should be specific, actionable, and include:
+Create a detailed, actionable step-by-step checklist with 8-12 steps that guides you through the entire visa application process. Each step should be specific, actionable, and include:
 - Clear title
 - Detailed description of what needs to be done
 - Specific guidance/tips
 - Documents needed for that step
 - Who is responsible (applicant or JAPA)
 - Timeline/due date information
+- Estimated duration (in days) - realistic estimate for completing this specific step
+
+IMPORTANT: For the estimated_duration field, provide a realistic number of days it typically takes to complete this step. Consider factors like:
+- Document gathering: 3-7 days for simple docs, 2-4 weeks for complex ones
+- Form completion: 1-3 days for simple forms, 1-2 weeks for complex applications
+- Application submission: 1-2 days
+- Waiting periods: Use actual processing times from the visa type
+- Interviews/preparation: 1-2 weeks preparation time
 
 Return ONLY valid JSON matching this exact schema:
 {{
@@ -762,7 +784,8 @@ Return ONLY valid JSON matching this exact schema:
       "guidance": "Specific tips, warnings, or guidance for completing this step",
       "documents": ["Document 1", "Document 2"],
       "owner": "applicant",
-      "due_in": "Timeline information (e.g., 'Before application submission')"
+      "due_in": "Timeline information (e.g., 'Before application submission')",
+      "estimated_duration": 7
     }}
   ]
 }}

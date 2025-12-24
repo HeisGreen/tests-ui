@@ -216,6 +216,7 @@ function Checklist() {
           documents: Array.isArray(item?.documents) ? item.documents : [],
           owner: item?.owner || "applicant",
           dueIn: item?.due_in || item?.dueIn || "",
+          estimatedDuration: item?.estimated_duration || item?.estimatedDuration || null,
           completed: false,
           _raw: item,
         };
@@ -299,6 +300,8 @@ function Checklist() {
   const [checklist, setChecklist] = useState([]);
   const [savingProgress, setSavingProgress] = useState(false);
   const saveTimeoutRef = useRef(null);
+  const [checklistStartTime, setChecklistStartTime] = useState(null);
+  const [processingTime, setProcessingTime] = useState("—");
 
   // Fetch and merge saved progress when checklist items are loaded
   useEffect(() => {
@@ -313,6 +316,11 @@ function Checklist() {
         const savedProgress = await checklistProgressAPI.getProgress(visaType);
         
         if (savedProgress && savedProgress.progress_json) {
+          // Store the start time (created_at) for processing time calculation
+          if (savedProgress.created_at) {
+            setChecklistStartTime(new Date(savedProgress.created_at));
+          }
+          
           // Merge saved progress into checklist items
           const mergedChecklist = checklistItems.map((item) => {
             const isCompleted = savedProgress.progress_json[item.id] === true;
@@ -325,12 +333,14 @@ function Checklist() {
           setChecklist(mergedChecklist);
         } else {
           // No saved progress, use default (all incomplete)
+          // Start time will be set when progress is first saved
           console.log("No saved progress found, using default");
           setChecklist(checklistItems);
         }
       } catch (error) {
         console.warn("Failed to load checklist progress:", error);
         // On error, just use the default checklist items
+        // Start time will be set when progress is first saved
         setChecklist(checklistItems);
       }
     };
@@ -400,7 +410,13 @@ function Checklist() {
           }
         });
         
-        await checklistProgressAPI.saveProgress(visaType, progressJson);
+        const savedProgress = await checklistProgressAPI.saveProgress(visaType, progressJson);
+        
+        // Update start time if it was just created (first save)
+        if (savedProgress && savedProgress.created_at && !checklistStartTime) {
+          setChecklistStartTime(new Date(savedProgress.created_at));
+        }
+        
         console.log("Saved checklist progress:", progressJson);
       } catch (error) {
         console.error("Failed to save checklist progress:", error);
@@ -415,11 +431,163 @@ function Checklist() {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [checklist, visaType]);
+  }, [checklist, visaType, checklistStartTime]);
 
   const completedCount = checklist.filter((item) => item && item.completed).length;
-  const totalCount = checklist.length || 1;
-  const progress = Math.round((completedCount / totalCount) * 100);
+  const totalCount = checklist.length;
+  // Only calculate progress if we have items, otherwise show 0
+  const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  
+  // Calculate circumference: 2 * π * radius (52)
+  const circumference = 2 * Math.PI * 52; // ≈ 326.73
+  // Calculate dash length for the progress circle
+  // Ensure we always show something visible - at minimum show 2% of circle
+  const progressPercent = Math.max(0, Math.min(100, progress));
+  const minVisibleLength = Math.max(5, circumference * 0.02); // At least 5 units or 2% of circle
+  const calculatedDashLength = (progressPercent / 100) * circumference;
+  // Always show at least minVisibleLength, even at 0%
+  const progressDashLength = totalCount > 0 
+    ? Math.max(minVisibleLength, calculatedDashLength)
+    : minVisibleLength;
+  
+  // Ensure values are valid numbers
+  const finalDashLength = isNaN(progressDashLength) ? minVisibleLength : Math.max(5, Math.round(progressDashLength));
+  const finalCircumference = isNaN(circumference) ? 327 : Math.round(circumference);
+  
+  // Debug logging for progress
+  useEffect(() => {
+    console.log("Checklist progress calculation:", {
+      completedCount,
+      totalCount,
+      progress,
+      progressPercent,
+      checklistLength: checklist.length,
+      circumference: finalCircumference,
+      progressDashLength: finalDashLength,
+      minVisibleLength,
+      strokeDasharray: `${finalDashLength} ${finalCircumference}`
+    });
+    
+    // Also log the actual DOM element to verify it exists
+    setTimeout(() => {
+      const circle = document.querySelector('.progress-ring-circle');
+      const bgCircle = document.querySelector('.progress-ring-circle-bg');
+      const svg = document.querySelector('.progress-ring');
+      const progressText = document.querySelector('.progress-text');
+      const progressNumber = document.querySelector('.progress-number');
+      const progressLabel = document.querySelector('.progress-label');
+      
+      console.log("Progress circle DOM check:", {
+        svg: svg ? 'FOUND' : 'NOT FOUND',
+        circle: circle ? {
+          strokeDasharray: circle.getAttribute('stroke-dasharray'),
+          stroke: circle.getAttribute('stroke'),
+          strokeWidth: circle.getAttribute('stroke-width'),
+          r: circle.getAttribute('r'),
+          cx: circle.getAttribute('cx'),
+          cy: circle.getAttribute('cy'),
+          opacity: window.getComputedStyle(circle).opacity,
+          display: window.getComputedStyle(circle).display,
+          visibility: window.getComputedStyle(circle).visibility
+        } : 'NOT FOUND',
+        bgCircle: bgCircle ? {
+          stroke: bgCircle.getAttribute('stroke'),
+          display: window.getComputedStyle(bgCircle).display
+        } : 'NOT FOUND',
+        progressText: progressText ? {
+          textContent: progressText.textContent,
+          innerHTML: progressText.innerHTML,
+          opacity: window.getComputedStyle(progressText).opacity,
+          display: window.getComputedStyle(progressText).display,
+          visibility: window.getComputedStyle(progressText).visibility,
+          zIndex: window.getComputedStyle(progressText).zIndex,
+          color: window.getComputedStyle(progressText).color,
+          top: window.getComputedStyle(progressText).top,
+          left: window.getComputedStyle(progressText).left
+        } : 'NOT FOUND',
+        progressNumber: progressNumber ? {
+          textContent: progressNumber.textContent,
+          innerHTML: progressNumber.innerHTML,
+          opacity: window.getComputedStyle(progressNumber).opacity,
+          display: window.getComputedStyle(progressNumber).display,
+          visibility: window.getComputedStyle(progressNumber).visibility,
+          color: window.getComputedStyle(progressNumber).color,
+          fontSize: window.getComputedStyle(progressNumber).fontSize
+        } : 'NOT FOUND',
+        progressLabel: progressLabel ? {
+          textContent: progressLabel.textContent,
+          display: window.getComputedStyle(progressLabel).display
+        } : 'NOT FOUND'
+      });
+    }, 500);
+  }, [completedCount, totalCount, progress, checklist.length, finalCircumference, finalDashLength, minVisibleLength, progressPercent]);
+  
+  // Function to calculate estimated remaining processing time based on incomplete steps
+  const calculateEstimatedRemainingTime = () => {
+    if (!checklist || checklist.length === 0) {
+      return visaOption?.estimated_timeline || "—";
+    }
+    
+    const completed = checklist.filter((item) => item && item.completed).length;
+    const total = checklist.length;
+    
+    // Get all incomplete steps with duration estimates
+    const incompleteSteps = checklist.filter((item) => item && !item.completed && item.estimatedDuration);
+    
+    if (incompleteSteps.length === 0) {
+      // All steps completed or no duration estimates
+      if (completed === total && total > 0) {
+        return "Completed";
+      }
+      // Fallback to visa option estimated timeline if no duration data
+      return visaOption?.estimated_timeline || "—";
+    }
+    
+    // Sum up estimated durations for incomplete steps
+    const totalDays = incompleteSteps.reduce((sum, step) => {
+      const duration = step.estimatedDuration;
+      if (typeof duration === 'number' && duration > 0) {
+        return sum + duration;
+      }
+      return sum;
+    }, 0);
+    
+    if (totalDays === 0) {
+      return visaOption?.estimated_timeline || "—";
+    }
+    
+    // Format the duration nicely
+    const weeks = Math.floor(totalDays / 7);
+    const days = totalDays % 7;
+    
+    if (weeks > 0 && days > 0) {
+      return `~${weeks} week${weeks !== 1 ? 's' : ''}, ${days} day${days !== 1 ? 's' : ''}`;
+    } else if (weeks > 0) {
+      return `~${weeks} week${weeks !== 1 ? 's' : ''}`;
+    } else {
+      return `~${totalDays} day${totalDays !== 1 ? 's' : ''}`;
+    }
+  };
+  
+  // Function to get the next incomplete step
+  const getNextStep = () => {
+    const incompleteStep = checklist.find((item) => item && !item.completed);
+    if (incompleteStep) {
+      return incompleteStep.title || incompleteStep.name || "Continue with next step";
+    }
+    // All steps completed
+    return "All steps completed! 🎉";
+  };
+  
+  // Update processing time based on remaining steps
+  useEffect(() => {
+    // Calculate estimated remaining time based on incomplete steps
+    const estimatedTime = calculateEstimatedRemainingTime();
+    setProcessingTime(estimatedTime);
+  }, [checklist, visaOption]);
+  
+  // Note: Start time is set when progress is first saved (from backend created_at)
+  // or when loading existing progress. No need to set it here.
   
   // Debug logging
   useEffect(() => {
@@ -482,32 +650,43 @@ function Checklist() {
             </div>
             <div className="progress-summary">
               <div className="progress-circle">
-                <svg className="progress-ring" width="120" height="120">
+                <svg 
+                  className="progress-ring" 
+                  width="120" 
+                  height="120" 
+                  viewBox="0 0 120 120"
+                >
+                  {/* Background circle - always visible */}
                   <circle
                     className="progress-ring-circle-bg"
                     stroke="#E8F1FF"
                     strokeWidth="8"
-                    fill="transparent"
+                    fill="none"
                     r="52"
                     cx="60"
                     cy="60"
                   />
+                  {/* Progress circle - shows completion */}
                   <circle
                     className="progress-ring-circle"
                     stroke="#4A90E2"
                     strokeWidth="8"
-                    fill="transparent"
+                    fill="none"
                     r="52"
                     cx="60"
                     cy="60"
-                    strokeDasharray={`${progress * 3.27} 327`}
+                    strokeDasharray={`${finalDashLength} ${finalCircumference}`}
                     strokeDashoffset="0"
                     transform="rotate(-90 60 60)"
                   />
                 </svg>
                 <div className="progress-text">
-                  <span className="progress-number">{progress}%</span>
-                  <span className="progress-label">Complete</span>
+                  <span className="progress-number" style={{ display: 'block', color: '#4A90E2', fontSize: '1.8rem', fontWeight: 'bold' }}>
+                    {progress || 0}%
+                  </span>
+                  <span className="progress-label" style={{ display: 'block', color: '#666666', fontSize: '0.85rem' }}>
+                    Complete
+                  </span>
                 </div>
               </div>
             </div>
@@ -518,7 +697,7 @@ function Checklist() {
               <div className="info-col">
                 <span className="info-label">Processing Time</span>
                 <span className="info-value">
-                  {visaOption?.estimated_timeline || "—"}
+                  {processingTime}
                 </span>
               </div>
               <div className="info-col">
@@ -530,10 +709,7 @@ function Checklist() {
               <div className="info-col">
                 <span className="info-label">Next Step</span>
                 <span className="info-value">
-                  {Array.isArray(visaOption?.next_steps) &&
-                  visaOption.next_steps.length
-                    ? visaOption.next_steps[0]
-                    : "—"}
+                  {getNextStep()}
                 </span>
               </div>
             </div>

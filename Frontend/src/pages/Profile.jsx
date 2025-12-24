@@ -22,6 +22,10 @@ function Profile() {
         name: user.name || '',
         email: user.email || ''
       })
+      // Debug: log user object to check for created_at field
+      console.log('Profile - User object:', user);
+      console.log('Profile - User created_at:', user.created_at);
+      console.log('Profile - User keys:', Object.keys(user));
     }
   }, [user])
 
@@ -127,7 +131,59 @@ function Profile() {
             <div className="info-item">
               <span className="info-label">Member Since</span>
               <span className="info-value">
-                {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}
+                {(() => {
+                  if (!user) {
+                    return 'N/A';
+                  }
+                  
+                  // Check for created_at in various possible formats
+                  const dateValue = user.created_at || user.createdAt || user['created_at'];
+                  
+                  if (!dateValue) {
+                    console.warn('No created_at field found. User object:', user);
+                    return 'N/A';
+                  }
+                  
+                  try {
+                    let date;
+                    
+                    // Handle Date object
+                    if (dateValue instanceof Date) {
+                      date = dateValue;
+                    } 
+                    // Handle string dates
+                    else if (typeof dateValue === 'string') {
+                      // Clean up malformed date strings (remove trailing Z if timezone offset exists)
+                      let cleanDate = dateValue;
+                      // If string has both timezone offset (+XX:XX) and Z, remove the Z
+                      if (cleanDate.includes('+') && cleanDate.endsWith('Z')) {
+                        cleanDate = cleanDate.replace(/Z$/, '');
+                      }
+                      // Try parsing the ISO string
+                      date = new Date(cleanDate);
+                    } 
+                    // Handle number (timestamp)
+                    else if (typeof dateValue === 'number') {
+                      date = new Date(dateValue);
+                    }
+                    // Fallback: try to parse as-is
+                    else {
+                      date = new Date(dateValue);
+                    }
+                    
+                    // Validate the date
+                    if (isNaN(date.getTime())) {
+                      console.error('Invalid date:', dateValue, 'type:', typeof dateValue);
+                      return 'N/A';
+                    }
+                    
+                    // Format the date with day, month, and year
+                    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                  } catch (error) {
+                    console.error('Error parsing date:', error, 'value:', dateValue);
+                    return 'N/A';
+                  }
+                })()}
               </span>
             </div>
             <div className="info-item">

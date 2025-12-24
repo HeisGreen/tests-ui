@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { countries } from "../data/countries";
@@ -15,11 +15,24 @@ function Onboarding() {
   const [currentStep, setCurrentStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
+  const [errors, setErrors] = useState({});
+  const [countrySearch, setCountrySearch] = useState({});
+  const [showMultiSelect, setShowMultiSelect] = useState({});
+  const stepRef = useRef(null);
 
   // Sort countries alphabetically by name
   const sortedCountries = useMemo(() => {
     return [...countries].sort((a, b) => a.name.localeCompare(b.name));
   }, []);
+
+  // Filter countries based on search
+  const getFilteredCountries = (fieldName) => {
+    const searchTerm = (countrySearch[fieldName] || "").toLowerCase();
+    if (!searchTerm) return sortedCountries;
+    return sortedCountries.filter((country) =>
+      country.name.toLowerCase().includes(searchTerm)
+    );
+  };
   const [formData, setFormData] = useState({
     // Personal & Contact Details
     nationality: "",
@@ -135,12 +148,50 @@ function Onboarding() {
     }
   }, [onboardingData]);
 
+  // Validate current step
+  const validateStep = (step) => {
+    const stepErrors = {};
+    
+    if (step === 1) {
+      if (!formData.nationality) {
+        stepErrors.nationality = "Nationality is required";
+      }
+    }
+    
+    if (step === 2) {
+      if (!formData.preferred_destinations) {
+        stepErrors.preferred_destinations = "At least one preferred destination is required";
+      }
+      if (!formData.target_timeline) {
+        stepErrors.target_timeline = "Target timeline is required";
+      }
+    }
+    
+    if (step === 3) {
+      if (!formData.education_level) {
+        stepErrors.education_level = "Education level is required";
+      }
+    }
+    
+    setErrors(stepErrors);
+    return Object.keys(stepErrors).length === 0;
+  };
+
   const handleChange = (field, value) => {
     const updatedData = {
       ...formData,
       [field]: value === "" ? null : value,
     };
     setFormData(updatedData);
+
+    // Clear error for this field
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
 
     // Auto-save to localStorage
     const dataToSave = {
@@ -153,15 +204,94 @@ function Onboarding() {
   };
 
   const handleNext = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
+    if (validateStep(currentStep)) {
+      if (currentStep < totalSteps) {
+        setCurrentStep(currentStep + 1);
+        // Scroll to top of step
+        if (stepRef.current) {
+          stepRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
     }
   };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+      setErrors({});
+      // Scroll to top of step
+      if (stepRef.current) {
+        stepRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
+  };
+
+  const handleStepClick = (step) => {
+    if (step <= currentStep || step === currentStep + 1) {
+      setCurrentStep(step);
+      setErrors({});
+      if (stepRef.current) {
+        stepRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (submitting) return;
+      
+      if (e.key === "Enter" && e.ctrlKey) {
+        e.preventDefault();
+        if (currentStep < totalSteps) {
+          handleNext();
+        } else {
+          handleSubmit();
+        }
+      } else if (e.key === "ArrowLeft" && e.ctrlKey) {
+        e.preventDefault();
+        handlePrevious();
+      } else if (e.key === "ArrowRight" && e.ctrlKey) {
+        e.preventDefault();
+        handleNext();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [currentStep, submitting, formData]);
+
+  // Close multi-select dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(".multi-select-wrapper")) {
+        setShowMultiSelect({});
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Multi-select helpers
+  const toggleCountrySelection = (fieldName, countryCode) => {
+    const currentValue = formData[fieldName] || "";
+    const selected = currentValue
+      ? currentValue.split(",").map((c) => c.trim())
+      : [];
+    
+    if (selected.includes(countryCode)) {
+      const updated = selected.filter((c) => c !== countryCode);
+      handleChange(fieldName, updated.length > 0 ? updated.join(", ") : null);
+    } else {
+      const updated = [...selected, countryCode];
+      handleChange(fieldName, updated.join(", "));
+    }
+  };
+
+  const getSelectedCountries = (fieldName) => {
+    const value = formData[fieldName] || "";
+    return value ? value.split(",").map((c) => c.trim()) : [];
   };
 
   const handleSubmit = async () => {
@@ -203,11 +333,17 @@ function Onboarding() {
         return (
           <div className="onboarding-step">
             <h2>Personal & Contact Details</h2>
+            <p className="step-description">
+              Tell us about yourself to help us provide better recommendations.
+            </p>
             <div className="form-group">
-              <label>Nationality *</label>
+              <label>
+                Nationality <span className="required">*</span>
+              </label>
               <select
                 value={formData.nationality || ""}
                 onChange={(e) => handleChange("nationality", e.target.value)}
+                className={errors.nationality ? "error" : ""}
               >
                 <option value="">Select a country...</option>
                 {sortedCountries.map((country) => (
@@ -216,6 +352,9 @@ function Onboarding() {
                   </option>
                 ))}
               </select>
+              {errors.nationality && (
+                <span className="error-message">{errors.nationality}</span>
+              )}
             </div>
             <div className="form-group">
               <label>Current Residence Country</label>
@@ -334,45 +473,109 @@ function Onboarding() {
         return (
           <div className="onboarding-step">
             <h2>Destination & Timeline</h2>
+            <p className="step-description">
+              Where do you want to go? You can select multiple destinations.
+            </p>
             <div className="form-group">
-              <label>Preferred Destination(s) *</label>
-              <select
-                multiple
-                value={
-                  formData.preferred_destinations
-                    ? formData.preferred_destinations
-                        .split(",")
-                        .map((d) => d.trim())
-                    : []
-                }
-                onChange={(e) => {
-                  const selected = Array.from(
-                    e.target.selectedOptions,
-                    (option) => option.value
-                  );
-                  handleChange("preferred_destinations", selected.join(", "));
-                }}
-                style={{ minHeight: "100px" }}
-              >
-                {sortedCountries.map((country) => (
-                  <option key={country.code} value={country.code}>
-                    {country.name}
-                  </option>
-                ))}
-              </select>
-              <small
-                style={{ display: "block", marginTop: "5px", color: "#666" }}
-              >
-                Hold Ctrl (Cmd on Mac) to select multiple countries
-              </small>
+              <label>
+                Preferred Destination(s) <span className="required">*</span>
+              </label>
+              <div className="multi-select-wrapper">
+                <div
+                  className="multi-select-trigger"
+                  onClick={() =>
+                    setShowMultiSelect({
+                      ...showMultiSelect,
+                      preferred_destinations: !showMultiSelect.preferred_destinations,
+                    })
+                  }
+                >
+                  <div className="selected-chips">
+                    {getSelectedCountries("preferred_destinations").length >
+                    0 ? (
+                      getSelectedCountries("preferred_destinations").map(
+                        (code) => {
+                          const country = sortedCountries.find(
+                            (c) => c.code === code
+                          );
+                          return (
+                            <span key={code} className="chip">
+                              {country?.name || code}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleCountrySelection(
+                                    "preferred_destinations",
+                                    code
+                                  );
+                                }}
+                                className="chip-remove"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          );
+                        }
+                      )
+                    ) : (
+                      <span className="placeholder">
+                        Select one or more countries...
+                      </span>
+                    )}
+                  </div>
+                  <span className="dropdown-arrow">▼</span>
+                </div>
+                {showMultiSelect.preferred_destinations && (
+                  <div className="multi-select-dropdown">
+                    <div className="country-list">
+                      {sortedCountries.map((country) => {
+                          const isSelected = getSelectedCountries(
+                            "preferred_destinations"
+                          ).includes(country.code);
+                          return (
+                            <div
+                              key={country.code}
+                              className={`country-option ${
+                                isSelected ? "selected" : ""
+                              }`}
+                              onClick={() =>
+                                toggleCountrySelection(
+                                  "preferred_destinations",
+                                  country.code
+                                )
+                              }
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => {}}
+                              />
+                              <span>{country.name}</span>
+                            </div>
+                          );
+                        }
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {errors.preferred_destinations && (
+                <span className="error-message">
+                  {errors.preferred_destinations}
+                </span>
+              )}
             </div>
             <div className="form-group">
-              <label>Target Timeline *</label>
+              <label>
+                Target Timeline <span className="required">*</span>
+              </label>
               <select
                 value={formData.target_timeline || ""}
                 onChange={(e) =>
                   handleChange("target_timeline", e.target.value)
                 }
+                className={errors.target_timeline ? "error" : ""}
               >
                 <option value="">Select...</option>
                 <option value="immediate">Immediate</option>
@@ -381,6 +584,12 @@ function Onboarding() {
                 <option value="1_year">1 year</option>
                 <option value="2_years">2+ years</option>
               </select>
+              {errors.target_timeline && (
+                <span className="error-message">{errors.target_timeline}</span>
+              )}
+              <small className="help-text">
+                When do you plan to start your visa application process?
+              </small>
             </div>
             <div className="form-group">
               <label>Target Move Date</label>
@@ -464,44 +673,87 @@ function Onboarding() {
             {formData.willing_to_consider_alternatives && (
               <div className="form-group">
                 <label>Alternative Countries</label>
-                <select
-                  multiple
-                  value={(() => {
-                    // Handle both array and string formats for alternative_countries
-                    if (!formData.alternative_countries) return [];
-                    if (Array.isArray(formData.alternative_countries)) {
-                      return formData.alternative_countries;
+                <div className="multi-select-wrapper">
+                  <div
+                    className="multi-select-trigger"
+                    onClick={() =>
+                      setShowMultiSelect({
+                        ...showMultiSelect,
+                        alternative_countries:
+                          !showMultiSelect.alternative_countries,
+                      })
                     }
-                    // Convert comma-separated string to array
-                    return formData.alternative_countries
-                      .split(",")
-                      .map((d) => d.trim())
-                      .filter((d) => d);
-                  })()}
-                  onChange={(e) => {
-                    const selected = Array.from(
-                      e.target.selectedOptions,
-                      (option) => option.value
-                    );
-                    // Store as comma-separated string (will be converted to array by transform function)
-                    handleChange(
-                      "alternative_countries",
-                      selected.length > 0 ? selected.join(", ") : null
-                    );
-                  }}
-                  style={{ minHeight: "100px" }}
-                >
-                  {sortedCountries.map((country) => (
-                    <option key={country.code} value={country.code}>
-                      {country.name}
-                    </option>
-                  ))}
-                </select>
-                <small
-                  style={{ display: "block", marginTop: "5px", color: "#666" }}
-                >
-                  Hold Ctrl (Cmd on Mac) to select multiple countries
-                </small>
+                  >
+                    <div className="selected-chips">
+                      {getSelectedCountries("alternative_countries").length >
+                      0 ? (
+                        getSelectedCountries("alternative_countries").map(
+                          (code) => {
+                            const country = sortedCountries.find(
+                              (c) => c.code === code
+                            );
+                            return (
+                              <span key={code} className="chip">
+                                {country?.name || code}
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleCountrySelection(
+                                      "alternative_countries",
+                                      code
+                                    );
+                                  }}
+                                  className="chip-remove"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            );
+                          }
+                        )
+                      ) : (
+                        <span className="placeholder">
+                          Select alternative countries...
+                        </span>
+                      )}
+                    </div>
+                    <span className="dropdown-arrow">▼</span>
+                  </div>
+                  {showMultiSelect.alternative_countries && (
+                    <div className="multi-select-dropdown">
+                      <div className="country-list">
+                        {sortedCountries.map((country) => {
+                            const isSelected = getSelectedCountries(
+                              "alternative_countries"
+                            ).includes(country.code);
+                            return (
+                              <div
+                                key={country.code}
+                                className={`country-option ${
+                                  isSelected ? "selected" : ""
+                                }`}
+                                onClick={() =>
+                                  toggleCountrySelection(
+                                    "alternative_countries",
+                                    country.code
+                                  )
+                                }
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={() => {}}
+                                />
+                                <span>{country.name}</span>
+                              </div>
+                            );
+                          }
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -511,13 +763,20 @@ function Onboarding() {
         return (
           <div className="onboarding-step">
             <h2>Education</h2>
+            <p className="step-description">
+              Your educational background helps us match you with suitable visa
+              programs.
+            </p>
             <div className="form-group">
-              <label>Education Level *</label>
+              <label>
+                Education Level <span className="required">*</span>
+              </label>
               <select
                 value={formData.education_level || ""}
                 onChange={(e) =>
                   handleChange("education_level", e.target.value)
                 }
+                className={errors.education_level ? "error" : ""}
               >
                 <option value="">Select...</option>
                 <option value="high_school">High School</option>
@@ -526,6 +785,11 @@ function Onboarding() {
                 <option value="phd">PhD</option>
                 <option value="diploma">Diploma/Certificate</option>
               </select>
+              {errors.education_level && (
+                <span className="error-message">
+                  {errors.education_level}
+                </span>
+              )}
             </div>
             <div className="form-group">
               <label>Field of Study</label>
@@ -1562,6 +1826,18 @@ function Onboarding() {
     }
   };
 
+  const stepNames = [
+    "Personal Details",
+    "Destination & Timeline",
+    "Education",
+    "Work Experience",
+    "Skills & Language",
+    "Immigration History",
+    "Financial Info",
+    "Special Items",
+    "Documents & Preferences",
+  ];
+
   return (
     <div className="onboarding-page">
       {submitting && (
@@ -1582,6 +1858,35 @@ function Onboarding() {
         <div className="onboarding-header">
           <h1>Let's get to know you</h1>
           <p>Help us provide personalized visa recommendations</p>
+          <div className="progress-text-header">
+            Step {currentStep} of {totalSteps} • {stepNames[currentStep - 1]}
+          </div>
+        </div>
+
+        {/* Step Navigation Dots */}
+        <div className="step-navigation">
+          {stepNames.map((name, index) => {
+            const stepNum = index + 1;
+            const isActive = stepNum === currentStep;
+            const isCompleted = stepNum < currentStep;
+            const isAccessible = stepNum <= currentStep || stepNum === currentStep + 1;
+            
+            return (
+              <div
+                key={stepNum}
+                className={`step-dot ${isActive ? "active" : ""} ${
+                  isCompleted ? "completed" : ""
+                } ${isAccessible ? "accessible" : ""}`}
+                onClick={() => isAccessible && handleStepClick(stepNum)}
+                title={name}
+              >
+                <div className="step-dot-circle">
+                  {isCompleted ? "✓" : stepNum}
+                </div>
+                <span className="step-dot-label">{name}</span>
+              </div>
+            );
+          })}
         </div>
 
         <div className="progress-bar">
@@ -1590,11 +1895,18 @@ function Onboarding() {
             style={{ width: `${(currentStep / totalSteps) * 100}%` }}
           ></div>
         </div>
-        <div className="progress-text">
-          Step {currentStep} of {totalSteps}
+
+
+        <div className="onboarding-content" ref={stepRef}>
+          {renderStep()}
         </div>
 
-        <div className="onboarding-content">{renderStep()}</div>
+        <div className="keyboard-hint">
+          <small>
+            💡 Tip: Press <kbd>Ctrl</kbd> + <kbd>→</kbd> to go next,{" "}
+            <kbd>Ctrl</kbd> + <kbd>←</kbd> to go back
+          </small>
+        </div>
 
         <div className="onboarding-actions">
           {currentStep > 1 && (
@@ -1603,7 +1915,7 @@ function Onboarding() {
               className="btn-secondary"
               disabled={submitting}
             >
-              Previous
+              ← Previous
             </button>
           )}
           <div className="spacer"></div>
@@ -1613,15 +1925,15 @@ function Onboarding() {
               className="btn-primary"
               disabled={submitting}
             >
-              Next
+              Next →
             </button>
           ) : (
             <button
               onClick={handleSubmit}
-              className="btn-primary"
+              className="btn-primary btn-complete"
               disabled={submitting}
             >
-              {submitting ? "Generating…" : "Complete Onboarding"}
+              {submitting ? "Generating…" : "✓ Complete Onboarding"}
             </button>
           )}
         </div>

@@ -21,6 +21,7 @@ function Home() {
   const [historyCount, setHistoryCount] = useState(0);
   const [activeChecklists, setActiveChecklists] = useState([]);
   const [loadingChecklists, setLoadingChecklists] = useState(true);
+  const [checklistData, setChecklistData] = useState({}); // Map of visa_type -> checklist items
 
   useEffect(() => {
     initScrollAnimations();
@@ -83,7 +84,7 @@ function Home() {
     };
   }, []);
 
-  // Load active checklists (checklists with saved progress)
+  // Load active checklists (checklists with saved progress) and fetch checklist data
   useEffect(() => {
     let cancelled = false;
 
@@ -97,6 +98,28 @@ function Home() {
         if (progressList && Array.isArray(progressList)) {
           console.log("Setting active checklists:", progressList);
           setActiveChecklists(progressList);
+          
+          // Fetch recommendation data to get checklist items with durations
+          try {
+            const history = await recommendationsAPI.getHistory(1);
+            if (cancelled) return;
+            const latestRecord = history?.[0];
+            const options = latestRecord?.output_data?.options || [];
+            
+            // Create a map of visa_type -> checklist items
+            const checklistMap = {};
+            options.forEach(option => {
+              if (option?.visa_type && option?.checklist && Array.isArray(option.checklist)) {
+                checklistMap[option.visa_type] = option.checklist;
+              }
+            });
+            
+            if (!cancelled) {
+              setChecklistData(checklistMap);
+            }
+          } catch (err) {
+            console.warn("Error loading checklist data:", err);
+          }
         } else {
           console.warn("Progress list is not an array:", progressList);
           setActiveChecklists([]);
@@ -126,6 +149,61 @@ function Home() {
     const completed = items.filter(v => v === true).length;
     return Math.round((completed / items.length) * 100);
   };
+
+  // Calculate estimated remaining processing time for a checklist
+  const calculateEstimatedRemainingTime = (visaType, progressJson) => {
+    const checklistItems = checklistData[visaType];
+    if (!checklistItems || !Array.isArray(checklistItems) || checklistItems.length === 0) {
+      return "—";
+    }
+
+    // Get incomplete steps with duration estimates
+    const incompleteSteps = checklistItems.filter((item, idx) => {
+      const itemId = item?.id || `step-${idx + 1}`;
+      const isCompleted = progressJson[itemId] === true;
+      return !isCompleted && item?.estimated_duration;
+    });
+
+    if (incompleteSteps.length === 0) {
+      // Check if all steps are completed
+      const allCompleted = Object.values(progressJson).every(v => v === true);
+      return allCompleted ? "Completed" : "—";
+    }
+
+    // Sum up estimated durations for incomplete steps
+    const totalDays = incompleteSteps.reduce((sum, step) => {
+      const duration = step.estimated_duration;
+      if (typeof duration === 'number' && duration > 0) {
+        return sum + duration;
+      }
+      return sum;
+    }, 0);
+
+    if (totalDays === 0) {
+      return "—";
+    }
+
+    // Format the duration nicely
+    const weeks = Math.floor(totalDays / 7);
+    const days = totalDays % 7;
+
+    if (weeks > 0 && days > 0) {
+      return `~${weeks} week${weeks !== 1 ? 's' : ''}, ${days} day${days !== 1 ? 's' : ''}`;
+    } else if (weeks > 0) {
+      return `~${weeks} week${weeks !== 1 ? 's' : ''}`;
+    } else {
+      return `~${totalDays} day${totalDays !== 1 ? 's' : ''}`;
+    }
+  };
+
+  // Filter checklists to only show those with progress > 0%
+  const activeChecklistsWithProgress = useMemo(() => {
+    return activeChecklists.filter((checklist) => {
+      const progressJson = checklist.progress_json || checklist.progressJson || {};
+      const progressPercent = getChecklistProgress(progressJson);
+      return progressPercent > 0;
+    });
+  }, [activeChecklists]);
 
   const getVisaStateText = (visa) => {
     const raw = visa?.state ?? visa?.status ?? visa?.likelihood ?? "";
@@ -352,7 +430,7 @@ function Home() {
                     <div className="info-item">
                       <span className="info-label">Processing Time:</span>
                       <span className="info-value">
-                        {visa.estimated_timeline || "—"}
+                        {visa.estimated_timeline || visa.processing_time || "—"}
                       </span>
                     </div>
                     <div className="info-item">
@@ -397,28 +475,28 @@ function Home() {
             <p>Loading your checklists…</p>
           </div>
         </div>
-      ) : activeChecklists.length > 0 ? (
+      ) : activeChecklistsWithProgress.length > 0 ? (
         <div className="home-section">
           <div className="section-header">
             <h2>Active Checklists</h2>
             <span className="section-subtitle">
-              {activeChecklists.length} checklist{activeChecklists.length !== 1 ? 's' : ''} in progress
+              {activeChecklistsWithProgress.length} checklist{activeChecklistsWithProgress.length !== 1 ? 's' : ''} in progress
             </span>
           </div>
           <div className="checklists-grid">
-            {activeChecklists.length === 0 ? (
+            {activeChecklistsWithProgress.length === 0 ? (
               <div className="empty-state">
                 <p>No active checklists found.</p>
               </div>
-            ) : activeChecklists.filter(c => c && (c.visa_type || c.visaType)).length === 0 ? (
+            ) : activeChecklistsWithProgress.filter(c => c && (c.visa_type || c.visaType)).length === 0 ? (
               <div className="empty-state">
                 <p>Checklists found but missing visa_type field.</p>
                 <pre style={{ fontSize: '0.8rem', textAlign: 'left', maxWidth: '100%', overflow: 'auto' }}>
-                  {JSON.stringify(activeChecklists, null, 2)}
+                  {JSON.stringify(activeChecklistsWithProgress, null, 2)}
                 </pre>
               </div>
             ) : (
-              activeChecklists.map((checklist, index) => {
+              activeChecklistsWithProgress.map((checklist, index) => {
                 console.log(`Rendering checklist card ${index}:`, checklist);
                 
                 // Handle missing or invalid data
@@ -432,13 +510,15 @@ function Home() {
                 const progressPercent = getChecklistProgress(progressJson);
                 const completedCount = Object.values(progressJson).filter(v => v === true).length;
                 const totalCount = Object.keys(progressJson).length || 0;
+                const estimatedTime = calculateEstimatedRemainingTime(visaType, progressJson);
                 
                 console.log(`Checklist ${index} details:`, {
                   visaType,
                   progressPercent,
                   completedCount,
                   totalCount,
-                  progressJson
+                  progressJson,
+                  estimatedTime
                 });
                 
                 return (
@@ -467,7 +547,20 @@ function Home() {
                       />
                     </div>
                     <div className="checklist-progress-text">
-                      <span>{progressPercent}% Complete</span>
+                      <div className="checklist-progress-info">
+                        <span>{progressPercent}% Complete</span>
+                        {estimatedTime !== "—" && estimatedTime !== "Completed" && (
+                          <span className="checklist-processing-time">
+                            <FiClock className="clock-icon" />
+                            {estimatedTime}
+                          </span>
+                        )}
+                        {estimatedTime === "Completed" && (
+                          <span className="checklist-processing-time completed">
+                            ✓ Completed
+                          </span>
+                        )}
+                      </div>
                       <FiArrowRight className="arrow-icon" />
                     </div>
                   </Link>

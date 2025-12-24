@@ -171,7 +171,6 @@ class RecommendationRecord(BaseModel):
 
     model_config = {
         "from_attributes": True,
-        "json_encoders": {datetime: lambda v: v.isoformat() + "Z"},
     }
 
 
@@ -195,8 +194,19 @@ class UserResponse(BaseModel):
     created_at: datetime
 
     model_config = {
-        "json_encoders": {datetime: lambda v: v.isoformat() + "Z"},
+        "from_attributes": True,
     }
+    
+    def model_dump(self, **kwargs):
+        """Override to ensure proper datetime serialization"""
+        data = super().model_dump(**kwargs)
+        # Convert datetime objects to ISO format strings
+        for key, value in data.items():
+            if isinstance(value, datetime):
+                # Use isoformat() which handles timezone properly
+                # Don't add "Z" - let JavaScript Date handle ISO strings with timezone offsets
+                data[key] = value.isoformat()
+        return data
 
 
 class UserUpdate(BaseModel):

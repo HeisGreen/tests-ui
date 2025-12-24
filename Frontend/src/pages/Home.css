@@ -401,9 +401,32 @@
   color: #666666;
 }
 
+.checklist-progress-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .checklist-progress-text span {
   font-weight: 500;
   color: #333333;
+}
+
+.checklist-processing-time {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #4A90E2;
+  font-weight: 500;
+}
+
+.checklist-processing-time.completed {
+  color: #10b981;
+}
+
+.checklist-processing-time .clock-icon {
+  font-size: 0.875rem;
 }
 
 .checklist-progress-text .arrow-icon {
