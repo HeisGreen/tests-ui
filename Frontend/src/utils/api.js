@@ -190,6 +190,24 @@ export const recommendationsAPI = {
       }),
     });
   },
+
+  /**
+   * Fetch a cached checklist (regenerates via ChatGPT if missing or stale)
+   * @param {string} visaType - The visa type identifier
+   * @param {object} visaOption - Optional visa recommendation option to compute hash
+   */
+  getChecklistCached: async (visaType, visaOption = null) => {
+    const body = {
+      visa_type: visaType,
+    };
+    if (visaOption) {
+      body.visa_option = visaOption;
+    }
+    return apiRequest("/checklist", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
 };
 
 // Checklist Progress API functions
@@ -200,7 +218,9 @@ export const checklistProgressAPI = {
    * @returns {Promise<object|null>} Progress data or null if none exists
    */
   getProgress: async (visaType) => {
-    return apiRequest(`/checklist/progress?visa_type=${encodeURIComponent(visaType)}`);
+    return apiRequest(
+      `/checklist/progress?visa_type=${encodeURIComponent(visaType)}`
+    );
   },
 
   /**
@@ -246,7 +266,8 @@ export const documentsAPI = {
    * @param {string} statusFilter - Optional filter by status ('all', 'pending', 'verified', 'rejected')
    */
   getDocuments: async (statusFilter = "all") => {
-    const params = statusFilter !== "all" ? `?status_filter=${statusFilter}` : "";
+    const params =
+      statusFilter !== "all" ? `?status_filter=${statusFilter}` : "";
     return apiRequest(`/documents${params}`);
   },
 

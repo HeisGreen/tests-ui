@@ -305,6 +305,18 @@ class ChecklistResponse(BaseModel):
     checklist: List[dict]
 
 
+class ChecklistFetchRequest(BaseModel):
+    visa_type: str
+    visa_option: Optional[RecommendationOption] = None
+
+
+class ChecklistCachedResponse(BaseModel):
+    checklist: List[dict]
+    source: str = Field(default="cache")
+    option_hash: Optional[str] = None
+    cached_at: Optional[datetime] = None
+
+
 # Checklist Progress schemas
 class ChecklistProgressCreate(BaseModel):
     visa_type: str

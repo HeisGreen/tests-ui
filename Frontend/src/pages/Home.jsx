@@ -54,18 +54,21 @@ function Home() {
 
         setHistoryCount(history.length);
         const latestRecord = history[0] || null;
-        
+
         // Debug: Check what we're getting
         if (latestRecord) {
-          console.log('=== DEBUG: Latest record ===');
-          console.log('Full record:', JSON.stringify(latestRecord, null, 2));
-          console.log('created_at value:', latestRecord.created_at);
-          console.log('created_at type:', typeof latestRecord.created_at);
-          console.log('All keys:', Object.keys(latestRecord));
+          console.log("=== DEBUG: Latest record ===");
+          console.log("Full record:", JSON.stringify(latestRecord, null, 2));
+          console.log("created_at value:", latestRecord.created_at);
+          console.log("created_at type:", typeof latestRecord.created_at);
+          console.log("All keys:", Object.keys(latestRecord));
         } else {
-          console.log('No latest record found. History length:', history.length);
+          console.log(
+            "No latest record found. History length:",
+            history.length
+          );
         }
-        
+
         setLatest(latestRecord);
       } catch (err) {
         if (cancelled) return;
@@ -98,27 +101,32 @@ function Home() {
         if (progressList && Array.isArray(progressList)) {
           console.log("Setting active checklists:", progressList);
           setActiveChecklists(progressList);
-          
-          // Fetch recommendation data to get checklist items with durations
+          // Fetch cached checklist items per visa_type so we can show durations/steps
           try {
-            const history = await recommendationsAPI.getHistory(1);
-            if (cancelled) return;
-            const latestRecord = history?.[0];
-            const options = latestRecord?.output_data?.options || [];
-            
-            // Create a map of visa_type -> checklist items
+            const entries = await Promise.all(
+              progressList.map(async (p) => {
+                const vt = p?.visa_type || p?.visaType;
+                if (!vt) return null;
+                try {
+                  const res = await recommendationsAPI.getChecklistCached(vt);
+                  if (res?.checklist && Array.isArray(res.checklist)) {
+                    return [vt, res.checklist];
+                  }
+                } catch (err) {
+                  console.warn("Error loading cached checklist for", vt, err);
+                }
+                return null;
+              })
+            );
             const checklistMap = {};
-            options.forEach(option => {
-              if (option?.visa_type && option?.checklist && Array.isArray(option.checklist)) {
-                checklistMap[option.visa_type] = option.checklist;
-              }
+            entries.filter(Boolean).forEach(([vt, list]) => {
+              checklistMap[vt] = list;
             });
-            
             if (!cancelled) {
               setChecklistData(checklistMap);
             }
           } catch (err) {
-            console.warn("Error loading checklist data:", err);
+            console.warn("Error loading checklist data from cache:", err);
           }
         } else {
           console.warn("Progress list is not an array:", progressList);
@@ -143,17 +151,21 @@ function Home() {
 
   // Calculate progress percentage for a checklist
   const getChecklistProgress = (progressJson) => {
-    if (!progressJson || typeof progressJson !== 'object') return 0;
+    if (!progressJson || typeof progressJson !== "object") return 0;
     const items = Object.values(progressJson);
     if (items.length === 0) return 0;
-    const completed = items.filter(v => v === true).length;
+    const completed = items.filter((v) => v === true).length;
     return Math.round((completed / items.length) * 100);
   };
 
   // Calculate estimated remaining processing time for a checklist
   const calculateEstimatedRemainingTime = (visaType, progressJson) => {
     const checklistItems = checklistData[visaType];
-    if (!checklistItems || !Array.isArray(checklistItems) || checklistItems.length === 0) {
+    if (
+      !checklistItems ||
+      !Array.isArray(checklistItems) ||
+      checklistItems.length === 0
+    ) {
       return "—";
     }
 
@@ -166,14 +178,14 @@ function Home() {
 
     if (incompleteSteps.length === 0) {
       // Check if all steps are completed
-      const allCompleted = Object.values(progressJson).every(v => v === true);
+      const allCompleted = Object.values(progressJson).every((v) => v === true);
       return allCompleted ? "Completed" : "—";
     }
 
     // Sum up estimated durations for incomplete steps
     const totalDays = incompleteSteps.reduce((sum, step) => {
       const duration = step.estimated_duration;
-      if (typeof duration === 'number' && duration > 0) {
+      if (typeof duration === "number" && duration > 0) {
         return sum + duration;
       }
       return sum;
@@ -188,21 +200,21 @@ function Home() {
     const days = totalDays % 7;
 
     if (weeks > 0 && days > 0) {
-      return `~${weeks} week${weeks !== 1 ? 's' : ''}, ${days} day${days !== 1 ? 's' : ''}`;
+      return `~${weeks} week${weeks !== 1 ? "s" : ""}, ${days} day${
+        days !== 1 ? "s" : ""
+      }`;
     } else if (weeks > 0) {
-      return `~${weeks} week${weeks !== 1 ? 's' : ''}`;
+      return `~${weeks} week${weeks !== 1 ? "s" : ""}`;
     } else {
-      return `~${totalDays} day${totalDays !== 1 ? 's' : ''}`;
+      return `~${totalDays} day${totalDays !== 1 ? "s" : ""}`;
     }
   };
 
-  // Filter checklists to only show those with progress > 0%
+  // Show all checklists with saved progress (even 0%) to avoid hiding new ones
   const activeChecklistsWithProgress = useMemo(() => {
-    return activeChecklists.filter((checklist) => {
-      const progressJson = checklist.progress_json || checklist.progressJson || {};
-      const progressPercent = getChecklistProgress(progressJson);
-      return progressPercent > 0;
-    });
+    return activeChecklists.filter(
+      (checklist) => checklist && (checklist.visa_type || checklist.visaType)
+    );
   }, [activeChecklists]);
 
   const getVisaStateText = (visa) => {
@@ -323,48 +335,52 @@ function Home() {
               if (!latest) {
                 return "—";
               }
-              
+
               // Log everything for debugging
-              console.log('Latest object:', latest);
-              console.log('Latest keys:', Object.keys(latest));
-              
+              console.log("Latest object:", latest);
+              console.log("Latest keys:", Object.keys(latest));
+
               // Try different possible field names
-              const dateValue = latest.created_at || latest.createdAt || latest.date || latest['created_at'];
-              
-              console.log('Date value found:', dateValue);
-              
+              const dateValue =
+                latest.created_at ||
+                latest.createdAt ||
+                latest.date ||
+                latest["created_at"];
+
+              console.log("Date value found:", dateValue);
+
               if (!dateValue) {
-                console.warn('No date field found. Full object:', latest);
+                console.warn("No date field found. Full object:", latest);
                 return "—";
               }
-              
+
               try {
                 // Handle string dates
                 let date;
-                if (typeof dateValue === 'string') {
+                if (typeof dateValue === "string") {
                   // Remove trailing Z if present for better compatibility
-                  const cleanDate = dateValue.replace(/Z$/, '');
+                  const cleanDate = dateValue.replace(/Z$/, "");
                   date = new Date(cleanDate);
                 } else if (dateValue instanceof Date) {
                   date = dateValue;
                 } else {
                   date = new Date(dateValue);
                 }
-                
+
                 if (isNaN(date.getTime())) {
-                  console.warn('Invalid date:', dateValue, 'parsed as:', date);
+                  console.warn("Invalid date:", dateValue, "parsed as:", date);
                   return "—";
                 }
-                
-                const formatted = date.toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric'
+
+                const formatted = date.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
                 });
-                
-                console.log('Formatted date:', formatted);
+
+                console.log("Formatted date:", formatted);
                 return formatted;
               } catch (e) {
-                console.error('Date parsing error:', e, 'value:', dateValue);
+                console.error("Date parsing error:", e, "value:", dateValue);
                 return "—";
               }
             })()}
@@ -480,7 +496,8 @@ function Home() {
           <div className="section-header">
             <h2>Active Checklists</h2>
             <span className="section-subtitle">
-              {activeChecklistsWithProgress.length} checklist{activeChecklistsWithProgress.length !== 1 ? 's' : ''} in progress
+              {activeChecklistsWithProgress.length} checklist
+              {activeChecklistsWithProgress.length !== 1 ? "s" : ""} in progress
             </span>
           </div>
           <div className="checklists-grid">
@@ -488,84 +505,107 @@ function Home() {
               <div className="empty-state">
                 <p>No active checklists found.</p>
               </div>
-            ) : activeChecklistsWithProgress.filter(c => c && (c.visa_type || c.visaType)).length === 0 ? (
+            ) : activeChecklistsWithProgress.filter(
+                (c) => c && (c.visa_type || c.visaType)
+              ).length === 0 ? (
               <div className="empty-state">
                 <p>Checklists found but missing visa_type field.</p>
-                <pre style={{ fontSize: '0.8rem', textAlign: 'left', maxWidth: '100%', overflow: 'auto' }}>
+                <pre
+                  style={{
+                    fontSize: "0.8rem",
+                    textAlign: "left",
+                    maxWidth: "100%",
+                    overflow: "auto",
+                  }}
+                >
                   {JSON.stringify(activeChecklistsWithProgress, null, 2)}
                 </pre>
               </div>
             ) : (
-              activeChecklistsWithProgress.map((checklist, index) => {
-                console.log(`Rendering checklist card ${index}:`, checklist);
-                
-                // Handle missing or invalid data
-                if (!checklist) {
-                  console.warn(`Checklist at index ${index} is null/undefined`);
-                  return null;
-                }
-                
-                const visaType = checklist.visa_type || checklist.visaType || `Checklist ${index + 1}`;
-                const progressJson = checklist.progress_json || checklist.progressJson || {};
-                const progressPercent = getChecklistProgress(progressJson);
-                const completedCount = Object.values(progressJson).filter(v => v === true).length;
-                const totalCount = Object.keys(progressJson).length || 0;
-                const estimatedTime = calculateEstimatedRemainingTime(visaType, progressJson);
-                
-                console.log(`Checklist ${index} details:`, {
-                  visaType,
-                  progressPercent,
-                  completedCount,
-                  totalCount,
-                  progressJson,
-                  estimatedTime
-                });
-                
-                return (
-                  <Link
-                    key={checklist.id || `checklist-${index}`}
-                    to={`/checklist/${encodeURIComponent(visaType)}`}
-                    className="checklist-card scroll-animate"
-                  >
-                    <div className="checklist-card-header">
-                      <div className="checklist-icon">
-                        <FiList />
+              activeChecklistsWithProgress
+                .map((checklist, index) => {
+                  console.log(`Rendering checklist card ${index}:`, checklist);
+
+                  // Handle missing or invalid data
+                  if (!checklist) {
+                    console.warn(
+                      `Checklist at index ${index} is null/undefined`
+                    );
+                    return null;
+                  }
+
+                  const visaType =
+                    checklist.visa_type ||
+                    checklist.visaType ||
+                    `Checklist ${index + 1}`;
+                  const progressJson =
+                    checklist.progress_json || checklist.progressJson || {};
+                  const progressPercent = getChecklistProgress(progressJson);
+                  const completedCount = Object.values(progressJson).filter(
+                    (v) => v === true
+                  ).length;
+                  const totalCount = Object.keys(progressJson).length || 0;
+                  const estimatedTime = calculateEstimatedRemainingTime(
+                    visaType,
+                    progressJson
+                  );
+
+                  console.log(`Checklist ${index} details:`, {
+                    visaType,
+                    progressPercent,
+                    completedCount,
+                    totalCount,
+                    progressJson,
+                    estimatedTime,
+                  });
+
+                  return (
+                    <Link
+                      key={checklist.id || `checklist-${index}`}
+                      to={`/checklist/${encodeURIComponent(visaType)}`}
+                      className="checklist-card scroll-animate"
+                    >
+                      <div className="checklist-card-header">
+                        <div className="checklist-icon">
+                          <FiList />
+                        </div>
+                        <div className="checklist-title-section">
+                          <h3>{visaType}</h3>
+                          <p className="checklist-meta">
+                            {totalCount > 0
+                              ? `${completedCount} of ${totalCount} steps completed`
+                              : "No progress yet"}
+                          </p>
+                        </div>
                       </div>
-                      <div className="checklist-title-section">
-                        <h3>{visaType}</h3>
-                        <p className="checklist-meta">
-                          {totalCount > 0 
-                            ? `${completedCount} of ${totalCount} steps completed`
-                            : "No progress yet"}
-                        </p>
+                      <div className="checklist-progress-bar">
+                        <div
+                          className="checklist-progress-fill"
+                          style={{ width: `${Math.max(progressPercent, 0)}%` }}
+                        />
                       </div>
-                    </div>
-                    <div className="checklist-progress-bar">
-                      <div 
-                        className="checklist-progress-fill"
-                        style={{ width: `${Math.max(progressPercent, 0)}%` }}
-                      />
-                    </div>
-                    <div className="checklist-progress-text">
-                      <div className="checklist-progress-info">
-                        <span>{progressPercent}% Complete</span>
-                        {estimatedTime !== "—" && estimatedTime !== "Completed" && (
-                          <span className="checklist-processing-time">
-                            <FiClock className="clock-icon" />
-                            {estimatedTime}
-                          </span>
-                        )}
-                        {estimatedTime === "Completed" && (
-                          <span className="checklist-processing-time completed">
-                            ✓ Completed
-                          </span>
-                        )}
+                      <div className="checklist-progress-text">
+                        <div className="checklist-progress-info">
+                          <span>{progressPercent}% Complete</span>
+                          {estimatedTime !== "—" &&
+                            estimatedTime !== "Completed" && (
+                              <span className="checklist-processing-time">
+                                <FiClock className="clock-icon" />
+                                {estimatedTime}
+                              </span>
+                            )}
+                          {estimatedTime === "Completed" && (
+                            <span className="checklist-processing-time completed">
+                              ✓ Completed
+                            </span>
+                          )}
+                        </div>
+                        <FiArrowRight className="arrow-icon" />
                       </div>
-                      <FiArrowRight className="arrow-icon" />
-                    </div>
-                  </Link>
-                );
-              }).filter(Boolean)
+                    </Link>
+                  );
+                })
+                .filter(Boolean)
             )}
           </div>
         </div>

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, JSON, Text
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, JSON, Text, UniqueConstraint
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -77,4 +77,22 @@ class ChecklistProgress(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationship to user
+    user = relationship("User")
+
+
+class ChecklistCache(Base):
+    __tablename__ = "checklist_cache"
+    __table_args__ = (
+        UniqueConstraint("user_id", "visa_type", name="uq_checklist_cache_user_visa"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+    visa_type = Column(String, nullable=False, index=True)
+    option_hash = Column(String, nullable=True, index=True)
+    checklist_json = Column(JSON, nullable=False)
+    source = Column(String, default="cache", nullable=False)  # cache | ai | cache_fallback
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
     user = relationship("User")

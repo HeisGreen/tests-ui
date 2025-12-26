@@ -1,5 +1,6 @@
 import json
 import logging
+import hashlib
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta
 
@@ -11,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.config import Settings, get_settings
 from app.database import engine, get_db
-from app.models import Base, User, UserProfile, Recommendation, Document, ChecklistProgress
+from app.models import Base, User, UserProfile, Recommendation, Document, ChecklistProgress, ChecklistCache
 from app.schemas import (
     IntakeCreate,
     IntakeData,
@@ -32,6 +33,8 @@ from app.schemas import (
     DocumentResponse,
     ChecklistRequest,
     ChecklistResponse,
+    ChecklistFetchRequest,
+    ChecklistCachedResponse,
     ChecklistProgressCreate,
     ChecklistProgressUpdate,
     ChecklistProgressResponse,
@@ -736,18 +739,28 @@ def get_recommendation_by_id(
     return recommendation
 
 
-@app.post("/recommendations/checklist", response_model=ChecklistResponse)
-def generate_checklist(
-    request: ChecklistRequest,
-    settings: Settings = Depends(get_settings),
-    current_user: User = Depends(get_current_active_user),
-) -> ChecklistResponse:
+def compute_option_hash(visa_option: RecommendationOption) -> str:
+    """Stable hash of a visa option for cache invalidation."""
+    if not visa_option:
+        return ""
+    try:
+        payload = visa_option.model_dump(exclude_none=True)
+    except Exception:
+        payload = {}
+    # Ignore generated checklist when hashing to avoid unnecessary regenerations
+    payload.pop("checklist", None)
+    serialized = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def generate_checklist_via_openai(
+    visa_option: RecommendationOption,
+    settings: Settings,
+    current_user: User,
+) -> List[dict]:
     """
-    Generate a detailed step-by-step checklist for a visa recommendation using ChatGPT.
+    Call OpenAI to generate a detailed checklist for a visa option.
     """
-    visa_option = request.visa_option
-    
-    # Build prompt for checklist generation
     prompt = f"""You are an expert immigration advisor. Generate a comprehensive, step-by-step application checklist for the following visa recommendation.
 
 Visa Type: {visa_option.visa_type}
@@ -802,7 +815,7 @@ Make sure the checklist is comprehensive, covers the entire application process 
 Return only JSON, no explanations."""
 
     client = get_openai_client(settings)
-    
+
     try:
         completion = client.chat.completions.create(
             model=settings.openai_model,
@@ -820,8 +833,7 @@ Return only JSON, no explanations."""
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"Failed to generate checklist: {exc}",
         ) from exc
-    
-    # Parse the response
+
     try:
         data = json.loads(content)
         checklist = data.get("checklist", [])
@@ -835,7 +847,7 @@ Return only JSON, no explanations."""
             "steps_count": len(checklist),
         })
         
-        return ChecklistResponse(checklist=checklist)
+        return checklist
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse checklist JSON: {e}", extra={"user_id": current_user.id})
         raise HTTPException(
@@ -849,6 +861,162 @@ Return only JSON, no explanations."""
             detail=f"Error processing checklist: {str(e)}",
         )
 
+
+@app.post("/checklist", response_model=ChecklistCachedResponse)
+def get_or_generate_checklist(
+    payload: ChecklistFetchRequest,
+    settings: Settings = Depends(get_settings),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+) -> ChecklistCachedResponse:
+    """
+    Return a cached checklist for a visa type, regenerating with ChatGPT when missing or when the option hash changes.
+    """
+    visa_type = payload.visa_type
+    visa_option = payload.visa_option
+
+    if not visa_type:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="visa_type is required",
+        )
+
+    # Resolve visa_option if not provided by looking up the latest recommendation
+    if visa_option is None:
+        latest_rec = (
+            db.query(Recommendation)
+            .filter(Recommendation.user_id == current_user.id)
+            .order_by(Recommendation.created_at.desc())
+            .first()
+        )
+        options = []
+        if latest_rec and latest_rec.output_data:
+            options = latest_rec.output_data.get("options", [])
+        if options:
+            match = next(
+                (
+                    opt
+                    for opt in options
+                    if str(opt.get("visa_type", "")).lower() == str(visa_type).lower()
+                ),
+                None,
+            )
+            if match:
+                try:
+                    visa_option = RecommendationOption(**match)
+                except Exception:
+                    visa_option = None
+
+    if visa_option is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Visa option not found; provide visa_option or generate recommendations first.",
+        )
+
+    option_hash = compute_option_hash(visa_option)
+
+    existing = (
+        db.query(ChecklistCache)
+        .filter(
+            ChecklistCache.user_id == current_user.id,
+            ChecklistCache.visa_type == visa_type,
+        )
+        .first()
+    )
+
+    if existing and existing.option_hash == option_hash:
+        logger.info(
+            "Checklist cache hit",
+            extra={
+                "user_id": current_user.id,
+                "visa_type": visa_type,
+                "source": existing.source,
+            },
+        )
+        return ChecklistCachedResponse(
+            checklist=existing.checklist_json,
+            source=existing.source or "cache",
+            option_hash=existing.option_hash,
+            cached_at=existing.updated_at or existing.created_at,
+        )
+
+    # Cache miss or hash mismatch -> regenerate
+    try:
+        checklist = generate_checklist_via_openai(
+            visa_option=visa_option,
+            settings=settings,
+            current_user=current_user,
+        )
+    except HTTPException as exc:
+        # On failure, return last cached data if available
+        if existing:
+            logger.warning(
+                "Checklist generation failed; returning cached fallback",
+                extra={
+                    "user_id": current_user.id,
+                    "visa_type": visa_type,
+                    "error": exc.detail,
+                },
+            )
+            return ChecklistCachedResponse(
+                checklist=existing.checklist_json,
+                source="cache_fallback",
+                option_hash=existing.option_hash,
+                cached_at=existing.updated_at or existing.created_at,
+            )
+        raise
+
+    # Upsert: update existing row if present, otherwise insert new
+    if existing:
+        existing.checklist_json = checklist
+        existing.option_hash = option_hash
+        existing.source = "ai"
+    else:
+        existing = ChecklistCache(
+            user_id=current_user.id,
+            visa_type=visa_type,
+            option_hash=option_hash,
+            checklist_json=checklist,
+            source="ai",
+        )
+        db.add(existing)
+
+    db.commit()
+    db.refresh(existing)
+
+    logger.info(
+        "Checklist regenerated and cached",
+        extra={
+            "user_id": current_user.id,
+            "visa_type": visa_type,
+            "source": "ai",
+        },
+    )
+
+    return ChecklistCachedResponse(
+        checklist=existing.checklist_json,
+        source="ai",
+        option_hash=existing.option_hash,
+        cached_at=existing.updated_at or existing.created_at,
+    )
+
+
+@app.post("/recommendations/checklist", response_model=ChecklistResponse)
+def generate_checklist(
+    request: ChecklistRequest,
+    settings: Settings = Depends(get_settings),
+    current_user: User = Depends(get_current_active_user),
+) -> ChecklistResponse:
+    """
+    Generate a detailed step-by-step checklist for a visa recommendation using ChatGPT.
+    """
+    visa_option = request.visa_option
+    checklist = generate_checklist_via_openai(
+        visa_option=visa_option,
+        settings=settings,
+        current_user=current_user,
+    )
+    return ChecklistResponse(checklist=checklist)
 
 # Checklist Progress endpoints
 @app.get("/checklist/progress", response_model=Optional[ChecklistProgressResponse])

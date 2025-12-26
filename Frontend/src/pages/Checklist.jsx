@@ -25,6 +25,33 @@ function Checklist() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [visaOption, setVisaOption] = useState(null); // Recommendation option
+  const loadChecklist = async (optionToUse) => {
+    if (!visaType) return;
+    try {
+      setError(null);
+      setLoading(true);
+      const response = await recommendationsAPI.getChecklistCached(
+        visaType,
+        optionToUse || null
+      );
+      if (optionToUse) {
+        setVisaOption({
+          ...optionToUse,
+          checklist: response?.checklist || optionToUse.checklist || null,
+        });
+      } else if (response?.checklist) {
+        setVisaOption((prev) => ({
+          ...(prev || { visa_type: visaType }),
+          checklist: response.checklist,
+        }));
+      }
+    } catch (err) {
+      console.warn("Checklist: Failed to load cached checklist", err);
+      setError(err?.message || "Failed to load checklist");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Safety timeout to prevent infinite loading
   useEffect(() => {
@@ -49,44 +76,17 @@ function Checklist() {
     return () => clearTimeout(timeout);
   }, [loading, visaOption, visaType]);
 
-  // Load from navigation state if provided (fast path), then generate checklist if needed.
+  // Load from navigation state if provided (fast path), then load checklist via backend cache.
   useEffect(() => {
     const opt = location?.state?.visaOption || null;
     if (opt) {
       console.log("Checklist: Loading from location.state", opt);
-      
-      // If checklist is missing or has only 1 step, generate a detailed one
-      const existingChecklist = opt?.checklist;
-      if (!existingChecklist || !Array.isArray(existingChecklist) || existingChecklist.length <= 1) {
-        console.log("Checklist: Generating detailed checklist using ChatGPT");
-        setLoading(true);
-        
-        recommendationsAPI.generateChecklist(opt)
-          .then((checklistResponse) => {
-            if (checklistResponse?.checklist && Array.isArray(checklistResponse.checklist)) {
-              const updatedOption = {
-                ...opt,
-                checklist: checklistResponse.checklist,
-              };
-              console.log(`Checklist: Generated ${checklistResponse.checklist.length} steps`);
-              setVisaOption(updatedOption);
-            } else {
-              setVisaOption(opt);
-            }
-          })
-          .catch((err) => {
-            console.warn("Checklist: Failed to generate checklist, using existing data", err);
-            setVisaOption(opt);
-          })
-          .finally(() => {
-            setLoading(false);
-          });
-      } else {
-        setVisaOption(opt);
-        setLoading(false);
-      }
+      setVisaOption(opt);
+      loadChecklist(opt);
     } else {
-      console.log("Checklist: No visaOption in location.state, will fetch from API");
+      console.log(
+        "Checklist: No visaOption in location.state, will fetch from API"
+      );
     }
   }, [location?.state]);
 
@@ -102,13 +102,11 @@ function Checklist() {
         return;
       }
       if (visaOption) {
-        setLoading(false);
         return;
       }
 
       try {
         setError(null);
-        setLoading(true);
         // Only need the most recent record; keep payload small to avoid slow loads.
         const history = await Promise.race([
           recommendationsAPI.getHistory(1),
@@ -135,7 +133,7 @@ function Checklist() {
           ) || null;
 
         let visaOptionData = match;
-        
+
         if (!match) {
           // Even if no exact match, create a basic visa option from the visa type
           console.log("Checklist: No match found, creating basic visa option");
@@ -150,27 +148,10 @@ function Checklist() {
             checklist: null,
             requirements: [],
           };
-        } else {
-          console.log("Checklist: Found match", match);
-        }
-
-        // If checklist is missing or has only 1 step, generate a detailed one using ChatGPT
-        const existingChecklist = visaOptionData?.checklist;
-        if (!existingChecklist || !Array.isArray(existingChecklist) || existingChecklist.length <= 1) {
-          console.log("Checklist: Generating detailed checklist using ChatGPT");
-          try {
-            const checklistResponse = await recommendationsAPI.generateChecklist(visaOptionData);
-            if (checklistResponse?.checklist && Array.isArray(checklistResponse.checklist)) {
-              visaOptionData.checklist = checklistResponse.checklist;
-              console.log(`Checklist: Generated ${checklistResponse.checklist.length} steps`);
-            }
-          } catch (checklistErr) {
-            console.warn("Checklist: Failed to generate checklist, using fallback", checklistErr);
-            // Continue with existing data or fallback
-          }
         }
 
         setVisaOption(visaOptionData);
+        await loadChecklist(visaOptionData);
       } catch (err) {
         if (cancelled) return;
         console.error("Error loading checklist:", err);
@@ -202,7 +183,7 @@ function Checklist() {
   const checklistItems = useMemo(() => {
     const raw = visaOption?.checklist;
     console.log("Checklist items useMemo - raw checklist:", raw);
-    
+
     // If we have structured checklist data, use it
     if (Array.isArray(raw) && raw.length > 0) {
       const processed = raw.map((item, idx) => {
@@ -210,13 +191,17 @@ function Checklist() {
         const processedItem = {
           id: item?.id ?? `step-${idx + 1}`,
           stepNumber: idx + 1,
-          title: item?.title || item?.name || (typeof item === 'string' ? item : `Step ${idx + 1}`),
+          title:
+            item?.title ||
+            item?.name ||
+            (typeof item === "string" ? item : `Step ${idx + 1}`),
           description: item?.description || "",
           guidance: item?.guidance || "",
           documents: Array.isArray(item?.documents) ? item.documents : [],
           owner: item?.owner || "applicant",
           dueIn: item?.due_in || item?.dueIn || "",
-          estimatedDuration: item?.estimated_duration || item?.estimatedDuration || null,
+          estimatedDuration:
+            item?.estimated_duration || item?.estimatedDuration || null,
           completed: false,
           _raw: item,
         };
@@ -226,7 +211,7 @@ function Checklist() {
       console.log(`Processed ${processed.length} checklist items`);
       return processed;
     }
-    
+
     // Fallback: Generate checklist from next_steps if available
     const nextSteps = visaOption?.next_steps;
     if (Array.isArray(nextSteps) && nextSteps.length > 0) {
@@ -234,7 +219,9 @@ function Checklist() {
         id: `step-${idx + 1}`,
         stepNumber: idx + 1,
         title: step,
-        description: `Complete this step to progress with your ${visaOption?.visa_type || "visa"} application.`,
+        description: `Complete this step to progress with your ${
+          visaOption?.visa_type || "visa"
+        } application.`,
         guidance: "",
         documents: [],
         owner: "applicant",
@@ -243,7 +230,7 @@ function Checklist() {
         _raw: { title: step },
       }));
     }
-    
+
     // Final fallback: Create a basic checklist structure
     if (visaOption) {
       return [
@@ -252,8 +239,11 @@ function Checklist() {
           stepNumber: 1,
           title: "Review Eligibility Requirements",
           description: `Review the eligibility requirements for ${visaOption.visa_type} to ensure you meet all criteria.`,
-          guidance: "Check the eligibility requirements section below for detailed information.",
-          documents: Array.isArray(visaOption?.requirements) ? visaOption.requirements : [],
+          guidance:
+            "Check the eligibility requirements section below for detailed information.",
+          documents: Array.isArray(visaOption?.requirements)
+            ? visaOption.requirements
+            : [],
           owner: "applicant",
           dueIn: "",
           completed: false,
@@ -263,8 +253,11 @@ function Checklist() {
           stepNumber: 2,
           title: "Gather Required Documents",
           description: `Collect all necessary documents for your ${visaOption.visa_type} application.`,
-          guidance: "Use the documents section below to see what's needed and upload them.",
-          documents: Array.isArray(visaOption?.requirements) ? visaOption.requirements : [],
+          guidance:
+            "Use the documents section below to see what's needed and upload them.",
+          documents: Array.isArray(visaOption?.requirements)
+            ? visaOption.requirements
+            : [],
           owner: "applicant",
           dueIn: "",
           completed: false,
@@ -274,7 +267,8 @@ function Checklist() {
           stepNumber: 3,
           title: "Prepare Application Forms",
           description: `Complete all required application forms for ${visaOption.visa_type}.`,
-          guidance: "Visit the official immigration website to download and complete the necessary forms.",
+          guidance:
+            "Visit the official immigration website to download and complete the necessary forms.",
           documents: [],
           owner: "applicant",
           dueIn: "",
@@ -285,7 +279,9 @@ function Checklist() {
           stepNumber: 4,
           title: "Submit Application",
           description: `Submit your complete ${visaOption.visa_type} application with all required documents.`,
-          guidance: `Estimated processing time: ${visaOption?.estimated_timeline || "varies"}. Estimated cost: ${visaOption?.estimated_costs || "varies"}.`,
+          guidance: `Estimated processing time: ${
+            visaOption?.estimated_timeline || "varies"
+          }. Estimated cost: ${visaOption?.estimated_costs || "varies"}.`,
           documents: [],
           owner: "applicant",
           dueIn: "",
@@ -293,7 +289,7 @@ function Checklist() {
         },
       ];
     }
-    
+
     return [];
   }, [visaOption]);
 
@@ -314,13 +310,13 @@ function Checklist() {
     const loadProgress = async () => {
       try {
         const savedProgress = await checklistProgressAPI.getProgress(visaType);
-        
+
         if (savedProgress && savedProgress.progress_json) {
           // Store the start time (created_at) for processing time calculation
           if (savedProgress.created_at) {
             setChecklistStartTime(new Date(savedProgress.created_at));
           }
-          
+
           // Merge saved progress into checklist items
           const mergedChecklist = checklistItems.map((item) => {
             const isCompleted = savedProgress.progress_json[item.id] === true;
@@ -351,34 +347,36 @@ function Checklist() {
   // Initialize scroll animations after checklist items are rendered
   useEffect(() => {
     if (checklist.length === 0) return;
-    
+
     const timer = setTimeout(() => {
       // First, manually add animate-in to all checklist items that are in view
-      const items = document.querySelectorAll('.checklist-item.scroll-animate');
+      const items = document.querySelectorAll(".checklist-item.scroll-animate");
       items.forEach((item) => {
         const rect = item.getBoundingClientRect();
         const isInView = rect.top < window.innerHeight && rect.bottom > 0;
         if (isInView || rect.top === 0) {
-          item.classList.add('animate-in');
+          item.classList.add("animate-in");
         }
       });
-      
+
       // Then initialize the observer for future scroll events
       const observer = initScrollAnimations();
-      
+
       // Fallback: if items still aren't visible after 1 second, force them visible
       setTimeout(() => {
-        const hiddenItems = document.querySelectorAll('.checklist-item.scroll-animate:not(.animate-in)');
+        const hiddenItems = document.querySelectorAll(
+          ".checklist-item.scroll-animate:not(.animate-in)"
+        );
         hiddenItems.forEach((item) => {
-          item.classList.add('animate-in');
+          item.classList.add("animate-in");
         });
       }, 1000);
-      
+
       return () => {
         if (observer) observer.disconnect();
       };
     }, 300);
-    
+
     return () => clearTimeout(timer);
   }, [checklist]);
 
@@ -409,14 +407,17 @@ function Checklist() {
             progressJson[item.id] = item.completed || false;
           }
         });
-        
-        const savedProgress = await checklistProgressAPI.saveProgress(visaType, progressJson);
-        
+
+        const savedProgress = await checklistProgressAPI.saveProgress(
+          visaType,
+          progressJson
+        );
+
         // Update start time if it was just created (first save)
         if (savedProgress && savedProgress.created_at && !checklistStartTime) {
           setChecklistStartTime(new Date(savedProgress.created_at));
         }
-        
+
         console.log("Saved checklist progress:", progressJson);
       } catch (error) {
         console.error("Failed to save checklist progress:", error);
@@ -433,11 +434,14 @@ function Checklist() {
     };
   }, [checklist, visaType, checklistStartTime]);
 
-  const completedCount = checklist.filter((item) => item && item.completed).length;
+  const completedCount = checklist.filter(
+    (item) => item && item.completed
+  ).length;
   const totalCount = checklist.length;
   // Only calculate progress if we have items, otherwise show 0
-  const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-  
+  const progress =
+    totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
   // Calculate circumference: 2 * π * radius (52)
   const circumference = 2 * Math.PI * 52; // ≈ 326.73
   // Calculate dash length for the progress circle
@@ -446,14 +450,19 @@ function Checklist() {
   const minVisibleLength = Math.max(5, circumference * 0.02); // At least 5 units or 2% of circle
   const calculatedDashLength = (progressPercent / 100) * circumference;
   // Always show at least minVisibleLength, even at 0%
-  const progressDashLength = totalCount > 0 
-    ? Math.max(minVisibleLength, calculatedDashLength)
-    : minVisibleLength;
-  
+  const progressDashLength =
+    totalCount > 0
+      ? Math.max(minVisibleLength, calculatedDashLength)
+      : minVisibleLength;
+
   // Ensure values are valid numbers
-  const finalDashLength = isNaN(progressDashLength) ? minVisibleLength : Math.max(5, Math.round(progressDashLength));
-  const finalCircumference = isNaN(circumference) ? 327 : Math.round(circumference);
-  
+  const finalDashLength = isNaN(progressDashLength)
+    ? minVisibleLength
+    : Math.max(5, Math.round(progressDashLength));
+  const finalCircumference = isNaN(circumference)
+    ? 327
+    : Math.round(circumference);
+
   // Debug logging for progress
   useEffect(() => {
     console.log("Checklist progress calculation:", {
@@ -465,75 +474,96 @@ function Checklist() {
       circumference: finalCircumference,
       progressDashLength: finalDashLength,
       minVisibleLength,
-      strokeDasharray: `${finalDashLength} ${finalCircumference}`
+      strokeDasharray: `${finalDashLength} ${finalCircumference}`,
     });
-    
+
     // Also log the actual DOM element to verify it exists
     setTimeout(() => {
-      const circle = document.querySelector('.progress-ring-circle');
-      const bgCircle = document.querySelector('.progress-ring-circle-bg');
-      const svg = document.querySelector('.progress-ring');
-      const progressText = document.querySelector('.progress-text');
-      const progressNumber = document.querySelector('.progress-number');
-      const progressLabel = document.querySelector('.progress-label');
-      
+      const circle = document.querySelector(".progress-ring-circle");
+      const bgCircle = document.querySelector(".progress-ring-circle-bg");
+      const svg = document.querySelector(".progress-ring");
+      const progressText = document.querySelector(".progress-text");
+      const progressNumber = document.querySelector(".progress-number");
+      const progressLabel = document.querySelector(".progress-label");
+
       console.log("Progress circle DOM check:", {
-        svg: svg ? 'FOUND' : 'NOT FOUND',
-        circle: circle ? {
-          strokeDasharray: circle.getAttribute('stroke-dasharray'),
-          stroke: circle.getAttribute('stroke'),
-          strokeWidth: circle.getAttribute('stroke-width'),
-          r: circle.getAttribute('r'),
-          cx: circle.getAttribute('cx'),
-          cy: circle.getAttribute('cy'),
-          opacity: window.getComputedStyle(circle).opacity,
-          display: window.getComputedStyle(circle).display,
-          visibility: window.getComputedStyle(circle).visibility
-        } : 'NOT FOUND',
-        bgCircle: bgCircle ? {
-          stroke: bgCircle.getAttribute('stroke'),
-          display: window.getComputedStyle(bgCircle).display
-        } : 'NOT FOUND',
-        progressText: progressText ? {
-          textContent: progressText.textContent,
-          innerHTML: progressText.innerHTML,
-          opacity: window.getComputedStyle(progressText).opacity,
-          display: window.getComputedStyle(progressText).display,
-          visibility: window.getComputedStyle(progressText).visibility,
-          zIndex: window.getComputedStyle(progressText).zIndex,
-          color: window.getComputedStyle(progressText).color,
-          top: window.getComputedStyle(progressText).top,
-          left: window.getComputedStyle(progressText).left
-        } : 'NOT FOUND',
-        progressNumber: progressNumber ? {
-          textContent: progressNumber.textContent,
-          innerHTML: progressNumber.innerHTML,
-          opacity: window.getComputedStyle(progressNumber).opacity,
-          display: window.getComputedStyle(progressNumber).display,
-          visibility: window.getComputedStyle(progressNumber).visibility,
-          color: window.getComputedStyle(progressNumber).color,
-          fontSize: window.getComputedStyle(progressNumber).fontSize
-        } : 'NOT FOUND',
-        progressLabel: progressLabel ? {
-          textContent: progressLabel.textContent,
-          display: window.getComputedStyle(progressLabel).display
-        } : 'NOT FOUND'
+        svg: svg ? "FOUND" : "NOT FOUND",
+        circle: circle
+          ? {
+              strokeDasharray: circle.getAttribute("stroke-dasharray"),
+              stroke: circle.getAttribute("stroke"),
+              strokeWidth: circle.getAttribute("stroke-width"),
+              r: circle.getAttribute("r"),
+              cx: circle.getAttribute("cx"),
+              cy: circle.getAttribute("cy"),
+              opacity: window.getComputedStyle(circle).opacity,
+              display: window.getComputedStyle(circle).display,
+              visibility: window.getComputedStyle(circle).visibility,
+            }
+          : "NOT FOUND",
+        bgCircle: bgCircle
+          ? {
+              stroke: bgCircle.getAttribute("stroke"),
+              display: window.getComputedStyle(bgCircle).display,
+            }
+          : "NOT FOUND",
+        progressText: progressText
+          ? {
+              textContent: progressText.textContent,
+              innerHTML: progressText.innerHTML,
+              opacity: window.getComputedStyle(progressText).opacity,
+              display: window.getComputedStyle(progressText).display,
+              visibility: window.getComputedStyle(progressText).visibility,
+              zIndex: window.getComputedStyle(progressText).zIndex,
+              color: window.getComputedStyle(progressText).color,
+              top: window.getComputedStyle(progressText).top,
+              left: window.getComputedStyle(progressText).left,
+            }
+          : "NOT FOUND",
+        progressNumber: progressNumber
+          ? {
+              textContent: progressNumber.textContent,
+              innerHTML: progressNumber.innerHTML,
+              opacity: window.getComputedStyle(progressNumber).opacity,
+              display: window.getComputedStyle(progressNumber).display,
+              visibility: window.getComputedStyle(progressNumber).visibility,
+              color: window.getComputedStyle(progressNumber).color,
+              fontSize: window.getComputedStyle(progressNumber).fontSize,
+            }
+          : "NOT FOUND",
+        progressLabel: progressLabel
+          ? {
+              textContent: progressLabel.textContent,
+              display: window.getComputedStyle(progressLabel).display,
+            }
+          : "NOT FOUND",
       });
     }, 500);
-  }, [completedCount, totalCount, progress, checklist.length, finalCircumference, finalDashLength, minVisibleLength, progressPercent]);
-  
+  }, [
+    completedCount,
+    totalCount,
+    progress,
+    checklist.length,
+    finalCircumference,
+    finalDashLength,
+    minVisibleLength,
+    progressPercent,
+  ]);
+
   // Function to calculate estimated remaining processing time based on incomplete steps
   const calculateEstimatedRemainingTime = () => {
     if (!checklist || checklist.length === 0) {
       return visaOption?.estimated_timeline || "—";
     }
-    
+
     const completed = checklist.filter((item) => item && item.completed).length;
     const total = checklist.length;
-    
+
     // Get all incomplete steps with duration estimates
-    const incompleteSteps = checklist.filter((item) => item && !item.completed && item.estimatedDuration);
-    
+    const incompleteSteps = checklist.filter(
+      (item) => item && !item.completed && item.estimatedDuration
+    );
+
     if (incompleteSteps.length === 0) {
       // All steps completed or no duration estimates
       if (completed === total && total > 0) {
@@ -542,53 +572,57 @@ function Checklist() {
       // Fallback to visa option estimated timeline if no duration data
       return visaOption?.estimated_timeline || "—";
     }
-    
+
     // Sum up estimated durations for incomplete steps
     const totalDays = incompleteSteps.reduce((sum, step) => {
       const duration = step.estimatedDuration;
-      if (typeof duration === 'number' && duration > 0) {
+      if (typeof duration === "number" && duration > 0) {
         return sum + duration;
       }
       return sum;
     }, 0);
-    
+
     if (totalDays === 0) {
       return visaOption?.estimated_timeline || "—";
     }
-    
+
     // Format the duration nicely
     const weeks = Math.floor(totalDays / 7);
     const days = totalDays % 7;
-    
+
     if (weeks > 0 && days > 0) {
-      return `~${weeks} week${weeks !== 1 ? 's' : ''}, ${days} day${days !== 1 ? 's' : ''}`;
+      return `~${weeks} week${weeks !== 1 ? "s" : ""}, ${days} day${
+        days !== 1 ? "s" : ""
+      }`;
     } else if (weeks > 0) {
-      return `~${weeks} week${weeks !== 1 ? 's' : ''}`;
+      return `~${weeks} week${weeks !== 1 ? "s" : ""}`;
     } else {
-      return `~${totalDays} day${totalDays !== 1 ? 's' : ''}`;
+      return `~${totalDays} day${totalDays !== 1 ? "s" : ""}`;
     }
   };
-  
+
   // Function to get the next incomplete step
   const getNextStep = () => {
     const incompleteStep = checklist.find((item) => item && !item.completed);
     if (incompleteStep) {
-      return incompleteStep.title || incompleteStep.name || "Continue with next step";
+      return (
+        incompleteStep.title || incompleteStep.name || "Continue with next step"
+      );
     }
     // All steps completed
     return "All steps completed! 🎉";
   };
-  
+
   // Update processing time based on remaining steps
   useEffect(() => {
     // Calculate estimated remaining time based on incomplete steps
     const estimatedTime = calculateEstimatedRemainingTime();
     setProcessingTime(estimatedTime);
   }, [checklist, visaOption]);
-  
+
   // Note: Start time is set when progress is first saved (from backend created_at)
   // or when loading existing progress. No need to set it here.
-  
+
   // Debug logging
   useEffect(() => {
     console.log("Checklist state:", {
@@ -619,7 +653,9 @@ function Checklist() {
           </div>
           <h2 className="loading-title">Preparing Your Checklist</h2>
           <p className="loading-subtitle">
-            {visaType ? `Generating step-by-step guide for ${visaType}` : "Creating your personalized application guide"}
+            {visaType
+              ? `Generating step-by-step guide for ${visaType}`
+              : "Creating your personalized application guide"}
           </p>
           <div className="loading-progress">
             <div className="loading-progress-bar"></div>
@@ -650,10 +686,10 @@ function Checklist() {
             </div>
             <div className="progress-summary">
               <div className="progress-circle">
-                <svg 
-                  className="progress-ring" 
-                  width="120" 
-                  height="120" 
+                <svg
+                  className="progress-ring"
+                  width="120"
+                  height="120"
                   viewBox="0 0 120 120"
                 >
                   {/* Background circle - always visible */}
@@ -681,10 +717,25 @@ function Checklist() {
                   />
                 </svg>
                 <div className="progress-text">
-                  <span className="progress-number" style={{ display: 'block', color: '#4A90E2', fontSize: '1.8rem', fontWeight: 'bold' }}>
+                  <span
+                    className="progress-number"
+                    style={{
+                      display: "block",
+                      color: "#4A90E2",
+                      fontSize: "1.8rem",
+                      fontWeight: "bold",
+                    }}
+                  >
                     {progress || 0}%
                   </span>
-                  <span className="progress-label" style={{ display: 'block', color: '#666666', fontSize: '0.85rem' }}>
+                  <span
+                    className="progress-label"
+                    style={{
+                      display: "block",
+                      color: "#666666",
+                      fontSize: "0.85rem",
+                    }}
+                  >
                     Complete
                   </span>
                 </div>
@@ -696,9 +747,7 @@ function Checklist() {
             <div className="info-row">
               <div className="info-col">
                 <span className="info-label">Processing Time</span>
-                <span className="info-value">
-                  {processingTime}
-                </span>
+                <span className="info-value">{processingTime}</span>
               </div>
               <div className="info-col">
                 <span className="info-label">Cost</span>
@@ -708,9 +757,7 @@ function Checklist() {
               </div>
               <div className="info-col">
                 <span className="info-label">Next Step</span>
-                <span className="info-value">
-                  {getNextStep()}
-                </span>
+                <span className="info-value">{getNextStep()}</span>
               </div>
             </div>
           </div>
@@ -725,118 +772,131 @@ function Checklist() {
 
             <div className="checklist-items">
               {checklist.length > 0 ? (
-                checklist.map((item, index) => {
-                  // Ensure we have a valid item with at least a title
-                  if (!item) {
-                    console.warn(`Checklist item at index ${index} is null or undefined`);
-                    return null;
-                  }
-                  
-                  const itemId = item.id || `step-${index + 1}`;
-                  const itemTitle = item.title || item.name || `Step ${index + 1}`;
-                  const itemStepNumber = item.stepNumber || index + 1;
-                  
-                  return (
-                    <div
-                      key={itemId}
-                      className={`checklist-item scroll-animate scroll-animate-delay-${
-                        (index % 4) + 1
-                      } ${item.completed ? "completed" : ""}`}
-                    >
-                      <div className="step-indicator">
-                        <div className="step-number">{itemStepNumber}</div>
-                        {index < checklist.length - 1 && (
-                          <div className="step-connector"></div>
-                        )}
-                      </div>
-                      
-                      <button
-                        onClick={() => toggleItem(itemId)}
-                        className="check-button"
+                checklist
+                  .map((item, index) => {
+                    // Ensure we have a valid item with at least a title
+                    if (!item) {
+                      console.warn(
+                        `Checklist item at index ${index} is null or undefined`
+                      );
+                      return null;
+                    }
+
+                    const itemId = item.id || `step-${index + 1}`;
+                    const itemTitle =
+                      item.title || item.name || `Step ${index + 1}`;
+                    const itemStepNumber = item.stepNumber || index + 1;
+
+                    return (
+                      <div
+                        key={itemId}
+                        className={`checklist-item scroll-animate scroll-animate-delay-${
+                          (index % 4) + 1
+                        } ${item.completed ? "completed" : ""}`}
                       >
-                        {item.completed ? (
-                          <FiCheckCircle className="check-icon checked" />
-                        ) : (
-                          <FiCircle className="check-icon" />
-                        )}
-                      </button>
-                      
-                      <div className="item-content">
-                        <div className="item-header">
-                          <div className="item-title">
-                            {itemTitle}
-                          </div>
-                          {item.owner && (
-                            <span className={`owner-badge ${item.owner === "JAPA" ? "japa" : "applicant"}`}>
-                              {item.owner === "JAPA" ? (
-                                <FiBriefcase className="owner-icon" />
-                              ) : (
-                                <FiUser className="owner-icon" />
-                              )}
-                              {item.owner === "JAPA" ? "JAPA Handles" : "Your Action"}
-                            </span>
+                        <div className="step-indicator">
+                          <div className="step-number">{itemStepNumber}</div>
+                          {index < checklist.length - 1 && (
+                            <div className="step-connector"></div>
                           )}
                         </div>
-                        
-                        {item.description && (
-                          <div className="item-description">
-                            {item.description}
+
+                        <button
+                          onClick={() => toggleItem(itemId)}
+                          className="check-button"
+                        >
+                          {item.completed ? (
+                            <FiCheckCircle className="check-icon checked" />
+                          ) : (
+                            <FiCircle className="check-icon" />
+                          )}
+                        </button>
+
+                        <div className="item-content">
+                          <div className="item-header">
+                            <div className="item-title">{itemTitle}</div>
+                            {item.owner && (
+                              <span
+                                className={`owner-badge ${
+                                  item.owner === "JAPA" ? "japa" : "applicant"
+                                }`}
+                              >
+                                {item.owner === "JAPA" ? (
+                                  <FiBriefcase className="owner-icon" />
+                                ) : (
+                                  <FiUser className="owner-icon" />
+                                )}
+                                {item.owner === "JAPA"
+                                  ? "JAPA Handles"
+                                  : "Your Action"}
+                              </span>
+                            )}
                           </div>
-                        )}
-                        
-                        {item.guidance && (
-                          <div className="item-guidance">
-                            <FiBookOpen className="guidance-icon" />
-                            <div>
-                              <strong>Guidance:</strong> {item.guidance}
+
+                          {item.description && (
+                            <div className="item-description">
+                              {item.description}
                             </div>
-                          </div>
-                        )}
-                        
-                        {item.documents && Array.isArray(item.documents) && item.documents.length > 0 && (
-                          <div className="item-documents">
-                            <FiFileText className="documents-icon" />
-                            <div>
-                              <strong>Documents needed:</strong>
-                              <ul className="documents-list">
-                                {item.documents.map((doc, docIdx) => (
-                                  <li key={docIdx}>{doc}</li>
-                                ))}
-                              </ul>
+                          )}
+
+                          {item.guidance && (
+                            <div className="item-guidance">
+                              <FiBookOpen className="guidance-icon" />
+                              <div>
+                                <strong>Guidance:</strong> {item.guidance}
+                              </div>
                             </div>
-                          </div>
-                        )}
-                        
-                        {(item.dueIn || item.due_in) && (
-                          <div className="item-due">
-                            <FiClock className="due-icon" />
-                            <span>
-                              <strong>Timeline:</strong> {item.dueIn || item.due_in}
-                            </span>
-                          </div>
-                        )}
+                          )}
+
+                          {item.documents &&
+                            Array.isArray(item.documents) &&
+                            item.documents.length > 0 && (
+                              <div className="item-documents">
+                                <FiFileText className="documents-icon" />
+                                <div>
+                                  <strong>Documents needed:</strong>
+                                  <ul className="documents-list">
+                                    {item.documents.map((doc, docIdx) => (
+                                      <li key={docIdx}>{doc}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            )}
+
+                          {(item.dueIn || item.due_in) && (
+                            <div className="item-due">
+                              <FiClock className="due-icon" />
+                              <span>
+                                <strong>Timeline:</strong>{" "}
+                                {item.dueIn || item.due_in}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                }).filter(Boolean) // Remove any null items
+                    );
+                  })
+                  .filter(Boolean) // Remove any null items
               ) : (
                 <div className="empty-state">
                   <p>
                     No checklist items were provided for this recommendation.
                   </p>
-                  {visaOption?.next_steps && visaOption.next_steps.length > 0 && (
-                    <div className="fallback-steps">
-                      <h3>Next Steps:</h3>
-                      <ul className="requirements-list">
-                        {visaOption.next_steps.map((step, idx) => (
-                          <li key={idx}>
-                            <FiCheckCircle className="check-icon" />
-                            {step}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {visaOption?.next_steps &&
+                    visaOption.next_steps.length > 0 && (
+                      <div className="fallback-steps">
+                        <h3>Next Steps:</h3>
+                        <ul className="requirements-list">
+                          {visaOption.next_steps.map((step, idx) => (
+                            <li key={idx}>
+                              <FiCheckCircle className="check-icon" />
+                              {step}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                 </div>
               )}
             </div>
