@@ -290,6 +290,20 @@
   color: var(--accent);
 }
 
+.mission-copy p {
+  margin: 0;
+}
+
+.mission-copy p + p {
+  margin-top: 1.25rem;
+}
+
+/* Keep anchor jumps from hiding under sticky nav */
+#what-is-japa,
+#how-japa-works {
+  scroll-margin-top: 96px;
+}
+
 /* Section Title */
 .section-title {
   font-size: 3rem;
@@ -548,11 +562,32 @@
   color: var(--text-secondary);
 }
 
+.trust-disclaimer {
+  margin-top: 2.5rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 900px;
+}
+
+/* Why Different */
+.why-different {
+  padding: 8rem 0;
+  background: var(--bg-soft);
+}
+
+/* CTA Bottom */
 /* CTA Bottom */
 .cta-bottom {
   padding: 8rem 0;
   background: #111827;
   text-align: center;
+}
+
+.cta-note {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* Footer */

@@ -70,23 +70,21 @@ function Landing() {
         <div className="hero-content container">
           <div className="hero-panel">
             <h1 className="hero-title">
-              Immigration, Done Right.
-              <br />
-              <span>For People Like You.</span>
+              Navigate migration with <span>clarity</span>, not confusion.
             </h1>
             <p className="hero-subtitle">
-              Japa is an AI-powered immigration support platform helping
-              migrants, students, and families find the best visa path -
-              clearly, quickly, and affordably.
+              JAPA is an AI-powered migration assistant that guides you through
+              visas, documents, interviews, and immigration pathways — step by
+              step.
             </p>
             <div className="hero-actions">
               <button onClick={handleGetStarted} className="btn-hero">
-                Get Your Visa Match
+                Get started for free
               </button>
             </div>
           </div>
           <div className="hero-scroll-indicator">
-            <a className="scroll-link" href="#how-we-help">
+            <a className="scroll-link" href="#how-japa-works">
               <span>See How It Works</span>
               <span className="arrow-down" aria-hidden="true">
                 ↓
@@ -98,156 +96,170 @@ function Landing() {
 
       <section className="why-we-exist">
         <div className="container">
-          <h2 className="section-title underline">Why We Exist</h2>
+          <h2 className="section-title underline">
+            Migration is complex. The information shouldn’t be.
+          </h2>
           <div className="mission-box">
-            <p>
-              Immigration shouldn't be a maze of confusion, costly mistakes, and
-              misinformation. Our <strong>AI immigration platform</strong> was
-              born from the real-world challenges faced by millions seeking{" "}
-              <strong>visa options</strong> and{" "}
-              <strong>trusted immigration services</strong>. We recognized the
-              need for a transparent, technology-driven solution that puts users
-              first.
-            </p>
+            <div className="mission-copy">
+              <p>
+                Migrating to another country often means unclear requirements,
+                conflicting advice, scattered documents, and costly mistakes.
+                Many people don’t fail because they’re unqualified — they fail
+                because the migration process is hard to navigate.
+              </p>
+              <p>
+                <strong>JAPA exists</strong> to bring structure and clarity to
+                migration.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="how-we-help" id="how-we-help">
+      <section className="how-we-help" id="what-is-japa">
         <div className="container">
-          <h2 className="section-title underline">How We Help</h2>
+          <h2 className="section-title underline">What is JAPA?</h2>
           <p className="section-subtitle">
-            Our platform combines AI intelligence with human expertise to guide
-            your immigration journey
+            JAPA is your personal AI migration guide.
           </p>
           <div className="features-grid">
             <div className="feature-card scroll-animate">
               <div className="feature-icon">
                 <FiZap />
               </div>
-              <h3>Smart Matching</h3>
+              <h3>Your personal guide</h3>
               <p>
-                Our AI guides you to visa paths that fit your real profile and
-                goals.
+                It helps you understand where you qualify, how to apply, and
+                what to do next — without endless Googling, guesswork, or
+                confusion.
+              </p>
+            </div>
+            <div className="feature-card scroll-animate">
+              <div className="feature-icon">
+                <FiCheckCircle />
+              </div>
+              <h3>Prepare & organize</h3>
+              <p>
+                JAPA helps you prepare, organize, and navigate migration
+                properly with checklists, tasks, and guidance.
               </p>
             </div>
             <div className="feature-card scroll-animate">
               <div className="feature-icon">
                 <FiShield />
               </div>
-              <h3>Verified Experts</h3>
+              <h3>Not a replacement for lawyers</h3>
               <p>
-                Connect with qualified professionals who understand your
-                specific needs.
-              </p>
-            </div>
-            <div className="feature-card scroll-animate">
-              <div className="feature-icon">
-                <FiLock />
-              </div>
-              <h3>Full Privacy</h3>
-              <p>
-                Your data is secure and encrypted. We never sell or exploit your
-                information.
-              </p>
-            </div>
-            <div className="feature-card scroll-animate">
-              <div className="feature-icon">
-                <FiSmile />
-              </div>
-              <h3>Seamless Experience</h3>
-              <p>
-                Manage documents and track progress in one simple, clean
-                dashboard.
+                JAPA does not replace immigration lawyers or governments. It
+                supports you with structure and clarity when legal judgment
+                isn’t required.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="unique-features">
+      <section className="unique-features" id="how-japa-works">
         <div className="container">
-          <h2 className="section-title underline">What Makes Japa Unique</h2>
+          <h2 className="section-title underline">How JAPA works</h2>
           <p className="section-subtitle">
-            Our platform combines cutting-edge technology with human expertise
-            to deliver unmatched immigration support
+            A guided, step-by-step flow — from profile to pathway to plan.
           </p>
-          <div className="checklist-box glass-light">
-            <ul className="checklist">
-              <li>
-                <FiCheckCircle className="check-icon" /> AI-powered visa pathway
-                engine
-              </li>
-              <li>
-                <FiCheckCircle className="check-icon" /> Verified immigration
-                experts, not agencies
-              </li>
-              <li>
-                <FiCheckCircle className="check-icon" /> Personalized relocation
-                services (SIM, housing, etc.)
-              </li>
-              <li>
-                <FiCheckCircle className="check-icon" /> Available in multiple
-                languages
-              </li>
-              <li>
-                <FiCheckCircle className="check-icon" /> Secure, data-driven
-                platform
-              </li>
-            </ul>
+          <div className="features-grid">
+            <div className="feature-card scroll-animate">
+              <div className="feature-icon">
+                <FiUsers />
+              </div>
+              <h3>Step 1: Build your migration profile</h3>
+              <p>
+                Share your nationality, education, work history, finances, and
+                goals.
+              </p>
+            </div>
+            <div className="feature-card scroll-animate">
+              <div className="feature-icon">
+                <FiGlobe />
+              </div>
+              <h3>Step 2: Discover your migration pathways</h3>
+              <p>
+                JAPA analyzes your profile and recommends realistic visa and
+                immigration options, including alternatives.
+              </p>
+            </div>
+            <div className="feature-card scroll-animate">
+              <div className="feature-icon">
+                <FiClock />
+              </div>
+              <h3>Step 3: Follow a guided migration plan</h3>
+              <p>
+                Get step-by-step tasks, document checklists, timelines, and AI
+                guidance.
+              </p>
+            </div>
+            <div className="feature-card scroll-animate">
+              <div className="feature-icon">
+                <FiStar />
+              </div>
+              <h3>Step 4: Prepare for interviews and decisions</h3>
+              <p>
+                From applications to embassy interviews, JAPA helps you stay
+                ready and confident.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       <section className="who-we-serve">
         <div className="container">
-          <h2 className="section-title underline">Who We Serve</h2>
+          <h2 className="section-title underline">
+            Everything you need to navigate migration — in one place
+          </h2>
           <p className="section-subtitle">
-            Supporting diverse communities on their immigration journey
+            Tools that keep you clear, organized, and moving forward.
           </p>
-          <div className="serve-grid">
-            <div className="serve-card">
-              <div className="serve-icon">
+          <div className="features-grid">
+            <div className="feature-card scroll-animate">
+              <div className="feature-icon">
                 <FiGlobe />
               </div>
-              <h3>First-time Immigrants</h3>
+              <h3>AI Migration Pathway Matching</h3>
               <p>
-                Students, skilled workers, and families taking their first steps
-                toward a new country.
+                Personalized visa and immigration routes based on your
+                background.
               </p>
             </div>
-            <div className="serve-card">
-              <div className="serve-icon">
-                <FiUsers />
+            <div className="feature-card scroll-animate">
+              <div className="feature-icon">
+                <FiCheckCircle />
               </div>
-              <h3>People Already Abroad</h3>
+              <h3>Smart Document Management</h3>
               <p>
-                Those seeking status changes, renewals, or exploring new visa
-                pathways.
+                Country-specific document checklists with deadline tracking.
               </p>
             </div>
-            <div className="serve-card">
-              <div className="serve-icon">
+            <div className="feature-card scroll-animate">
+              <div className="feature-icon">
+                <FiSmile />
+              </div>
+              <h3>AI Application & Interview Coaching</h3>
+              <p>Help with SOPs, forms, and immigration interviews.</p>
+            </div>
+            <div className="feature-card scroll-animate">
+              <div className="feature-icon">
+                <FiClock />
+              </div>
+              <h3>Task & Timeline Tracking</h3>
+              <p>Clear milestones so you always know what to do next.</p>
+            </div>
+            <div className="feature-card scroll-animate">
+              <div className="feature-icon">
                 <FiBriefcase />
               </div>
-              <h3>Service Providers</h3>
+              <h3>Expert & Lawyer Connections (Optional)</h3>
               <p>
-                Immigration professionals and legal experts serving their
-                clients better.
+                Access verified professionals when legal judgment is required.
               </p>
-            </div>
-          </div>
-          <div className="serve-tags-box glass-light">
-            <p>
-              Japa serves students, skilled workers, entrepreneurs, and families
-              from 80+ countries.
-            </p>
-            <div className="serve-tags">
-              <span className="tag">Students</span>
-              <span className="tag">Skilled Workers</span>
-              <span className="tag">Entrepreneurs</span>
-              <span className="tag">Job Seekers</span>
-              <span className="tag">Families</span>
             </div>
           </div>
         </div>
@@ -256,76 +268,126 @@ function Landing() {
       <section className="vision">
         <div className="container">
           <h2 className="section-title white underline">
-            Our Vision for the Future
+            Who JAPA is built for
           </h2>
           <p className="section-subtitle white">
-            We believe the future of immigration is ethical, data-driven, and
-            human-first.
+            JAPA is global by design — built for real people navigating real
+            migration journeys.
           </p>
           <div className="vision-grid">
             <div className="vision-item">
               <div className="vision-icon">
-                <FiGlobe />
+                <FiUsers />
               </div>
-              <h4>Global Expansion</h4>
-              <p>Serving immigration needs worldwide</p>
-            </div>
-            <div className="vision-item">
-              <div className="vision-icon">
-                <FiZap />
-              </div>
-              <h4>End-to-End Automation</h4>
-              <p>Streamlining every step of the process</p>
+              <h4>Students</h4>
+              <p>Planning study routes and transitions</p>
             </div>
             <div className="vision-item">
               <div className="vision-icon">
                 <FiBriefcase />
               </div>
-              <h4>Career Ecosystem</h4>
-              <p>Connecting opportunities with pathways</p>
+              <h4>Skilled workers</h4>
+              <p>Finding realistic work and residency pathways</p>
             </div>
+            <div className="vision-item">
+              <div className="vision-icon">
+                <FiZap />
+              </div>
+              <h4>Founders & freelancers</h4>
+              <p>Navigating business, talent, and relocation options</p>
+            </div>
+            <div className="vision-item">
+              <div className="vision-icon">
+                <FiGlobe />
+              </div>
+              <h4>Families</h4>
+              <p>Organizing dependents, documents, and timelines</p>
+            </div>
+            <div className="vision-item">
+              <div className="vision-icon">
+                <FiClock />
+              </div>
+              <h4>Status changes</h4>
+              <p>Renewals, switches, and in-country processes</p>
+            </div>
+            <div className="vision-item">
+              <div className="vision-icon">
+                <FiMapPin />
+              </div>
+              <h4>Anyone migrating</h4>
+              <p>From one country to another — step by step</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="why-different">
+        <div className="container">
+          <h2 className="section-title underline">
+            Built for real migration journeys
+          </h2>
+          <p className="section-subtitle">
+            Most tools stop at eligibility checks or generic advice. JAPA guides
+            you through the entire migration process — from understanding your
+            options to preparing strong applications.
+          </p>
+          <div className="checklist-box">
+            <ul className="checklist">
+              <li>
+                <FiCheckCircle className="check-icon" />
+                It’s not about shortcuts.
+              </li>
+              <li>
+                <FiCheckCircle className="check-icon" />
+                It’s about doing migration right.
+              </li>
+            </ul>
           </div>
         </div>
       </section>
 
       <section className="trust">
         <div className="container">
-          <h2 className="section-title underline">A Platform You Can Trust</h2>
+          <h2 className="section-title underline">Trust & transparency</h2>
           <p className="section-subtitle">
-            Your journey deserves the highest standards of security and
-            transparency
+            Clear boundaries. Clear expectations.
           </p>
           <div className="trust-box glass-light">
             <div className="trust-grid">
               <div className="trust-item">
                 <FiShield className="trust-icon" />
                 <div>
-                  <h4>Verified Experts</h4>
-                  <p>Top immigration professionals</p>
+                  <h4>No legal advice</h4>
+                  <p>Guidance and organization, not legal representation</p>
                 </div>
               </div>
               <div className="trust-item">
                 <FiLock className="trust-icon" />
                 <div>
-                  <h4>Secure & Encrypted</h4>
-                  <p>Full data protection</p>
+                  <h4>Privacy-first</h4>
+                  <p>Secure handling of your information</p>
                 </div>
               </div>
               <div className="trust-item">
                 <FiStar className="trust-icon" />
                 <div>
-                  <h4>Transparent Process</h4>
-                  <p>No hidden fees or surprises</p>
+                  <h4>No guarantees</h4>
+                  <p>We don’t guarantee visa approvals</p>
                 </div>
               </div>
               <div className="trust-item">
                 <FiUsers className="trust-icon" />
                 <div>
-                  <h4>5-Star Reviews</h4>
-                  <p>From users in 70+ countries</p>
+                  <h4>Informed decisions</h4>
+                  <p>Clarity so you can act with confidence</p>
                 </div>
               </div>
             </div>
+            <p className="trust-disclaimer">
+              JAPA does not provide legal advice and does not guarantee visa
+              approvals. It helps users make informed decisions, stay organized,
+              and prepare thoroughly throughout the migration process.
+            </p>
           </div>
         </div>
       </section>
@@ -333,15 +395,15 @@ function Landing() {
       <section className="cta-bottom">
         <div className="container">
           <h2 className="section-title white">
-            You're Not Alone in This Journey
+            Start your migration journey with confidence.
           </h2>
           <p className="section-subtitle white">
-            Japa helps you move from questions to action with personalized
-            guidance.
+            No guesswork. No chaos. Just clarity.
           </p>
           <button onClick={handleGetStarted} className="btn-hero">
-            Get Your Visa Match →
+            Get started for free →
           </button>
+          <p className="cta-note">No credit card required.</p>
         </div>
       </section>
 
