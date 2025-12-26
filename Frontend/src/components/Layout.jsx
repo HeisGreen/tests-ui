@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { FiHome, FiUser, FiFileText, FiCheckSquare, FiLogOut, FiMail, FiPhone, FiMapPin, FiGithub, FiTwitter, FiLinkedin, FiInstagram } from 'react-icons/fi'
 import { initScrollAnimationsForElement } from '../utils/scrollAnimation'
+import logoMark from '../assets/japa-logo.png'
 import './Layout.css'
 
 function Layout({ children }) {
@@ -26,8 +27,7 @@ function Layout({ children }) {
       <nav className="navbar">
         <div className="nav-container">
           <Link to="/home" className="logo">
-            <span className="logo-icon">✈</span>
-            <span className="logo-text">JAPA</span>
+            <img className="logo-mark" src={logoMark} alt="JAPA logo" />
           </Link>
           <div className="nav-links">
             <Link to="/home" className="nav-link">
@@ -56,8 +56,7 @@ function Layout({ children }) {
           <div className="footer-content">
             <div className="footer-section scroll-animate scroll-animate-delay-1">
               <h3 className="footer-logo">
-                <span className="logo-icon">✈</span>
-                <span className="logo-text">JAPA</span>
+                <img className="logo-mark" src={logoMark} alt="JAPA logo" />
               </h3>
               <p className="footer-description">
                 Your trusted partner for seamless visa applications. Get personalized recommendations and track your progress with ease.

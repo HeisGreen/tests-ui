@@ -40,6 +40,13 @@
   transform: scale(1.05);
 }
 
+.logo-mark {
+  height: 28px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
 .logo-icon {
   font-size: 1.8rem;
   background: linear-gradient(135deg, #4a90e2 0%, #357abd 50%, #6ba3e8 100%);

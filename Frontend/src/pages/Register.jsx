@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import logoMark from '../assets/japa-logo.png'
 import './Auth.css'
 
 function Register() {
@@ -42,8 +43,7 @@ function Register() {
       <div className="auth-container">
         <div className="auth-header">
           <Link to="/" className="logo">
-            <span className="logo-icon">✈</span>
-            <span className="logo-text">JAPA</span>
+            <img className="logo-mark" src={logoMark} alt="JAPA logo" />
           </Link>
           <h1>Create your account</h1>
           <p>Get started with personalized visa recommendations</p>

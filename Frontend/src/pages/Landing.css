@@ -60,6 +60,13 @@
   transform: translateY(-1px);
 }
 
+.landing .logo-mark {
+  height: 28px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
 .landing .logo-icon {
   font-size: 1.8rem;
   color: var(--accent);
@@ -399,6 +406,55 @@
   background: var(--bg-soft);
 }
 
+.how-works-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 3.25rem;
+  align-items: stretch;
+  position: relative;
+}
+
+.how-works-step {
+  padding: 2.75rem 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.how-works-step h3 {
+  font-size: 1.05rem;
+}
+
+/* Single continuous pipeline rail behind steps (desktop) */
+.how-works-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 58px; /* aligns near icon row */
+  height: 120px;
+  width: 100%;
+  color: rgba(50, 215, 75, 0.85);
+  pointer-events: none;
+  z-index: 0;
+  filter: drop-shadow(0 12px 26px rgba(50, 215, 75, 0.14));
+}
+
+@media (max-width: 1200px) {
+  .how-works-flow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+  }
+
+  .how-works-rail {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .how-works-flow {
+    grid-template-columns: 1fr;
+  }
+}
+
 .checklist-box {
   max-width: 800px;
   margin: 0 auto;
@@ -609,6 +665,13 @@
   -webkit-text-fill-color: currentColor;
   filter: none;
   animation: none;
+}
+
+.landing-footer .logo-mark {
+  height: 28px;
+  width: auto;
+  display: block;
+  object-fit: contain;
 }
 
 .landing-footer .footer-logo .logo-text {
@@ -866,6 +929,15 @@
 
   .hero-title {
     font-size: 3.5rem;
+  }
+
+  .how-works-flow {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  .how-works-arrow {
+    display: none;
   }
 }
 

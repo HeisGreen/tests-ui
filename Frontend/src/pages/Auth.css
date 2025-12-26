@@ -46,6 +46,13 @@
   transform: scale(1.05);
 }
 
+.auth-header .logo-mark {
+  height: 28px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
 .auth-header .logo-icon {
   font-size: 1.8rem;
   background: linear-gradient(135deg, #4A90E2 0%, #357ABD 50%, #6BA3E8 100%);
