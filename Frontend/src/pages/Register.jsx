@@ -1,42 +1,42 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import logoMark from '../assets/japa-logo.png'
-import './Auth.css'
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import logoMark from "../assets/japa-logo.png";
+import "./Auth.css";
 
 function Register() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: ''
-  })
-  const [error, setError] = useState('')
-  const { register } = useAuth()
-  const navigate = useNavigate()
+    name: "",
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState("");
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    
+    e.preventDefault();
+    setError("");
+
     if (!formData.name || !formData.email || !formData.password) {
-      setError('Please fill in all required fields')
-      return
+      setError("Please fill in all required fields");
+      return;
     }
 
     try {
-      await register(formData)
-      navigate('/onboarding')
+      await register(formData);
+      navigate("/onboarding");
     } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.')
+      setError(err.message || "Registration failed. Please try again.");
     }
-  }
+  };
 
   return (
     <div className="auth-page">
@@ -51,7 +51,7 @@ function Register() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           {error && <div className="error-message">{error}</div>}
-          
+
           <div className="form-group">
             <label htmlFor="name">Full Name</label>
             <input
@@ -103,8 +103,7 @@ function Register() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default Register
-
+export default Register;

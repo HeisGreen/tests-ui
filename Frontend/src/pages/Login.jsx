@@ -1,32 +1,32 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import logoMark from '../assets/japa-logo.png'
-import './Auth.css'
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import logoMark from "../assets/japa-logo.png";
+import "./Auth.css";
 
 function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const { login } = useAuth()
-  const navigate = useNavigate()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    
+    e.preventDefault();
+    setError("");
+
     if (!email || !password) {
-      setError('Please fill in all fields')
-      return
+      setError("Please fill in all fields");
+      return;
     }
 
     try {
-      await login(email, password)
-      navigate('/home')
+      await login(email, password);
+      navigate("/home");
     } catch (err) {
-      setError(err.message || 'Invalid credentials')
+      setError(err.message || "Invalid credentials");
     }
-  }
+  };
 
   return (
     <div className="auth-page">
@@ -41,7 +41,7 @@ function Login() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           {error && <div className="error-message">{error}</div>}
-          
+
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
@@ -78,8 +78,7 @@ function Login() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default Login
-
+export default Login;
