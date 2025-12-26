@@ -22,6 +22,7 @@ import {
 } from "react-icons/fi";
 import { initScrollAnimations } from "../utils/scrollAnimation";
 import logoMark from "../assets/japa-logo.png";
+import heroVideo from "../assets/Takeoff1.mp4";
 import "./Landing.css";
 
 function Landing() {
@@ -67,6 +68,10 @@ function Landing() {
       </nav>
 
       <section className="hero">
+        <video className="hero-video" autoPlay loop muted playsInline>
+          <source src={heroVideo} type="video/mp4" />
+        </video>
+        <div className="hero-overlay"></div>
         <div className="hero-content container">
           <div className="hero-panel">
             <h1 className="hero-title">
