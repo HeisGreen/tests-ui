@@ -25,7 +25,10 @@ function Landing() {
     <div className="landing">
       <nav className="landing-nav">
         <div className="landing-nav-container">
-          <div className="logo">VisaAgent</div>
+          <div className="logo">
+            <span className="logo-icon">✈</span>
+            <span className="logo-text">JAPA</span>
+          </div>
           <div className="landing-nav-links">
             {isAuthenticated ? (
               <Link to="/home" className="btn-secondary">Go to Dashboard</Link>
@@ -130,7 +133,10 @@ function Landing() {
         <div className="footer-container">
           <div className="footer-content">
             <div className="footer-section scroll-animate scroll-animate-delay-1">
-              <h3 className="footer-logo">VisaAgent</h3>
+              <h3 className="footer-logo">
+                <span className="logo-icon">✈</span>
+                <span className="logo-text">JAPA</span>
+              </h3>
               <p className="footer-description">
                 Your trusted partner for seamless visa applications. Get personalized recommendations and track your progress with ease.
               </p>
@@ -175,7 +181,7 @@ function Landing() {
               <ul className="footer-contact">
                 <li>
                   <FiMail />
-                  <span>support@visaagent.com</span>
+                  <span>support@japa.com</span>
                 </li>
                 <li>
                   <FiPhone />
@@ -190,7 +196,7 @@ function Landing() {
           </div>
           
           <div className="footer-bottom scroll-animate scroll-animate-delay-5">
-            <p>&copy; {new Date().getFullYear()} VisaAgent. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Japa. All rights reserved.</p>
             <div className="footer-bottom-links">
               <a href="#">Terms of Service</a>
               <span>•</span>

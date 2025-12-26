@@ -1,4 +1,4 @@
-# VisaAgent - Visa Application Assistant Frontend
+# JAPA - Visa Application Assistant Frontend
 
 A comprehensive frontend application for managing visa applications, recommendations, and document tracking.
 

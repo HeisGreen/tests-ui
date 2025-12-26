@@ -26,7 +26,8 @@ function Layout({ children }) {
       <nav className="navbar">
         <div className="nav-container">
           <Link to="/home" className="logo">
-            VisaAgent
+            <span className="logo-icon">✈</span>
+            <span className="logo-text">JAPA</span>
           </Link>
           <div className="nav-links">
             <Link to="/home" className="nav-link">
@@ -54,7 +55,10 @@ function Layout({ children }) {
         <div className="footer-container">
           <div className="footer-content">
             <div className="footer-section scroll-animate scroll-animate-delay-1">
-              <h3 className="footer-logo">VisaAgent</h3>
+              <h3 className="footer-logo">
+                <span className="logo-icon">✈</span>
+                <span className="logo-text">JAPA</span>
+              </h3>
               <p className="footer-description">
                 Your trusted partner for seamless visa applications. Get personalized recommendations and track your progress with ease.
               </p>
@@ -99,7 +103,7 @@ function Layout({ children }) {
               <ul className="footer-contact">
                 <li>
                   <FiMail />
-                  <span>support@visaagent.com</span>
+                  <span>support@japa.com</span>
                 </li>
                 <li>
                   <FiPhone />
@@ -114,7 +118,7 @@ function Layout({ children }) {
           </div>
           
           <div className="footer-bottom scroll-animate scroll-animate-delay-5">
-            <p>&copy; {new Date().getFullYear()} VisaAgent. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Japa. All rights reserved.</p>
             <div className="footer-bottom-links">
               <a href="#">Terms of Service</a>
               <span>•</span>

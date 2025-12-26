@@ -378,14 +378,68 @@
   transform: translateY(-2px);
 }
 
-.footer-logo {
+.landing-nav .logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.5rem;
-  font-weight: bold;
-  color: #4A90E2;
-  margin-bottom: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.3s ease;
+}
+
+.landing-nav .logo:hover {
+  transform: scale(1.05);
+}
+
+.landing-nav .logo-icon {
+  font-size: 1.8rem;
+  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 50%, #6BA3E8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   display: inline-block;
-  transition: transform 0.3s ease, color 0.3s ease;
   animation: logoFloat 3s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(74, 144, 226, 0.3));
+}
+
+.landing-nav .logo-text {
+  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+  font-weight: 800;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  transition: transform 0.3s ease;
+  animation: logoFloat 3s ease-in-out infinite;
+}
+
+.footer-logo .logo-icon {
+  font-size: 1.8rem;
+  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 50%, #6BA3E8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+  filter: drop-shadow(0 2px 4px rgba(74, 144, 226, 0.3));
+}
+
+.footer-logo .logo-text {
+  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+  font-weight: 800;
 }
 
 @keyframes logoFloat {
@@ -399,7 +453,6 @@
 
 .footer-logo:hover {
   transform: translateY(-2px) scale(1.05);
-  color: #357ABD;
 }
 
 .footer-description {

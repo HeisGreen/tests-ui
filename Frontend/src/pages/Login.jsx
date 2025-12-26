@@ -31,7 +31,10 @@ function Login() {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-header">
-          <Link to="/" className="logo">VisaAgent</Link>
+          <Link to="/" className="logo">
+            <span className="logo-icon">✈</span>
+            <span className="logo-text">JAPA</span>
+          </Link>
           <h1>Welcome back</h1>
           <p>Sign in to continue to your visa application</p>
         </div>

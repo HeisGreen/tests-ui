@@ -41,7 +41,10 @@ function Register() {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-header">
-          <Link to="/" className="logo">VisaAgent</Link>
+          <Link to="/" className="logo">
+            <span className="logo-icon">✈</span>
+            <span className="logo-text">JAPA</span>
+          </Link>
           <h1>Create your account</h1>
           <p>Get started with personalized visa recommendations</p>
         </div>

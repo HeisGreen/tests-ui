@@ -32,11 +32,47 @@
 }
 
 .auth-header .logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.5rem;
-  font-weight: bold;
-  color: #4A90E2;
-  display: block;
+  font-weight: 700;
+  text-decoration: none;
   margin-bottom: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.auth-header .logo:hover {
+  transform: scale(1.05);
+}
+
+.auth-header .logo-icon {
+  font-size: 1.8rem;
+  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 50%, #6BA3E8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+  animation: logoFloat 3s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(74, 144, 226, 0.3));
+}
+
+.auth-header .logo-text {
+  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+  font-weight: 800;
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 .auth-header h1 {
