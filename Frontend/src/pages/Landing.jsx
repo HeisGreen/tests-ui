@@ -22,7 +22,7 @@ import {
 } from "react-icons/fi";
 import { initScrollAnimations } from "../utils/scrollAnimation";
 import logoMark from "../assets/japa-logo.png";
-import heroVideo from "../assets/Takeoff1.mp4";
+import heroVideo from "../assets/japa-bg.mp4";
 import "./Landing.css";
 
 function Landing() {
