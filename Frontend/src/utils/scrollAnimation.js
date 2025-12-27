@@ -16,7 +16,18 @@ export function initScrollAnimations() {
 
   // Observe all elements with scroll-animate class
   const animateElements = document.querySelectorAll('.scroll-animate')
-  animateElements.forEach((el) => observer.observe(el))
+  animateElements.forEach((el) => {
+    // Check if element is already in viewport before observing
+    const rect = el.getBoundingClientRect()
+    const isInView = rect.top < window.innerHeight && rect.bottom > 0 && rect.width > 0 && rect.height > 0
+    if (isInView || rect.top < 200) {
+      // Element is already visible or close to viewport, add animate-in immediately
+      el.classList.add('animate-in')
+    } else {
+      // Element is not in viewport, observe it
+      observer.observe(el)
+    }
+  })
 
   return observer
 }

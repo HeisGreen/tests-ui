@@ -9,6 +9,9 @@ import {
   FiClock,
   FiFileText,
   FiList,
+  FiTrendingUp,
+  FiCalendar,
+  FiTarget,
 } from "react-icons/fi";
 import { initScrollAnimations } from "../utils/scrollAnimation";
 import "./Home.css";
@@ -38,6 +41,59 @@ function Home() {
     if (!options.length) return;
     initScrollAnimations();
   }, [options.length]);
+
+  // Show all checklists with saved progress (even 0%) to avoid hiding new ones
+  // Defined early so it can be used in useEffect hooks
+  const activeChecklistsWithProgress = useMemo(() => {
+    return activeChecklists.filter(
+      (checklist) => checklist && (checklist.visa_type || checklist.visaType)
+    );
+  }, [activeChecklists]);
+
+  // Re-initialize scroll animations when checklist cards are loaded
+  useEffect(() => {
+    if (!loadingChecklists && activeChecklistsWithProgress.length > 0) {
+      // Use multiple attempts to ensure cards become visible
+      const makeCardsVisible = () => {
+        const cards = document.querySelectorAll('.checklist-card.scroll-animate');
+        
+        // First pass: Check if cards are already in viewport and make them visible immediately
+        cards.forEach((card) => {
+          const rect = card.getBoundingClientRect();
+          const isInView = rect.top < window.innerHeight && rect.bottom > 0 && rect.width > 0 && rect.height > 0;
+          // If card is in viewport or close to it, make it visible immediately
+          if (isInView || rect.top < 300) {
+            card.classList.add('animate-in');
+          }
+        });
+        
+        // Initialize scroll animations for cards not yet visible
+        initScrollAnimations();
+      };
+      
+      // Multiple attempts with increasing delays to catch cards at different render stages
+      requestAnimationFrame(() => {
+        makeCardsVisible();
+        
+        // Second attempt after a short delay
+        setTimeout(() => {
+          makeCardsVisible();
+        }, 100);
+        
+        // Final fallback: Force all cards visible if they're still not animated after 300ms
+        setTimeout(() => {
+          const hiddenCards = document.querySelectorAll('.checklist-card.scroll-animate:not(.animate-in)');
+          hiddenCards.forEach((card) => {
+            const rect = card.getBoundingClientRect();
+            // If card exists in DOM and has dimensions, make it visible
+            if (rect.width > 0 && rect.height > 0) {
+              card.classList.add('animate-in');
+            }
+          });
+        }, 300);
+      });
+    }
+  }, [loadingChecklists, activeChecklistsWithProgress.length]);
 
   useEffect(() => {
     let cancelled = false;
@@ -209,13 +265,6 @@ function Home() {
       return `~${totalDays} day${totalDays !== 1 ? "s" : ""}`;
     }
   };
-
-  // Show all checklists with saved progress (even 0%) to avoid hiding new ones
-  const activeChecklistsWithProgress = useMemo(() => {
-    return activeChecklists.filter(
-      (checklist) => checklist && (checklist.visa_type || checklist.visaType)
-    );
-  }, [activeChecklists]);
 
   const getVisaStateText = (visa) => {
     const raw = visa?.state ?? visa?.status ?? visa?.likelihood ?? "";
@@ -563,44 +612,76 @@ function Home() {
                     <Link
                       key={checklist.id || `checklist-${index}`}
                       to={`/checklist/${encodeURIComponent(visaType)}`}
-                      className="checklist-card scroll-animate"
+                      className={`checklist-card scroll-animate ${progressPercent === 100 ? 'checklist-completed' : ''}`}
                     >
                       <div className="checklist-card-header">
-                        <div className="checklist-icon">
-                          <FiList />
+                        <div className={`checklist-icon ${progressPercent === 100 ? 'completed' : ''}`}>
+                          {progressPercent === 100 ? (
+                            <FiCheckCircle />
+                          ) : (
+                            <FiTarget />
+                          )}
                         </div>
                         <div className="checklist-title-section">
                           <h3>{visaType}</h3>
                           <p className="checklist-meta">
-                            {totalCount > 0
-                              ? `${completedCount} of ${totalCount} steps completed`
-                              : "No progress yet"}
+                            {totalCount > 0 ? (
+                              <>
+                                <span className="checklist-stats">
+                                  <FiTrendingUp className="stats-icon" />
+                                  {completedCount} of {totalCount} steps
+                                </span>
+                              </>
+                            ) : (
+                              "Getting started..."
+                            )}
                           </p>
                         </div>
                       </div>
-                      <div className="checklist-progress-bar">
-                        <div
-                          className="checklist-progress-fill"
-                          style={{ width: `${Math.max(progressPercent, 0)}%` }}
-                        />
+                      
+                      <div className="checklist-progress-container">
+                        <div className="checklist-progress-header">
+                          <span className="progress-label">Progress</span>
+                          <span className="progress-percentage">{progressPercent}%</span>
+                        </div>
+                        <div className="checklist-progress-bar">
+                          <div
+                            className="checklist-progress-fill"
+                            style={{ width: `${Math.max(progressPercent, 0)}%` }}
+                          >
+                            {progressPercent > 0 && (
+                              <div className="progress-shine"></div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="checklist-progress-text">
+
+                      <div className="checklist-footer">
                         <div className="checklist-progress-info">
-                          <span>{progressPercent}% Complete</span>
                           {estimatedTime !== "—" &&
                             estimatedTime !== "Completed" && (
-                              <span className="checklist-processing-time">
+                              <div className="checklist-time-badge">
                                 <FiClock className="clock-icon" />
-                                {estimatedTime}
-                              </span>
+                                <span>{estimatedTime}</span>
+                              </div>
                             )}
                           {estimatedTime === "Completed" && (
-                            <span className="checklist-processing-time completed">
-                              ✓ Completed
-                            </span>
+                            <div className="checklist-completed-badge">
+                              <FiCheckCircle className="check-icon" />
+                              <span>All done!</span>
+                            </div>
+                          )}
+                          {totalCount > 0 && (
+                            <div className="checklist-steps-badge">
+                              <FiCalendar className="calendar-icon" />
+                              <span>{totalCount - completedCount} remaining</span>
+                            </div>
                           )}
                         </div>
-                        <FiArrowRight className="arrow-icon" />
+                        <div className="checklist-action">
+                          <span className="action-text">View Details</span>
+                          <FiArrowRight className="arrow-icon" />
+                        </div>
                       </div>
                     </Link>
                   );
