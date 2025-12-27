@@ -41,6 +41,38 @@ function Landing() {
     }
   };
 
+  const howWorksSteps = [
+    {
+      id: 1,
+      title: "Build your migration profile",
+      description:
+        "Share your nationality, education, work history, finances, and goals so we can recommend the right pathways.",
+      icon: FiUsers,
+      cta: "Get started",
+    },
+    {
+      id: 2,
+      title: "Discover your migration pathways",
+      description:
+        "JAPA analyzes your profile and recommends realistic visa and immigration options, including side-by-side alternatives.",
+      icon: FiGlobe,
+    },
+    {
+      id: 3,
+      title: "Follow a guided migration plan",
+      description:
+        "Receive checklists, document reminders, timelines, and AI guidance for every milestone.",
+      icon: FiClock,
+    },
+    {
+      id: 4,
+      title: "Prepare for interviews and decisions",
+      description:
+        "From applications to embassy interviews, JAPA helps you stay ready and confident.",
+      icon: FiStar,
+    },
+  ];
+
   return (
     <div className="landing">
       <nav className="landing-nav">
@@ -171,108 +203,32 @@ function Landing() {
             A guided, step-by-step flow — from profile to pathway to plan.
           </p>
           <div className="how-works-flow">
-            <svg
-              className="how-works-rail"
-              viewBox="0 0 1000 160"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-              focusable="false"
-            >
-              <defs>
-                <marker
-                  id="howWorksArrow"
-                  viewBox="0 0 10 10"
-                  refX="9"
-                  refY="5"
-                  markerWidth="7"
-                  markerHeight="7"
-                  orient="auto"
+            {howWorksSteps.map((step) => {
+              const IconComponent = step.icon;
+
+              return (
+                <div
+                  key={step.id}
+                  className="feature-card how-works-step scroll-animate"
                 >
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
-                </marker>
-              </defs>
-
-              {/* faint dotted baseline */}
-              <path
-                d="M 120 80 L 880 80"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="4"
-                strokeLinecap="round"
-                strokeDasharray="2 14"
-                opacity="0.35"
-              />
-
-              {/* squiggly segments with arrowheads */}
-              <path
-                d="M 150 80 C 215 44, 285 116, 350 80"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="6"
-                strokeLinecap="round"
-                markerEnd="url(#howWorksArrow)"
-              />
-              <path
-                d="M 400 80 C 465 44, 535 116, 600 80"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="6"
-                strokeLinecap="round"
-                markerEnd="url(#howWorksArrow)"
-              />
-              <path
-                d="M 650 80 C 715 44, 785 116, 850 80"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="6"
-                strokeLinecap="round"
-                markerEnd="url(#howWorksArrow)"
-              />
-            </svg>
-
-            <div className="feature-card how-works-step scroll-animate">
-              <div className="feature-icon">
-                <FiUsers />
-              </div>
-              <h3>Step 1: Build your migration profile</h3>
-              <p>
-                Share your nationality, education, work history, finances, and
-                goals.
-              </p>
-            </div>
-
-            <div className="feature-card how-works-step scroll-animate">
-              <div className="feature-icon">
-                <FiGlobe />
-              </div>
-              <h3>Step 2: Discover your migration pathways</h3>
-              <p>
-                JAPA analyzes your profile and recommends realistic visa and
-                immigration options, including alternatives.
-              </p>
-            </div>
-
-            <div className="feature-card how-works-step scroll-animate">
-              <div className="feature-icon">
-                <FiClock />
-              </div>
-              <h3>Step 3: Follow a guided migration plan</h3>
-              <p>
-                Get step-by-step tasks, document checklists, timelines, and AI
-                guidance.
-              </p>
-            </div>
-
-            <div className="feature-card how-works-step scroll-animate">
-              <div className="feature-icon">
-                <FiStar />
-              </div>
-              <h3>Step 4: Prepare for interviews and decisions</h3>
-              <p>
-                From applications to embassy interviews, JAPA helps you stay
-                ready and confident.
-              </p>
-            </div>
+                  <span className="step-pill">Step {step.id}</span>
+                  <div className="feature-icon">
+                    <IconComponent />
+                  </div>
+                  <h3>{step.title}</h3>
+                  <p>{step.description}</p>
+                  {step.cta && (
+                    <button
+                      type="button"
+                      className="step-cta"
+                      onClick={handleGetStarted}
+                    >
+                      {step.cta}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -419,7 +375,7 @@ function Landing() {
           <p className="section-subtitle">
             Clear boundaries. Clear expectations.
           </p>
-          <div className="trust-box glass-light">
+          <div className="trust-box">
             <div className="trust-grid">
               <div className="trust-item">
                 <FiShield className="trust-icon" />

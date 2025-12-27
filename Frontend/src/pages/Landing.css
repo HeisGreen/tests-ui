@@ -392,17 +392,53 @@
 
 .feature-card {
   padding: 3rem 2rem;
-  border-radius: 20px;
+  border-radius: 28px;
   background: white;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 15px 40px rgba(15, 23, 42, 0.1);
   text-align: center;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-.feature-card:hover {
+.feature-card:not(.how-works-step):hover {
   transform: translateY(-8px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+.features-grid .feature-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.features-grid .feature-card::before {
+  content: "";
+  position: absolute;
+  inset: 18px auto auto 18px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.4;
+  background: radial-gradient(circle, rgba(50, 215, 75, 0.6), transparent 75%);
+  z-index: -1;
+  transition: opacity 0.3s ease;
+}
+
+.features-grid .feature-card:hover::before {
+  opacity: 0.55;
+}
+
+.features-grid .feature-card h3 {
+  font-size: 1.1rem;
+  line-height: 1.4;
+  color: #111;
+  margin-bottom: 0.75rem;
+}
+
+.features-grid .feature-card p {
+  color: #565656;
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
 .feature-icon {
@@ -416,6 +452,14 @@
   align-items: center;
   justify-content: center;
   font-size: 1.75rem;
+  transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  will-change: background, color, box-shadow;
+}
+
+.how-works-step:hover .feature-icon {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 15px 30px rgba(50, 215, 75, 0.25);
 }
 
 /* Unique Features */
@@ -426,44 +470,126 @@
 
 .how-works-flow {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 3.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
   align-items: stretch;
   position: relative;
 }
 
 .how-works-step {
-  padding: 2.75rem 2rem;
+  background: white;
+  padding: 3rem 2.25rem 2.5rem;
+  border-radius: 28px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 15px 40px rgba(15, 23, 42, 0.1);
   position: relative;
-  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 280px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.how-works-step::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  filter: blur(30px);
+  opacity: 0.55;
+  background: radial-gradient(circle, rgba(50, 215, 75, 0.65), transparent 70%);
+  top: -30px;
+  left: -40px;
+}
+
+.how-works-step:nth-child(2)::before {
+  top: auto;
+  bottom: -40px;
+  left: -30px;
+  background: radial-gradient(circle, rgba(50, 215, 75, 0.45), transparent 70%);
+}
+
+.how-works-step:nth-child(3)::before {
+  top: -20px;
+  right: -40px;
+  left: auto;
+  background: radial-gradient(circle, rgba(50, 215, 75, 0.55), transparent 70%);
+}
+
+.how-works-step:nth-child(4)::before {
+  bottom: -24px;
+  right: -30px;
+  left: auto;
+  background: radial-gradient(circle, rgba(50, 215, 75, 0.5), transparent 75%);
 }
 
 .how-works-step h3 {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
+  line-height: 1.4;
 }
 
-/* Single continuous pipeline rail behind steps (desktop) */
-.how-works-rail {
+.how-works-step:hover {
+  border-color: rgba(50, 215, 75, 0.35);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.18);
+  transform: translateY(-6px);
+}
+
+.how-works-step {
+  will-change: transform, box-shadow, border-color;
+}
+
+.how-works-step p {
+  color: #565656;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.step-pill {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 58px; /* aligns near icon row */
-  height: 120px;
-  width: 100%;
-  color: rgba(50, 215, 75, 0.85);
-  pointer-events: none;
-  z-index: 0;
-  filter: drop-shadow(0 12px 26px rgba(50, 215, 75, 0.14));
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.35rem 1.2rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  box-shadow: 0 12px 30px rgba(50, 215, 75, 0.35);
+}
+
+.step-cta {
+  margin-top: auto;
+  align-self: center;
+  padding: 0.6rem 1.5rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 12px 25px rgba(50, 215, 75, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.step-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 30px rgba(50, 215, 75, 0.35);
+}
+
+.step-cta:focus-visible {
+  outline: 2px solid rgba(50, 215, 75, 1);
+  outline-offset: 4px;
 }
 
 @media (max-width: 1200px) {
   .how-works-flow {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 2rem;
-  }
-
-  .how-works-rail {
-    display: none;
+    gap: 1.5rem;
   }
 }
 
@@ -477,10 +603,17 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 4rem;
-  border-radius: 32px;
+  border-radius: 28px;
   background: white;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 15px 40px rgba(15, 23, 42, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.checklist-box:hover {
+  border-color: rgba(50, 215, 75, 0.35);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.14);
+  transform: translateY(-4px);
 }
 
 .checklist {
@@ -519,15 +652,18 @@
 
 .serve-card {
   padding: 3rem;
-  border-radius: 24px;
-  border: 1px solid var(--border);
+  border-radius: 28px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: white;
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
   text-align: center;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .serve-card:hover {
-  border-color: var(--accent);
-  background: rgba(50, 215, 75, 0.02);
+  border-color: rgba(50, 215, 75, 0.35);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.15);
+  transform: translateY(-4px);
 }
 
 .serve-icon {
@@ -603,9 +739,17 @@
 
 .trust-box {
   padding: 4rem;
-  border-radius: 32px;
-  background: rgba(50, 215, 75, 0.03);
-  border: 1px solid rgba(50, 215, 75, 0.1);
+  border-radius: 28px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 15px 40px rgba(15, 23, 42, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.trust-box:hover {
+  border-color: rgba(50, 215, 75, 0.35);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.14);
+  transform: translateY(-4px);
 }
 
 .trust-grid {
