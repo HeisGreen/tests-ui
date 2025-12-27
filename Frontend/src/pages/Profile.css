@@ -31,13 +31,13 @@
   padding: 2rem;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15),
+  box-shadow: 0 8px 32px rgba(50, 215, 75, 0.15),
               inset 0 1px 0 rgba(255, 255, 255, 0.6);
   transition: all 0.3s ease;
 }
 
 .profile-card:hover {
-  box-shadow: 0 12px 40px rgba(74, 144, 226, 0.2),
+  box-shadow: 0 12px 40px rgba(50, 215, 75, 0.2),
               inset 0 1px 0 rgba(255, 255, 255, 0.8);
   transform: translateY(-2px);
 }
@@ -45,7 +45,7 @@
 .card-header {
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #E8F1FF;
+  border-bottom: 1px solid var(--accent-surface);
 }
 
 .card-header h2 {
@@ -57,7 +57,7 @@
 }
 
 .header-icon {
-  color: #4A90E2;
+  color: var(--accent);
 }
 
 .profile-form {
@@ -82,13 +82,13 @@
 }
 
 .label-icon {
-  color: #4A90E2;
+  color: var(--accent);
   font-size: 1rem;
 }
 
 .form-group input {
   padding: 0.875rem;
-  border: 1px solid #E8F1FF;
+  border: 1px solid var(--accent-surface);
   border-radius: 6px;
   font-size: 1rem;
   transition: border-color 0.2s;
@@ -96,7 +96,7 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #4A90E2;
+  border-color: var(--accent);
 }
 
 .form-row {
@@ -110,7 +110,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: #4A90E2;
+  background-color: var(--accent);
   color: white;
   padding: 0.875rem 2rem;
   border-radius: 6px;
@@ -121,7 +121,7 @@
 }
 
 .btn-save:hover:not(:disabled) {
-  background-color: #357ABD;
+  background-color: var(--accent-strong);
 }
 
 .btn-save:disabled {

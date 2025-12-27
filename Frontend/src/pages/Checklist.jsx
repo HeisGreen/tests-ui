@@ -695,7 +695,7 @@ function Checklist() {
                   {/* Background circle - always visible */}
                   <circle
                     className="progress-ring-circle-bg"
-                    stroke="#E8F1FF"
+                    stroke="var(--accent-surface)"
                     strokeWidth="8"
                     fill="none"
                     r="52"
@@ -705,7 +705,7 @@ function Checklist() {
                   {/* Progress circle - shows completion */}
                   <circle
                     className="progress-ring-circle"
-                    stroke="#4A90E2"
+                    stroke="var(--accent)"
                     strokeWidth="8"
                     fill="none"
                     r="52"
@@ -721,7 +721,7 @@ function Checklist() {
                     className="progress-number"
                     style={{
                       display: "block",
-                      color: "#4A90E2",
+                      color: "var(--accent)",
                       fontSize: "1.8rem",
                       fontWeight: "bold",
                     }}

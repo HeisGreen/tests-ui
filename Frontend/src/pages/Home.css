@@ -32,23 +32,23 @@
   padding: 1.5rem;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15),
+  box-shadow: 0 8px 32px rgba(50, 215, 75, 0.15),
               inset 0 1px 0 rgba(255, 255, 255, 0.6);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .stat-card:hover {
   transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 16px 48px rgba(74, 144, 226, 0.25),
+  box-shadow: 0 16px 48px rgba(50, 215, 75, 0.25),
               inset 0 1px 0 rgba(255, 255, 255, 0.8);
   background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(74, 144, 226, 0.3);
+  border-color: rgba(50, 215, 75, 0.3);
 }
 
 .stat-value {
   font-size: 2.5rem;
   font-weight: bold;
-  color: #4A90E2;
+  color: var(--accent);
   margin-bottom: 0.5rem;
 }
 
@@ -83,13 +83,13 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #4A90E2;
+  color: var(--accent);
   font-weight: 500;
   transition: color 0.2s;
 }
 
 .link-primary:hover {
-  color: #357ABD;
+  color: var(--accent-strong);
 }
 
 .empty-state {
@@ -99,7 +99,7 @@
   backdrop-filter: blur(10px) saturate(180%);
   -webkit-backdrop-filter: blur(10px) saturate(180%);
   border-radius: 16px;
-  border: 2px dashed rgba(232, 241, 255, 0.6);
+  border: 2px dashed rgba(231, 255, 239, 0.6);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
@@ -110,7 +110,7 @@
 }
 
 .btn-primary {
-  background-color: #4A90E2;
+  background-color: var(--accent);
   color: white;
   padding: 0.875rem 2rem;
   border-radius: 6px;
@@ -120,7 +120,7 @@
 }
 
 .btn-primary:hover {
-  background-color: #357ABD;
+  background-color: var(--accent-strong);
 }
 
 .recommendations-grid {
@@ -136,17 +136,17 @@
   padding: 1.5rem;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.12),
+  box-shadow: 0 4px 16px rgba(50, 215, 75, 0.12),
               inset 0 1px 0 rgba(255, 255, 255, 0.6);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .recommendation-card:hover {
   transform: translateY(-6px) scale(1.01);
-  box-shadow: 0 12px 32px rgba(74, 144, 226, 0.2),
+  box-shadow: 0 12px 32px rgba(50, 215, 75, 0.2),
               inset 0 1px 0 rgba(255, 255, 255, 0.8);
   background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(74, 144, 226, 0.3);
+  border-color: rgba(50, 215, 75, 0.3);
 }
 
 .card-header {
@@ -195,14 +195,14 @@
 
 .progress-bar {
   height: 8px;
-  background-color: #E8F1FF;
+  background-color: var(--accent-surface);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background-color: #4A90E2;
+  background-color: var(--accent);
   border-radius: 4px;
   transition: width 0.3s;
 }
@@ -234,15 +234,15 @@
   gap: 0.5rem;
   width: 100%;
   padding: 0.75rem;
-  background-color: #E8F1FF;
-  color: #4A90E2;
+  background-color: var(--accent-surface);
+  color: var(--accent);
   border-radius: 6px;
   font-weight: 500;
   transition: background-color 0.2s;
 }
 
 .btn-card-action:hover {
-  background-color: #4A90E2;
+  background-color: var(--accent);
   color: white;
 }
 
@@ -259,7 +259,7 @@
   padding: 2rem;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.12),
+  box-shadow: 0 4px 16px rgba(50, 215, 75, 0.12),
               inset 0 1px 0 rgba(255, 255, 255, 0.6);
   text-align: center;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -267,10 +267,10 @@
 
 .action-card:hover {
   transform: translateY(-8px) scale(1.03);
-  box-shadow: 0 16px 40px rgba(74, 144, 226, 0.25),
+  box-shadow: 0 16px 40px rgba(50, 215, 75, 0.25),
               inset 0 1px 0 rgba(255, 255, 255, 0.8);
   background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(74, 144, 226, 0.3);
+  border-color: rgba(50, 215, 75, 0.3);
 }
 
 .action-icon {
@@ -286,7 +286,7 @@
 }
 
 .action-icon.blue {
-  background: linear-gradient(135deg, #4A90E2 0%, #E8F1FF 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-surface) 100%);
 }
 
 .action-icon.purple {
@@ -323,7 +323,7 @@
   padding: 1.5rem;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.12),
+  box-shadow: 0 4px 16px rgba(50, 215, 75, 0.12),
               inset 0 1px 0 rgba(255, 255, 255, 0.6);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
@@ -333,10 +333,10 @@
 
 .checklist-card:hover {
   transform: translateY(-6px) scale(1.01);
-  box-shadow: 0 12px 32px rgba(74, 144, 226, 0.2),
+  box-shadow: 0 12px 32px rgba(50, 215, 75, 0.2),
               inset 0 1px 0 rgba(255, 255, 255, 0.8);
   background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(74, 144, 226, 0.3);
+  border-color: rgba(50, 215, 75, 0.3);
   text-decoration: none;
   color: inherit;
 }
@@ -352,11 +352,11 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #4A90E2 0%, #E8F1FF 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-surface) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #4A90E2;
+  color: var(--accent);
   font-size: 1.5rem;
   flex-shrink: 0;
 }
@@ -380,7 +380,7 @@
 
 .checklist-progress-bar {
   height: 8px;
-  background-color: #E8F1FF;
+  background-color: var(--accent-surface);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 0.75rem;
@@ -388,7 +388,7 @@
 
 .checklist-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4A90E2 0%, #357ABD 100%);
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-strong) 100%);
   border-radius: 4px;
   transition: width 0.3s ease;
 }
@@ -417,7 +417,7 @@
   align-items: center;
   gap: 0.25rem;
   font-size: 0.75rem;
-  color: #4A90E2;
+  color: var(--accent);
   font-weight: 500;
 }
 
@@ -430,7 +430,7 @@
 }
 
 .checklist-progress-text .arrow-icon {
-  color: #4A90E2;
+  color: var(--accent);
   transition: transform 0.2s;
 }
 

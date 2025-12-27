@@ -7,14 +7,14 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #4A90E2;
+  color: var(--accent);
   margin-bottom: 2rem;
   font-weight: 500;
   transition: color 0.2s;
 }
 
 .back-link:hover {
-  color: #357ABD;
+  color: var(--accent-strong);
 }
 
 .checklist-header {
@@ -23,7 +23,7 @@
   align-items: flex-start;
   margin-bottom: 2rem;
   padding-bottom: 2rem;
-  border-bottom: 1px solid #E8F1FF;
+  border-bottom: 1px solid var(--accent-surface);
 }
 
 .checklist-header h1 {
@@ -64,14 +64,14 @@
   transition: stroke-dasharray 0.3s ease;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke: #4A90E2 !important;
+  stroke: var(--accent) !important;
   fill: none;
 }
 
 .progress-ring-circle-bg {
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke: #E8F1FF !important;
+  stroke: var(--accent-surface) !important;
   fill: none;
 }
 
@@ -95,7 +95,7 @@
   display: block !important;
   font-size: 1.8rem !important;
   font-weight: bold !important;
-  color: #4A90E2 !important;
+  color: var(--accent) !important;
   line-height: 1.2;
   margin: 0;
   padding: 0;
@@ -115,7 +115,7 @@
 }
 
 .visa-info-card {
-  background: rgba(232, 241, 255, 0.6);
+  background: rgba(231, 255, 239, 0.6);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   padding: 1.5rem;
@@ -170,7 +170,7 @@
 }
 
 .section-icon {
-  color: #4A90E2;
+  color: var(--accent);
 }
 
 .checklist-count {
@@ -207,7 +207,7 @@
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px) saturate(180%);
   -webkit-backdrop-filter: blur(10px) saturate(180%);
-  border: 2px solid rgba(232, 241, 255, 0.5);
+  border: 2px solid rgba(231, 255, 239, 0.5);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05),
               inset 0 1px 0 rgba(255, 255, 255, 0.6);
@@ -216,8 +216,8 @@
 }
 
 .checklist-item:hover {
-  border-color: rgba(74, 144, 226, 0.4);
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15),
+  border-color: rgba(50, 215, 75, 0.4);
+  box-shadow: 0 4px 12px rgba(50, 215, 75, 0.15),
               inset 0 1px 0 rgba(255, 255, 255, 0.7);
   transform: translateX(4px);
   background: rgba(255, 255, 255, 0.85);
@@ -240,7 +240,7 @@
 
 .check-icon {
   font-size: 1.5rem;
-  color: #E8F1FF;
+  color: var(--accent-surface);
   transition: color 0.2s;
 }
 
@@ -260,14 +260,14 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-size: 1.1rem;
-  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+  box-shadow: 0 2px 8px rgba(50, 215, 75, 0.3);
   z-index: 2;
 }
 
@@ -280,7 +280,7 @@
   width: 2px;
   flex: 1;
   min-height: 40px;
-  background: linear-gradient(to bottom, #E8F1FF 0%, rgba(232, 241, 255, 0.3) 100%);
+  background: linear-gradient(to bottom, var(--accent-surface) 0%, rgba(231, 255, 239, 0.3) 100%);
   margin-top: 0.5rem;
   transition: background 0.3s ease;
 }
@@ -332,7 +332,7 @@
 
 .owner-badge.applicant {
   background-color: #E8F4FD;
-  color: #357ABD;
+  color: var(--accent-strong);
 }
 
 .owner-badge.japa {
@@ -354,8 +354,8 @@
   display: flex;
   gap: 0.75rem;
   padding: 1rem;
-  background: rgba(74, 144, 226, 0.08);
-  border-left: 3px solid #4A90E2;
+  background: rgba(50, 215, 75, 0.08);
+  border-left: 3px solid var(--accent);
   border-radius: 6px;
   color: #444444;
   line-height: 1.6;
@@ -363,7 +363,7 @@
 }
 
 .guidance-icon {
-  color: #4A90E2;
+  color: var(--accent);
   font-size: 1.2rem;
   flex-shrink: 0;
   margin-top: 0.1rem;
@@ -377,14 +377,14 @@
   display: flex;
   gap: 0.75rem;
   padding: 1rem;
-  background: rgba(232, 241, 255, 0.4);
+  background: rgba(231, 255, 239, 0.4);
   border-radius: 6px;
   color: #444444;
   font-size: 0.9rem;
 }
 
 .documents-icon {
-  color: #4A90E2;
+  color: var(--accent);
   font-size: 1.2rem;
   flex-shrink: 0;
   margin-top: 0.1rem;
@@ -413,7 +413,7 @@
   content: "•";
   position: absolute;
   left: 0;
-  color: #4A90E2;
+  color: var(--accent);
   font-weight: bold;
 }
 
@@ -501,7 +501,7 @@
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px) saturate(180%);
   -webkit-backdrop-filter: blur(10px) saturate(180%);
-  border: 1px solid rgba(232, 241, 255, 0.5);
+  border: 1px solid rgba(231, 255, 239, 0.5);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05),
               inset 0 1px 0 rgba(255, 255, 255, 0.6);
@@ -509,8 +509,8 @@
 }
 
 .document-card:hover {
-  border-color: rgba(74, 144, 226, 0.4);
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15),
+  border-color: rgba(50, 215, 75, 0.4);
+  box-shadow: 0 4px 12px rgba(50, 215, 75, 0.15),
               inset 0 1px 0 rgba(255, 255, 255, 0.7);
   transform: translateY(-2px);
   background: rgba(255, 255, 255, 0.85);
@@ -518,18 +518,18 @@
 
 .doc-icon {
   font-size: 1.25rem;
-  color: #4A90E2;
+  color: var(--accent);
   flex-shrink: 0;
 }
 
 .link-primary {
-  color: #4A90E2;
+  color: var(--accent);
   font-weight: 500;
   transition: color 0.2s;
 }
 
 .link-primary:hover {
-  color: #357ABD;
+  color: var(--accent-strong);
 }
 
 .loading-state {
@@ -558,7 +558,7 @@
 
 .spinner-icon {
   font-size: 4rem;
-  color: #4A90E2;
+  color: var(--accent);
   animation: spin 2s linear infinite;
 }
 
@@ -582,7 +582,7 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
   animation: bounce 1.4s ease-in-out infinite both;
 }
 
@@ -614,7 +614,7 @@
   font-weight: 600;
   color: #333333;
   margin: 0 0 0.5rem 0;
-  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -632,7 +632,7 @@
   width: 100%;
   max-width: 400px;
   height: 4px;
-  background: rgba(232, 241, 255, 0.5);
+  background: rgba(231, 255, 239, 0.5);
   border-radius: 10px;
   overflow: hidden;
   margin: 2rem 0;
@@ -641,7 +641,7 @@
 
 .loading-progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #4A90E2 0%, #357ABD 50%, #4A90E2 100%);
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-strong) 50%, var(--accent) 100%);
   background-size: 200% 100%;
   border-radius: 10px;
   animation: progressMove 2s ease-in-out infinite, fadeInUp 0.6s ease-out 0.4s both;

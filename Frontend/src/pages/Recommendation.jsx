@@ -141,7 +141,7 @@ function Recommendation() {
       (l.includes("likely") && !l.includes("unlikely"))
     ) {
       // Neutral / plausible
-      return "#3B82F6"; // blue
+      return "#22C55E"; // green
     }
     // Unknown/default: keep neutral (not overly optimistic)
     return "#64748B"; // slate
@@ -348,7 +348,7 @@ function Recommendation() {
       {!loading && !error && !recommendations && (
         <div className="empty-state">
           <FiStar
-            style={{ fontSize: "3rem", color: "#4A90E2", marginBottom: "1rem" }}
+            style={{ fontSize: "3rem", color: "var(--accent)", marginBottom: "1rem" }}
           />
           <p>No recommendations loaded yet.</p>
           <p>

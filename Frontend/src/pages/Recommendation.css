@@ -31,17 +31,17 @@
   padding: 2rem;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15),
+  box-shadow: 0 8px 32px rgba(50, 215, 75, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .visa-card:hover {
   transform: translateY(-8px) scale(1.01);
-  box-shadow: 0 16px 48px rgba(74, 144, 226, 0.25),
+  box-shadow: 0 16px 48px rgba(50, 215, 75, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
   background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(74, 144, 226, 0.3);
+  border-color: rgba(50, 215, 75, 0.3);
 }
 
 .visa-card-header {
@@ -50,7 +50,7 @@
   align-items: flex-start;
   margin-bottom: 1.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e8f1ff;
+  border-bottom: 1px solid var(--accent-surface);
 }
 
 .visa-title-section h2 {
@@ -121,7 +121,7 @@
 
 .detail-icon {
   font-size: 1.5rem;
-  color: #4a90e2;
+  color: var(--accent);
   margin-top: 0.25rem;
 }
 
@@ -180,7 +180,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: #4a90e2;
+  background-color: var(--accent);
   color: white;
   padding: 0.875rem 1.5rem;
   border-radius: 6px;
@@ -189,7 +189,7 @@
 }
 
 .btn-primary:hover {
-  background-color: #357abd;
+  background-color: var(--accent-strong);
 }
 
 /* Toggle Panel */
@@ -198,7 +198,7 @@
   border-radius: 12px;
   padding: 1.5rem;
   margin-top: 1.5rem;
-  border: 1px solid #e8f1ff;
+  border: 1px solid var(--accent-surface);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
@@ -220,7 +220,7 @@
 }
 
 .toggle-label.active {
-  color: #4a90e2;
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -262,7 +262,7 @@
 }
 
 .toggle-switch input:checked + .toggle-slider {
-  background: linear-gradient(135deg, #1abc9c, #4a90e2);
+  background: linear-gradient(135deg, #1abc9c, var(--accent));
 }
 
 .toggle-switch input:checked + .toggle-slider:before {
@@ -299,18 +299,18 @@
   align-items: center;
   gap: 0.5rem;
   background-color: #f8f9fa;
-  color: #4a90e2;
+  color: var(--accent);
   padding: 0.75rem 1.25rem;
   border-radius: 6px;
   font-weight: 500;
-  border: 1px solid #e8f1ff;
+  border: 1px solid var(--accent-surface);
   transition: all 0.2s;
   cursor: pointer;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: #e8f1ff;
-  border-color: #4a90e2;
+  background-color: var(--accent-surface);
+  border-color: var(--accent);
 }
 
 .btn-secondary:disabled {
@@ -332,7 +332,7 @@
   padding: 4rem 2rem;
   background: white;
   border-radius: 12px;
-  border: 1px solid #e8f1ff;
+  border: 1px solid var(--accent-surface);
 }
 
 .loading-state p,
@@ -344,7 +344,7 @@
 
 .error-hint {
   font-size: 0.95rem;
-  color: #4a90e2;
+  color: var(--accent);
   font-style: italic;
 }
 
@@ -374,7 +374,7 @@
 }
 
 .raw-response-panel h3 {
-  color: #4a90e2;
+  color: var(--accent);
   font-size: 1rem;
   margin-bottom: 0.5rem;
   margin-top: 1rem;
@@ -416,7 +416,7 @@
   padding: 4rem 2rem;
   background: white;
   border-radius: 12px;
-  border: 2px dashed #e8f1ff;
+  border: 2px dashed var(--accent-surface);
 }
 
 .empty-state p {

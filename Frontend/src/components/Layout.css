@@ -49,17 +49,22 @@
 
 .logo-icon {
   font-size: 1.8rem;
-  background: linear-gradient(135deg, #4a90e2 0%, #357abd 50%, #6ba3e8 100%);
+  background: linear-gradient(
+    135deg,
+    var(--accent) 0%,
+    var(--accent-strong) 50%,
+    var(--accent-dark) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   display: inline-block;
   animation: logoFloat 3s ease-in-out infinite;
-  filter: drop-shadow(0 2px 4px rgba(74, 144, 226, 0.3));
+  filter: drop-shadow(0 2px 4px rgba(50, 215, 75, 0.3));
 }
 
 .logo-text {
-  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -83,7 +88,7 @@
 }
 
 .nav-link:hover {
-  color: #4a90e2;
+  color: var(--accent);
 }
 
 .logout-btn {
@@ -101,13 +106,13 @@
 
 /* Footer Styles */
 .footer {
-  background: rgba(232, 241, 255, 0.85);
+  background: rgba(231, 255, 239, 0.85);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border-top: 1px solid rgba(74, 144, 226, 0.2);
+  border-top: 1px solid rgba(50, 215, 75, 0.2);
   margin-top: 4rem;
   padding: 3rem 2rem 1.5rem;
-  box-shadow: 0 -4px 16px rgba(74, 144, 226, 0.1),
+  box-shadow: 0 -4px 16px rgba(50, 215, 75, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
   position: relative;
   overflow: hidden;
@@ -122,9 +127,9 @@
   bottom: 0;
   background: linear-gradient(
     135deg,
-    rgba(74, 144, 226, 0.05) 0%,
-    rgba(232, 241, 255, 0.1) 50%,
-    rgba(74, 144, 226, 0.05) 100%
+    rgba(50, 215, 75, 0.05) 0%,
+    rgba(231, 255, 239, 0.1) 50%,
+    rgba(50, 215, 75, 0.05) 100%
   );
   background-size: 200% 200%;
   animation: gradientShift 8s ease infinite;
@@ -179,16 +184,21 @@
 
 .footer-logo .logo-icon {
   font-size: 1.8rem;
-  background: linear-gradient(135deg, #4a90e2 0%, #357abd 50%, #6ba3e8 100%);
+  background: linear-gradient(
+    135deg,
+    var(--accent) 0%,
+    var(--accent-strong) 50%,
+    var(--accent-dark) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   display: inline-block;
-  filter: drop-shadow(0 2px 4px rgba(74, 144, 226, 0.3));
+  filter: drop-shadow(0 2px 4px rgba(50, 215, 75, 0.3));
 }
 
 .footer-logo .logo-text {
-  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -226,14 +236,14 @@
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  background: rgba(74, 144, 226, 0.1);
+  background: rgba(50, 215, 75, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #4a90e2;
+  color: var(--accent);
   font-size: 1.2rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(74, 144, 226, 0.2);
+  border: 1px solid rgba(50, 215, 75, 0.2);
   position: relative;
   overflow: hidden;
 }
@@ -246,7 +256,7 @@
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: rgba(74, 144, 226, 0.2);
+  background: rgba(50, 215, 75, 0.2);
   transform: translate(-50%, -50%);
   transition: width 0.4s ease, height 0.4s ease;
 }
@@ -257,11 +267,11 @@
 }
 
 .social-link:hover {
-  background: #4a90e2;
+  background: var(--accent);
   color: white;
   transform: translateY(-4px) scale(1.1);
-  box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
-  border-color: #4a90e2;
+  box-shadow: 0 6px 20px rgba(50, 215, 75, 0.4);
+  border-color: var(--accent);
 }
 
 .social-link svg {
@@ -277,7 +287,7 @@
 .footer-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #2c5282;
+  color: var(--accent-dark);
   margin-bottom: 1rem;
 }
 
@@ -299,7 +309,7 @@
   position: absolute;
   left: -15px;
   opacity: 0;
-  color: #4a90e2;
+  color: var(--accent);
   transition: all 0.3s ease;
   transform: translateX(-5px);
 }
@@ -328,12 +338,12 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: #4a90e2;
+  background: var(--accent);
   transition: width 0.3s ease;
 }
 
 .footer-links li a:hover {
-  color: #4a90e2;
+  color: var(--accent);
   transform: translateX(4px);
 }
 
@@ -360,7 +370,7 @@
 }
 
 .footer-contact li:hover {
-  background: rgba(74, 144, 226, 0.05);
+  background: rgba(50, 215, 75, 0.05);
   padding-left: 0.5rem;
   transform: translateX(4px);
 }
@@ -383,12 +393,12 @@
 }
 
 .footer-contact li:hover span {
-  color: #4a90e2;
+  color: var(--accent);
 }
 
 .footer-bottom {
   padding-top: 2rem;
-  border-top: 1px solid rgba(74, 144, 226, 0.2);
+  border-top: 1px solid rgba(50, 215, 75, 0.2);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -424,7 +434,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(74, 144, 226, 0.1);
+  background: rgba(50, 215, 75, 0.1);
   border-radius: 4px;
   opacity: 0;
   transform: scale(0.8);

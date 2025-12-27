@@ -276,7 +276,7 @@ function Home() {
       l.includes("moderate") ||
       (l.includes("likely") && !l.includes("unlikely"))
     ) {
-      return "#3B82F6"; // blue
+      return "#22C55E"; // green
     }
     return "#64748B"; // slate
   };

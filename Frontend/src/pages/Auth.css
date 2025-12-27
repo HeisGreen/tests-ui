@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #e8f1ff 0%, #ffffff 100%);
+  background: linear-gradient(135deg, var(--accent-surface) 0%, #ffffff 100%);
   padding: 2rem;
 }
 
@@ -13,7 +13,7 @@
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2),
+  box-shadow: 0 8px 32px rgba(50, 215, 75, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.7);
   padding: 3rem;
   width: 100%;
@@ -22,7 +22,7 @@
 }
 
 .auth-container:hover {
-  box-shadow: 0 12px 40px rgba(74, 144, 226, 0.25),
+  box-shadow: 0 12px 40px rgba(50, 215, 75, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
@@ -55,17 +55,22 @@
 
 .auth-header .logo-icon {
   font-size: 1.8rem;
-  background: linear-gradient(135deg, #4a90e2 0%, #357abd 50%, #6ba3e8 100%);
+  background: linear-gradient(
+    135deg,
+    var(--accent) 0%,
+    var(--accent-strong) 50%,
+    var(--accent-dark) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   display: inline-block;
   animation: logoFloat 3s ease-in-out infinite;
-  filter: drop-shadow(0 2px 4px rgba(74, 144, 226, 0.3));
+  filter: drop-shadow(0 2px 4px rgba(50, 215, 75, 0.3));
 }
 
 .auth-header .logo-text {
-  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -113,7 +118,7 @@
 .form-group input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #e8f1ff;
+  border: 1px solid var(--accent-surface);
   border-radius: 6px;
   font-size: 1rem;
   transition: border-color 0.2s;
@@ -121,7 +126,8 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #4a90e2;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(50, 215, 75, 0.1);
 }
 
 .form-row {
@@ -141,7 +147,7 @@
 
 .btn-auth {
   width: 100%;
-  background-color: #4a90e2;
+  background-color: var(--accent);
   color: white;
   padding: 0.875rem;
   border-radius: 6px;
@@ -151,7 +157,7 @@
 }
 
 .btn-auth:hover {
-  background-color: #357abd;
+  background-color: var(--accent-strong);
 }
 
 .auth-footer {
@@ -161,7 +167,7 @@
 }
 
 .auth-footer a {
-  color: #4a90e2;
+  color: var(--accent);
   font-weight: 500;
 }
 

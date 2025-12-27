@@ -40,7 +40,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid #E8F1FF;
+  border-bottom: 1px solid var(--accent-surface);
 }
 
 .modal-header h2 {
@@ -95,7 +95,7 @@
 .form-group textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #E8F1FF;
+  border: 1px solid var(--accent-surface);
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.2s;
@@ -107,8 +107,8 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #4A90E2;
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(50, 215, 75, 0.1);
 }
 
 .form-group input:disabled,
@@ -134,7 +134,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 1rem;
-  border: 2px dashed #E8F1FF;
+  border: 2px dashed var(--accent-surface);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
@@ -144,9 +144,9 @@
 }
 
 .file-input-label:hover:not(:has(+ input:disabled)) {
-  border-color: #4A90E2;
-  background-color: #E8F1FF;
-  color: #4A90E2;
+  border-color: var(--accent);
+  background-color: var(--accent-surface);
+  color: var(--accent);
 }
 
 .file-input:disabled + .file-input-label {
@@ -177,7 +177,7 @@
 .progress-bar {
   width: 100%;
   height: 8px;
-  background-color: #E8F1FF;
+  background-color: var(--accent-surface);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 0.5rem;
@@ -185,7 +185,7 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4A90E2, #357ABD);
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
   transition: width 0.3s ease;
   border-radius: 4px;
 }
@@ -203,7 +203,7 @@
   justify-content: flex-end;
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #E8F1FF;
+  border-top: 1px solid var(--accent-surface);
 }
 
 .btn-cancel,
@@ -227,12 +227,12 @@
 }
 
 .btn-submit {
-  background-color: #4A90E2;
+  background-color: var(--accent);
   color: white;
 }
 
 .btn-submit:hover:not(:disabled) {
-  background-color: #357ABD;
+  background-color: var(--accent-strong);
 }
 
 .btn-cancel:disabled,
