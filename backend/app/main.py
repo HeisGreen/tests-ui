@@ -870,7 +870,8 @@ def get_or_generate_checklist(
     db: Session = Depends(get_db),
 ) -> ChecklistCachedResponse:
     """
-    Return a cached checklist for a visa type, regenerating with ChatGPT when missing or when the option hash changes.
+    Return a cached checklist for a visa type. If checklist exists in DB, return it.
+    Only generate new checklist if it doesn't exist. After generation, automatically save progress.
     """
     visa_type = payload.visa_type
     visa_option = payload.visa_option
@@ -881,6 +882,33 @@ def get_or_generate_checklist(
             detail="visa_type is required",
         )
 
+    # Check if checklist already exists in DB - if so, return it immediately
+    existing_cache = (
+        db.query(ChecklistCache)
+        .filter(
+            ChecklistCache.user_id == current_user.id,
+            ChecklistCache.visa_type == visa_type,
+        )
+        .first()
+    )
+
+    if existing_cache:
+        logger.info(
+            "Checklist found in DB, returning cached version",
+            extra={
+                "user_id": current_user.id,
+                "visa_type": visa_type,
+                "source": existing_cache.source,
+            },
+        )
+        return ChecklistCachedResponse(
+            checklist=existing_cache.checklist_json,
+            source=existing_cache.source or "cache",
+            option_hash=existing_cache.option_hash,
+            cached_at=existing_cache.updated_at or existing_cache.created_at,
+        )
+
+    # Checklist doesn't exist - need to generate it
     # Resolve visa_option if not provided by looking up the latest recommendation
     if visa_option is None:
         latest_rec = (
@@ -915,32 +943,7 @@ def get_or_generate_checklist(
 
     option_hash = compute_option_hash(visa_option)
 
-    existing = (
-        db.query(ChecklistCache)
-        .filter(
-            ChecklistCache.user_id == current_user.id,
-            ChecklistCache.visa_type == visa_type,
-        )
-        .first()
-    )
-
-    if existing and existing.option_hash == option_hash:
-        logger.info(
-            "Checklist cache hit",
-            extra={
-                "user_id": current_user.id,
-                "visa_type": visa_type,
-                "source": existing.source,
-            },
-        )
-        return ChecklistCachedResponse(
-            checklist=existing.checklist_json,
-            source=existing.source or "cache",
-            option_hash=existing.option_hash,
-            cached_at=existing.updated_at or existing.created_at,
-        )
-
-    # Cache miss or hash mismatch -> regenerate
+    # Generate new checklist
     try:
         checklist = generate_checklist_via_openai(
             visa_option=visa_option,
@@ -948,56 +951,96 @@ def get_or_generate_checklist(
             current_user=current_user,
         )
     except HTTPException as exc:
-        # On failure, return last cached data if available
-        if existing:
-            logger.warning(
-                "Checklist generation failed; returning cached fallback",
-                extra={
-                    "user_id": current_user.id,
-                    "visa_type": visa_type,
-                    "error": exc.detail,
-                },
-            )
-            return ChecklistCachedResponse(
-                checklist=existing.checklist_json,
-                source="cache_fallback",
-                option_hash=existing.option_hash,
-                cached_at=existing.updated_at or existing.created_at,
-            )
+        logger.error(
+            "Checklist generation failed",
+            extra={
+                "user_id": current_user.id,
+                "visa_type": visa_type,
+                "error": exc.detail,
+            },
+        )
         raise
 
-    # Upsert: update existing row if present, otherwise insert new
-    if existing:
-        existing.checklist_json = checklist
-        existing.option_hash = option_hash
-        existing.source = "ai"
-    else:
-        existing = ChecklistCache(
-            user_id=current_user.id,
-            visa_type=visa_type,
-            option_hash=option_hash,
-            checklist_json=checklist,
-            source="ai",
-        )
-        db.add(existing)
-
+    # Save checklist to cache
+    new_cache = ChecklistCache(
+        user_id=current_user.id,
+        visa_type=visa_type,
+        option_hash=option_hash,
+        checklist_json=checklist,
+        source="ai",
+    )
+    db.add(new_cache)
     db.commit()
-    db.refresh(existing)
+    db.refresh(new_cache)
+
+    # After generating checklist, automatically save progress with all items set to incomplete
+    try:
+        progress_json = {}
+        if isinstance(checklist, list):
+            for idx, item in enumerate(checklist):
+                # Use item.id if available, otherwise generate step ID
+                item_id = item.get("id") if isinstance(item, dict) else f"step-{idx + 1}"
+                progress_json[item_id] = False
+
+        # Check if progress already exists
+        existing_progress = db.query(ChecklistProgress).filter(
+            ChecklistProgress.user_id == current_user.id,
+            ChecklistProgress.visa_type == visa_type
+        ).first()
+
+        now = datetime.utcnow()
+        if existing_progress:
+            # Update existing progress
+            existing_progress.progress_json = progress_json
+            existing_progress.updated_at = now
+        else:
+            # Create new progress record
+            new_progress = ChecklistProgress(
+                user_id=current_user.id,
+                visa_type=visa_type,
+                progress_json=progress_json,
+                created_at=now,
+                updated_at=now
+            )
+            db.add(new_progress)
+
+        db.commit()
+        logger.info(
+            "Progress initialized successfully",
+            extra={
+                "user_id": current_user.id,
+                "visa_type": visa_type,
+                "items_count": len(progress_json),
+            },
+        )
+    except Exception as progress_error:
+        # Log error but don't fail the request - progress can be saved later
+        logger.warning(
+            f"Failed to initialize progress (non-fatal): {progress_error}",
+            extra={
+                "user_id": current_user.id,
+                "visa_type": visa_type,
+                "error": str(progress_error),
+            },
+        )
+        # Rollback any partial changes
+        db.rollback()
 
     logger.info(
-        "Checklist regenerated and cached",
+        "Checklist generated, cached, and progress initialized",
         extra={
             "user_id": current_user.id,
             "visa_type": visa_type,
             "source": "ai",
+            "checklist_items": len(checklist),
         },
     )
 
     return ChecklistCachedResponse(
-        checklist=existing.checklist_json,
+        checklist=new_cache.checklist_json,
         source="ai",
-        option_hash=existing.option_hash,
-        cached_at=existing.updated_at or existing.created_at,
+        option_hash=new_cache.option_hash,
+        cached_at=new_cache.updated_at or new_cache.created_at,
     )
 
 

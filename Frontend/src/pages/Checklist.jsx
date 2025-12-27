@@ -25,118 +25,59 @@ function Checklist() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [visaOption, setVisaOption] = useState(null); // Recommendation option
-  const loadChecklist = async (optionToUse) => {
-    if (!visaType) return;
-    try {
-      setError(null);
-      setLoading(true);
-      const response = await recommendationsAPI.getChecklistCached(
-        visaType,
-        optionToUse || null
-      );
-      if (optionToUse) {
-        setVisaOption({
-          ...optionToUse,
-          checklist: response?.checklist || optionToUse.checklist || null,
-        });
-      } else if (response?.checklist) {
-        setVisaOption((prev) => ({
-          ...(prev || { visa_type: visaType }),
-          checklist: response.checklist,
-        }));
-      }
-    } catch (err) {
-      console.warn("Checklist: Failed to load cached checklist", err);
-      setError(err?.message || "Failed to load checklist");
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  // Safety timeout to prevent infinite loading
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (loading && !visaOption) {
-        console.warn("Checklist: Loading timeout, creating fallback");
-        setVisaOption({
-          visa_type: visaType || "Visa",
-          reasoning: `Application checklist`,
-          likelihood: "possible",
-          estimated_timeline: "Varies",
-          estimated_costs: "Varies",
-          risk_flags: [],
-          next_steps: [],
-          checklist: null,
-          requirements: [],
-        });
-        setLoading(false);
-      }
-    }, 15000); // 15 second timeout
-
-    return () => clearTimeout(timeout);
-  }, [loading, visaOption, visaType]);
-
-  // Load from navigation state if provided (fast path), then load checklist via backend cache.
-  useEffect(() => {
-    const opt = location?.state?.visaOption || null;
-    if (opt) {
-      console.log("Checklist: Loading from location.state", opt);
-      setVisaOption(opt);
-      loadChecklist(opt);
-    } else {
-      console.log(
-        "Checklist: No visaOption in location.state, will fetch from API"
-      );
-    }
-  }, [location?.state]);
-
-  // Fallback: fetch latest stored recommendation history and pick matching option by visa_type.
-  // Then generate a detailed checklist using ChatGPT.
+  // Single unified loader: Check DB first, generate only if needed
   useEffect(() => {
     let cancelled = false;
 
-    const load = async () => {
+    const loadChecklist = async () => {
       if (!visaType) {
         setError("Missing visa type.");
         setLoading(false);
         return;
       }
-      if (visaOption) {
-        return;
-      }
 
       try {
         setError(null);
-        // Only need the most recent record; keep payload small to avoid slow loads.
-        const history = await Promise.race([
-          recommendationsAPI.getHistory(1),
-          new Promise((_, reject) =>
-            setTimeout(
-              () =>
-                reject(
-                  new Error(
-                    "Checklist is taking too long to load. Please try again."
-                  )
-                ),
-              12000
-            )
-          ),
-        ]);
-        if (cancelled) return;
-        const latest = history?.[0]?.output_data;
-        const options = Array.isArray(latest?.options) ? latest.options : [];
-        const match =
-          options.find(
-            (o) =>
-              String(o?.visa_type || "").toLowerCase() ===
-              String(visaType).toLowerCase()
-          ) || null;
+        setLoading(true);
 
-        let visaOptionData = match;
+        // Get visa_option from location state if available, otherwise fetch from history
+        let visaOptionData = location?.state?.visaOption || null;
 
-        if (!match) {
-          // Even if no exact match, create a basic visa option from the visa type
-          console.log("Checklist: No match found, creating basic visa option");
+        if (!visaOptionData) {
+          // Try to fetch from recommendation history
+          try {
+            const history = await Promise.race([
+              recommendationsAPI.getHistory(1),
+              new Promise((_, reject) =>
+                setTimeout(
+                  () =>
+                    reject(
+                      new Error(
+                        "Checklist is taking too long to load. Please try again."
+                      )
+                    ),
+                  12000
+                )
+              ),
+            ]);
+            if (cancelled) return;
+
+            const latest = history?.[0]?.output_data;
+            const options = Array.isArray(latest?.options) ? latest.options : [];
+            visaOptionData =
+              options.find(
+                (o) =>
+                  String(o?.visa_type || "").toLowerCase() ===
+                  String(visaType).toLowerCase()
+              ) || null;
+          } catch (err) {
+            console.warn("Could not fetch recommendation history:", err);
+          }
+        }
+
+        // If still no visa option, create a basic one
+        if (!visaOptionData) {
           visaOptionData = {
             visa_type: visaType,
             reasoning: `Application checklist for ${visaType}`,
@@ -150,13 +91,24 @@ function Checklist() {
           };
         }
 
-        setVisaOption(visaOptionData);
-        await loadChecklist(visaOptionData);
+        // Call API - backend will check DB first, only generate if needed
+        const response = await recommendationsAPI.getChecklistCached(
+          visaType,
+          visaOptionData
+        );
+
+        if (cancelled) return;
+
+        // Set visa option with checklist data
+        setVisaOption({
+          ...visaOptionData,
+          checklist: response?.checklist || visaOptionData.checklist || null,
+        });
       } catch (err) {
         if (cancelled) return;
         console.error("Error loading checklist:", err);
-        // Don't show error, just create a basic checklist
-        console.log("Checklist: Error occurred, creating fallback visa option");
+        setError(err?.message || "Failed to load checklist");
+        // Create fallback visa option
         setVisaOption({
           visa_type: visaType,
           reasoning: `Application checklist for ${visaType}`,
@@ -174,11 +126,12 @@ function Checklist() {
       }
     };
 
-    load();
+    loadChecklist();
+
     return () => {
       cancelled = true;
     };
-  }, [visaType, visaOption]);
+  }, [visaType, location?.state]);
 
   const checklistItems = useMemo(() => {
     const raw = visaOption?.checklist;
@@ -298,6 +251,7 @@ function Checklist() {
   const saveTimeoutRef = useRef(null);
   const [checklistStartTime, setChecklistStartTime] = useState(null);
   const [processingTime, setProcessingTime] = useState("—");
+  const isInitialLoadRef = useRef(true); // Track if this is the initial load
 
   // Fetch and merge saved progress when checklist items are loaded
   useEffect(() => {
@@ -329,15 +283,17 @@ function Checklist() {
           setChecklist(mergedChecklist);
         } else {
           // No saved progress, use default (all incomplete)
-          // Start time will be set when progress is first saved
+          // Progress was already initialized by backend when checklist was generated
           console.log("No saved progress found, using default");
           setChecklist(checklistItems);
         }
       } catch (error) {
         console.warn("Failed to load checklist progress:", error);
         // On error, just use the default checklist items
-        // Start time will be set when progress is first saved
         setChecklist(checklistItems);
+      } finally {
+        // Mark initial load as complete
+        isInitialLoadRef.current = false;
       }
     };
 
@@ -389,8 +345,14 @@ function Checklist() {
   };
 
   // Save progress whenever checklist changes (debounced)
+  // BUT skip saving on initial load - only save when user actually toggles items
   useEffect(() => {
     if (checklist.length === 0 || !visaType) return;
+    
+    // Skip saving on initial load - backend already initialized progress when checklist was generated
+    if (isInitialLoadRef.current) {
+      return;
+    }
 
     // Clear existing timeout
     if (saveTimeoutRef.current) {
