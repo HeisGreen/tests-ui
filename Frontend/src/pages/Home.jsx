@@ -42,12 +42,22 @@ function Home() {
     initScrollAnimations();
   }, [options.length]);
 
-  // Show all checklists with saved progress (even 0%) to avoid hiding new ones
+  // Show only checklists with progress > 0%
   // Defined early so it can be used in useEffect hooks
   const activeChecklistsWithProgress = useMemo(() => {
-    return activeChecklists.filter(
-      (checklist) => checklist && (checklist.visa_type || checklist.visaType)
-    );
+    return activeChecklists.filter((checklist) => {
+      if (!checklist || !(checklist.visa_type || checklist.visaType)) {
+        return false;
+      }
+      // Calculate progress percentage
+      const progressJson = checklist.progress_json || checklist.progressJson || {};
+      const items = Object.values(progressJson);
+      if (items.length === 0) return false;
+      const completed = items.filter((v) => v === true).length;
+      const progressPercent = Math.round((completed / items.length) * 100);
+      // Only show checklists with progress > 0%
+      return progressPercent > 0;
+    });
   }, [activeChecklists]);
 
   // Re-initialize scroll animations when checklist cards are loaded
