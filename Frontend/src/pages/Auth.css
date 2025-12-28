@@ -64,6 +64,7 @@
     background-position: 100% 100%, 0% 0%, 50% 50%, 20% 80%, 10% 40%;
   }
 =======
+=======
   overflow: hidden;
 }
 
@@ -88,6 +89,8 @@
   object-fit: cover;
   z-index: 0;
   filter: saturate(1.1) brightness(0.8);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 >>>>>>> Stashed changes
 }
 
@@ -143,6 +146,9 @@
   transition: all 0.3s ease;
   position: relative;
   z-index: 2;
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }
 
