@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
   FiChevronDown,
@@ -15,12 +15,16 @@ import {
   FiSettings,
   FiShield,
   FiArrowRight,
+  FiArrowLeft,
+  FiHome,
 } from "react-icons/fi";
 import { initScrollAnimations } from "../utils/scrollAnimation";
+import logoMark from "../assets/japa-logo.png";
 import "./FAQ.css";
 
 function FAQ() {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [openIndex, setOpenIndex] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
@@ -231,6 +235,41 @@ function FAQ() {
 
   return (
     <div className="faq-page">
+      <nav className="faq-nav">
+        <div className="faq-nav-container">
+          <Link to={isAuthenticated ? "/home" : "/"} className="faq-logo">
+            <img className="logo-mark" src={logoMark} alt="JAPA logo" />
+          </Link>
+          <div className="faq-nav-links">
+            {isAuthenticated ? (
+              <>
+                <Link to="/home" className="faq-nav-link">
+                  <FiHome /> Home
+                </Link>
+                <button
+                  onClick={() => navigate(-1)}
+                  className="faq-nav-link back-btn"
+                >
+                  <FiArrowLeft /> Back
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/" className="faq-nav-link">
+                  <FiHome /> Home
+                </Link>
+                <Link to="/login" className="faq-nav-link-text">
+                  Log in
+                </Link>
+                <Link to="/register" className="btn-primary">
+                  Sign up
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </nav>
+
       <div className="faq-header">
         <div className="faq-header-content">
           <div className="faq-icon">
