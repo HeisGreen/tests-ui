@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import logoMark from "../assets/japa-logo.png";
+import AuthBackgroundVideo from "../components/AuthBackgroundVideo";
 import "./Auth.css";
 
 function Register() {
@@ -59,6 +60,7 @@ function Register() {
 
   return (
     <div className="auth-page">
+      <AuthBackgroundVideo />
       <div className="auth-container">
         <div className="auth-header">
           <Link to="/" className="logo">
