@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { authAPI, profileAPI, setAuthToken, removeAuthToken, getAuthToken } from '../utils/api'
+import { triggerGoogleSignIn } from '../utils/oauth'
 
 const AuthContext = createContext()
 
@@ -51,7 +52,8 @@ export function AuthProvider({ children }) {
           // Load profile data
           await loadProfileData()
         } catch (error) {
-          // Token is invalid, clear it
+          // Token is invalid or backend is unavailable, clear it
+          console.warn('Auth check failed (backend may be unavailable):', error.message)
           removeAuthToken()
           setIsAuthenticated(false)
         }
@@ -141,6 +143,39 @@ export function AuthProvider({ children }) {
     }
   }
 
+  const loginWithGoogle = async () => {
+    try {
+      // Sign in with Google
+      const googleUser = await triggerGoogleSignIn()
+      
+      // Send ID token to backend for verification
+      const response = await authAPI.loginWithGoogle(googleUser.idToken)
+      setAuthToken(response.access_token)
+      
+      // Get user data
+      const userData = await authAPI.getCurrentUser()
+      setUser(userData)
+      setIsAuthenticated(true)
+      
+      // Load profile data
+      await loadProfileData()
+      
+      return true
+    } catch (error) {
+      console.error('Google login error:', error)
+      // Provide more helpful error message
+      if (error.message.includes('Failed to fetch') || error.message.includes('ERR_CONNECTION')) {
+        throw new Error('Cannot connect to server. Please make sure the backend is running on port 8000.')
+      }
+      throw error
+    }
+  }
+
+  const signUpWithGoogle = async () => {
+    // For OAuth providers, sign up and sign in are typically the same flow
+    return loginWithGoogle()
+  }
+
   const value = {
     isAuthenticated,
     user,
@@ -150,7 +185,9 @@ export function AuthProvider({ children }) {
     register,
     logout,
     updateOnboardingData,
-    refreshUser
+    refreshUser,
+    loginWithGoogle,
+    signUpWithGoogle
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

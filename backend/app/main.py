@@ -4,9 +4,10 @@ import hashlib
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import JSONResponse
 from openai import OpenAI
 from sqlalchemy.orm import Session
 
@@ -25,6 +26,7 @@ from app.schemas import (
     UserResponse,
     UserUpdate,
     Token,
+    OAuthRequest,
     UserProfileCreate,
     UserProfileUpdate,
     UserProfileResponse,
@@ -52,6 +54,7 @@ from app.auth import (
     get_current_active_user,
     ACCESS_TOKEN_EXPIRE_MINUTES,
 )
+from app.oauth import verify_google_token
 
 
 # Create database tables
@@ -75,7 +78,6 @@ def get_openai_client(settings: Settings) -> OpenAI:
 
 
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
 
 # Custom JSON encoder for datetime
 def custom_jsonable_encoder(obj):
@@ -97,9 +99,11 @@ app.add_middleware(
         "http://127.0.0.1:5174",
     ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
+
 
 
 @app.get("/health")
@@ -182,6 +186,62 @@ def update_current_user_info(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+
+@app.post("/auth/google", response_model=Token)
+async def login_with_google(
+    oauth_data: OAuthRequest,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings)
+):
+    """
+    Login or sign up with Google OAuth.
+    Verifies the Google ID token and creates/updates user account.
+    """
+    try:
+        # Verify Google ID token
+        user_info = await verify_google_token(oauth_data.id_token, settings)
+        email = user_info['email']
+        name = user_info['name']
+        
+        # Check if user exists
+        user = get_user_by_email(db, email=email)
+        
+        if not user:
+            # Create new user without password (OAuth users don't need passwords)
+            # Use a special marker for OAuth users
+            db_user = User(
+                email=email,
+                name=name,
+                hashed_password="oauth_google"  # Marker to indicate OAuth user
+            )
+            db.add(db_user)
+            db.commit()
+            db.refresh(db_user)
+            user = db_user
+        else:
+            # Update name if it changed
+            if user.name != name:
+                user.name = name
+                db.commit()
+                db.refresh(user)
+        
+        # Generate JWT token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": user.email}, expires_delta=access_token_expires
+        )
+        
+        return {"access_token": access_token, "token_type": "bearer"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Google OAuth error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Google authentication failed: {str(e)}"
+        )
 
 
 # User Profile endpoints
@@ -973,7 +1033,16 @@ def get_or_generate_checklist(
     db.commit()
     db.refresh(new_cache)
 
+    # Prepare response data BEFORE progress saving (so we can return even if progress fails)
+    response_data = ChecklistCachedResponse(
+        checklist=new_cache.checklist_json,
+        source="ai",
+        option_hash=new_cache.option_hash,
+        cached_at=new_cache.updated_at or new_cache.created_at,
+    )
+
     # After generating checklist, automatically save progress with all items set to incomplete
+    # Use a separate try/except to ensure checklist response is returned even if progress fails
     try:
         progress_json = {}
         if isinstance(checklist, list):
@@ -1015,6 +1084,7 @@ def get_or_generate_checklist(
         )
     except Exception as progress_error:
         # Log error but don't fail the request - progress can be saved later
+        # Don't rollback - checklist is already committed and we want to return it
         logger.warning(
             f"Failed to initialize progress (non-fatal): {progress_error}",
             extra={
@@ -1023,11 +1093,10 @@ def get_or_generate_checklist(
                 "error": str(progress_error),
             },
         )
-        # Rollback any partial changes
-        db.rollback()
+        # Don't rollback - checklist is already committed
 
     logger.info(
-        "Checklist generated, cached, and progress initialized",
+        "Checklist generated and cached",
         extra={
             "user_id": current_user.id,
             "visa_type": visa_type,
@@ -1036,12 +1105,8 @@ def get_or_generate_checklist(
         },
     )
 
-    return ChecklistCachedResponse(
-        checklist=new_cache.checklist_json,
-        source="ai",
-        option_hash=new_cache.option_hash,
-        cached_at=new_cache.updated_at or new_cache.created_at,
-    )
+    # Return response - this ensures checklist is returned even if progress saving failed
+    return response_data
 
 
 @app.post("/recommendations/checklist", response_model=ChecklistResponse)

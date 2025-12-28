@@ -92,10 +92,34 @@ function Checklist() {
         }
 
         // Call API - backend will check DB first, only generate if needed
-        const response = await recommendationsAPI.getChecklistCached(
-          visaType,
-          visaOptionData
-        );
+        let response;
+        try {
+          response = await recommendationsAPI.getChecklistCached(
+            visaType,
+            visaOptionData
+          );
+        } catch (err) {
+          // If request fails but checklist might have been saved, retry once after a short delay
+          // This handles the case where the backend saves the checklist but response fails
+          if (err?.message?.includes("Network error") || err?.message?.includes("Failed to fetch")) {
+            console.warn("Initial request failed, retrying after delay...", err);
+            // Wait 2 seconds and retry - checklist might be cached now
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            try {
+              response = await recommendationsAPI.getChecklistCached(
+                visaType,
+                visaOptionData
+              );
+              console.log("Retry successful, checklist loaded from cache");
+            } catch (retryErr) {
+              // If retry also fails, throw the original error
+              throw err;
+            }
+          } else {
+            // For other errors, throw immediately
+            throw err;
+          }
+        }
 
         if (cancelled) return;
 

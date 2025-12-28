@@ -29,42 +29,59 @@ export const apiRequest = async (endpoint, options = {}) => {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
 
-  if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ detail: response.statusText }));
+    if (!response.ok) {
+      const error = await response
+        .json()
+        .catch(() => ({ detail: response.statusText }));
 
-    // Handle FastAPI validation errors (422) which return detail as array
-    let errorMessage = "An error occurred";
-    if (error.detail) {
-      if (Array.isArray(error.detail)) {
-        // Validation error format: [{loc: [...], msg: "...", type: "..."}]
-        errorMessage = error.detail.map((e) => e.msg).join(", ");
-      } else {
-        errorMessage = error.detail;
+      // Handle FastAPI validation errors (422) which return detail as array
+      let errorMessage = "An error occurred";
+      if (error.detail) {
+        if (Array.isArray(error.detail)) {
+          // Validation error format: [{loc: [...], msg: "...", type: "..."}]
+          errorMessage = error.detail.map((e) => e.msg).join(", ");
+        } else {
+          errorMessage = error.detail;
+        }
       }
+      throw new Error(errorMessage);
     }
-    throw new Error(errorMessage);
-  }
 
   // Handle 204 No Content responses (common for DELETE endpoints)
   if (response.status === 204) {
     return null;
   }
 
-  // Check if response has content before parsing JSON
-  const contentType = response.headers.get("content-type");
-  if (contentType && contentType.includes("application/json")) {
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;
-  }
+    // Check if response has content before parsing JSON
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      const text = await response.text();
+      return text ? JSON.parse(text) : null;
+    }
 
-  return null;
+    return null;
+  } catch (error) {
+    // Handle network errors (CORS, connection refused, etc.)
+    if (error instanceof TypeError && error.message === "Failed to fetch") {
+      console.error("Network error:", {
+        endpoint: `${API_BASE_URL}${endpoint}`,
+        method: options.method || "GET",
+        error: error.message,
+        message: "This might be a CORS issue or the backend server might not be running.",
+      });
+      throw new Error(
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running and accessible.`
+      );
+    }
+    // Re-throw other errors as-is
+    throw error;
+  }
 };
 
 // Auth API functions
@@ -115,6 +132,14 @@ export const authAPI = {
     return apiRequest("/auth/me", {
       method: "PUT",
       body: JSON.stringify(userData),
+    });
+  },
+
+  // OAuth login/signup
+  loginWithGoogle: async (idToken) => {
+    return apiRequest("/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ id_token: idToken }),
     });
   },
 };

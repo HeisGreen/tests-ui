@@ -223,6 +223,10 @@ class TokenData(BaseModel):
     email: Optional[str] = None
 
 
+class OAuthRequest(BaseModel):
+    id_token: str
+
+
 # User Profile schemas
 class UserProfileCreate(BaseModel):
     onboarding_data: Optional[IntakeData] = None
