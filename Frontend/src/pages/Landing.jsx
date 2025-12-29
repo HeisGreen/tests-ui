@@ -484,7 +484,7 @@ function Landing() {
                   <a href="#">Help Center</a>
                 </li>
                 <li>
-                  <a href="#">FAQ</a>
+                  <Link to="/faq">FAQ</Link>
                 </li>
                 <li>
                   <a href="#">Contact Us</a>

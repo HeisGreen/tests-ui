@@ -9,6 +9,7 @@ import Recommendation from './pages/Recommendation'
 import Checklist from './pages/Checklist'
 import Profile from './pages/Profile'
 import Documents from './pages/Documents'
+import FAQ from './pages/FAQ'
 import GoogleCallback from './pages/GoogleCallback'
 import Layout from './components/Layout'
 import { AuthProvider, useAuth } from './context/AuthContext'
@@ -45,6 +46,7 @@ function AppRoutes() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/faq" element={<FAQ />} />
         <Route path="/auth/google/callback" element={<GoogleCallback />} />
         <Route
           path="/onboarding"
