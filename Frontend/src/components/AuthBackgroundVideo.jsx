@@ -17,4 +17,3 @@ function AuthBackgroundVideo() {
 }
 
 export default AuthBackgroundVideo;
-
