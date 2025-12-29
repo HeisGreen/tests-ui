@@ -64,6 +64,7 @@ npm run build
 ## Dummy Data
 
 The application uses dummy data for:
+
 - Visa recommendations
 - User recommendations
 - Documents
@@ -74,6 +75,7 @@ All data is stored in `src/data/dummyData.js`
 ## Design
 
 The application follows the design system from `design.json`:
+
 - Color palette: #FFFFFF, #E8F1FF, #4A90E2, #333333, #FFD0D6
 - Clean, professional, minimalist design
 - Responsive layout
@@ -83,4 +85,3 @@ The application follows the design system from `design.json`:
 - Authentication is dummy-based (no real backend)
 - All data is stored in localStorage for session persistence
 - File uploads are simulated (no actual file handling)
-
