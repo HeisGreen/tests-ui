@@ -14,6 +14,7 @@ import {
   FiTwitter,
   FiLinkedin,
   FiInstagram,
+  FiMessageCircle,
 } from "react-icons/fi";
 import { initScrollAnimationsForElement } from "../utils/scrollAnimation";
 import logoMark from "../assets/japa-logo.png";
@@ -48,6 +49,9 @@ function Layout({ children }) {
             </Link>
             <Link to="/recommendation" className="nav-link">
               Get Recommendation
+            </Link>
+            <Link to="/messages" className="nav-link">
+              <FiMessageCircle /> Messages
             </Link>
             <Link to="/documents" className="nav-link">
               <FiFileText /> Documents
@@ -97,6 +101,9 @@ function Layout({ children }) {
                 </li>
                 <li>
                   <Link to="/recommendation">Get Recommendation</Link>
+                </li>
+                <li>
+                  <Link to="/messages">Messages</Link>
                 </li>
                 <li>
                   <Link to="/documents">Documents</Link>

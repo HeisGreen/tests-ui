@@ -1,7 +1,13 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, JSON, Text, UniqueConstraint
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, JSON, Text, UniqueConstraint, Enum as SQLEnum
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database import Base
+import enum
+
+
+class UserRole(str, enum.Enum):
+    USER = "USER"
+    TRAVEL_AGENT = "TRAVEL_AGENT"
 
 
 class User(Base):
@@ -11,12 +17,18 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     name = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
+    role = Column(SQLEnum(UserRole), default=UserRole.USER, nullable=False, index=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationship to user profile
     profile = relationship("UserProfile", back_populates="user", uselist=False)
+    # Relationship to travel agent profile
+    agent_profile = relationship("TravelAgentProfile", back_populates="user", uselist=False)
+    # Relationships for conversations
+    conversations_as_user = relationship("Conversation", foreign_keys="Conversation.user_id", back_populates="user")
+    conversations_as_agent = relationship("Conversation", foreign_keys="Conversation.agent_id", back_populates="agent")
 
 
 class UserProfile(Base):
@@ -96,3 +108,48 @@ class ChecklistCache(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     user = relationship("User")
+
+
+class TravelAgentProfile(Base):
+    __tablename__ = "travel_agent_profiles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False, index=True)
+    onboarding_data = Column(JSON, nullable=True)  # Stores TravelAgentOnboardingData as JSON
+    is_verified = Column(Boolean, default=False, nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationship back to user
+    user = relationship("User", back_populates="agent_profile")
+
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    agent_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    last_message_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    user = relationship("User", foreign_keys=[user_id], back_populates="conversations_as_user")
+    agent = relationship("User", foreign_keys=[agent_id], back_populates="conversations_as_agent")
+    messages = relationship("Message", back_populates="conversation", order_by="Message.created_at")
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False, index=True)
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    content = Column(Text, nullable=False)
+    is_read = Column(Boolean, default=False, nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+    
+    # Relationships
+    conversation = relationship("Conversation", back_populates="messages")
+    sender = relationship("User")

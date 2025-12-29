@@ -10,6 +10,7 @@ function Register() {
     name: "",
     email: "",
     password: "",
+    role: "USER", // Default to USER
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -37,7 +38,12 @@ function Register() {
 
     try {
       await register(formData);
-      navigate("/onboarding");
+      // Navigate based on role
+      if (formData.role === "TRAVEL_AGENT") {
+        navigate("/agent-onboarding");
+      } else {
+        navigate("/onboarding");
+      }
     } catch (err) {
       setError(err.message || "Registration failed. Please try again.");
     } finally {
@@ -50,6 +56,7 @@ function Register() {
     setLoading(true);
     try {
       await signUpWithGoogle();
+      // For Google OAuth, default to user onboarding (role can be changed later)
       navigate("/onboarding");
     } catch (err) {
       setError(err.message || "Google sign-up failed");
@@ -132,6 +139,27 @@ function Register() {
               required
               disabled={loading}
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="role">I am a</label>
+            <select
+              id="role"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              required
+              disabled={loading}
+              className="role-select"
+            >
+              <option value="USER">User (Looking for visa help)</option>
+              <option value="TRAVEL_AGENT">Travel Agent (Providing services)</option>
+            </select>
+            <small className="help-text">
+              {formData.role === "USER"
+                ? "You'll get personalized visa recommendations"
+                : "You'll help users with their migration journey"}
+            </small>
           </div>
 
           <div className="form-group password-group">

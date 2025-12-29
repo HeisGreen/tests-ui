@@ -1,0 +1,157 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Travel Agent Onboarding Form",
+  "description": "JSON schema for travel agent onboarding form generation",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string",
+      "title": "Full Name",
+      "description": "Your full legal name",
+      "required": true
+    },
+    "business_name": {
+      "type": "string",
+      "title": "Business / Agency Name",
+      "description": "Name of your travel agency or business (optional)",
+      "required": false
+    },
+    "country_of_operation": {
+      "type": "string",
+      "title": "Country of Operation",
+      "description": "Primary country where you operate",
+      "required": true,
+      "uiType": "countrySelect"
+    },
+    "cities_covered": {
+      "type": "array",
+      "title": "Cities Covered",
+      "description": "List of cities where you provide services",
+      "items": {
+        "type": "string"
+      },
+      "required": true,
+      "uiType": "multiText"
+    },
+    "years_of_experience": {
+      "type": "integer",
+      "title": "Years of Experience",
+      "description": "Number of years you've been working as a travel agent",
+      "minimum": 0,
+      "maximum": 50,
+      "required": true
+    },
+    "specializations": {
+      "type": "array",
+      "title": "Areas of Specialization",
+      "description": "Select all areas where you specialize",
+      "items": {
+        "type": "string",
+        "enum": [
+          "visas",
+          "relocation",
+          "student_migration",
+          "work_permits",
+          "family_reunification",
+          "business_immigration",
+          "investment_immigration",
+          "tourism_visas",
+          "permanent_residency",
+          "citizenship"
+        ]
+      },
+      "required": true,
+      "uiType": "multiSelect"
+    },
+    "supported_destination_countries": {
+      "type": "array",
+      "title": "Supported Destination Countries",
+      "description": "Countries you help clients migrate to",
+      "items": {
+        "type": "string"
+      },
+      "required": true,
+      "uiType": "countryMultiSelect"
+    },
+    "preferred_contact_method": {
+      "type": "string",
+      "title": "Preferred Contact Method",
+      "description": "How clients should contact you",
+      "enum": [
+        "in_app_chat",
+        "whatsapp",
+        "email",
+        "phone"
+      ],
+      "required": true,
+      "uiType": "select"
+    },
+    "contact_details": {
+      "type": "object",
+      "title": "Contact Details",
+      "description": "Your contact information",
+      "properties": {
+        "whatsapp": {
+          "type": "string",
+          "title": "WhatsApp Number",
+          "pattern": "^\\+?[1-9]\\d{1,14}$"
+        },
+        "email": {
+          "type": "string",
+          "title": "Email Address",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "title": "Phone Number",
+          "pattern": "^\\+?[1-9]\\d{1,14}$"
+        }
+      },
+      "required": true
+    },
+    "languages_spoken": {
+      "type": "array",
+      "title": "Languages Spoken",
+      "description": "Languages you can communicate in",
+      "items": {
+        "type": "string"
+      },
+      "required": true,
+      "uiType": "multiText"
+    },
+    "bio": {
+      "type": "string",
+      "title": "Professional Bio",
+      "description": "A short professional biography (max 500 characters)",
+      "maxLength": 500,
+      "required": true,
+      "uiType": "textarea"
+    },
+    "availability_status": {
+      "type": "string",
+      "title": "Availability Status",
+      "description": "Your current availability",
+      "enum": [
+        "available",
+        "unavailable"
+      ],
+      "default": "available",
+      "required": true,
+      "uiType": "select"
+    }
+  },
+  "required": [
+    "full_name",
+    "country_of_operation",
+    "cities_covered",
+    "years_of_experience",
+    "specializations",
+    "supported_destination_countries",
+    "preferred_contact_method",
+    "contact_details",
+    "languages_spoken",
+    "bio",
+    "availability_status"
+  ]
+}
+

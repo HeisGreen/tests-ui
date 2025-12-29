@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { recommendationsAPI, checklistProgressAPI } from "../utils/api";
+import { recommendationsAPI, checklistProgressAPI, messagingAPI } from "../utils/api";
 import {
   FiAlertCircle,
   FiArrowRight,
@@ -12,6 +12,9 @@ import {
   FiTrendingUp,
   FiCalendar,
   FiTarget,
+  FiMessageCircle,
+  FiUsers,
+  FiUser,
 } from "react-icons/fi";
 import { initScrollAnimations } from "../utils/scrollAnimation";
 import "./Home.css";
@@ -25,6 +28,8 @@ function Home() {
   const [activeChecklists, setActiveChecklists] = useState([]);
   const [loadingChecklists, setLoadingChecklists] = useState(true);
   const [checklistData, setChecklistData] = useState({}); // Map of visa_type -> checklist items
+  const [conversations, setConversations] = useState([]);
+  const [loadingConversations, setLoadingConversations] = useState(false);
 
   useEffect(() => {
     initScrollAnimations();
@@ -214,6 +219,24 @@ function Home() {
       cancelled = true;
     };
   }, []);
+
+  // Load recent conversations for users
+  useEffect(() => {
+    if (user?.role === "USER") {
+      const loadConversations = async () => {
+        try {
+          setLoadingConversations(true);
+          const data = await messagingAPI.getConversations();
+          setConversations(data);
+        } catch (err) {
+          console.error("Error loading conversations:", err);
+        } finally {
+          setLoadingConversations(false);
+        }
+      };
+      loadConversations();
+    }
+  }, [user]);
 
   // Calculate progress percentage for a checklist
   const getChecklistProgress = (progressJson) => {
@@ -702,6 +725,110 @@ function Home() {
         </div>
       ) : null}
 
+      {/* Recent Conversations Section (for users) */}
+      {user?.role === "USER" && (
+        <div className="home-section">
+          <div className="section-header">
+            <h2>Recent Messages</h2>
+            <Link to="/messages" className="link-primary">
+              View All <FiArrowRight />
+            </Link>
+          </div>
+
+          {loadingConversations ? (
+            <div className="empty-state">
+              <p>Loading conversations...</p>
+            </div>
+          ) : conversations.length === 0 ? (
+            <div className="empty-state">
+              <FiMessageCircle size={48} style={{ color: "#999", marginBottom: "1rem" }} />
+              <p>No conversations yet</p>
+              <Link to="/agents" className="btn-primary">
+                Find a Travel Agent
+              </Link>
+            </div>
+          ) : (
+            <div className="conversations-preview-grid">
+              {conversations.slice(0, 3).map((conv) => {
+                const formatTime = (dateString) => {
+                  if (!dateString) return "Just now";
+                  
+                  try {
+                    let date;
+                    if (typeof dateString === "string") {
+                      const cleanDate = dateString.replace(/Z$/, "");
+                      date = new Date(cleanDate);
+                    } else if (dateString instanceof Date) {
+                      date = dateString;
+                    } else {
+                      date = new Date(dateString);
+                    }
+
+                    if (isNaN(date.getTime())) {
+                      return "Just now";
+                    }
+
+                    const now = new Date();
+                    const diffMs = now - date;
+                    
+                    if (diffMs < 0) {
+                      return "Just now";
+                    }
+
+                    const diffMins = Math.floor(diffMs / 60000);
+
+                    // Less than 1 minute: "Just now"
+                    if (diffMins < 1) return "Just now";
+                    
+                    // 1 minute or more: Show time in HH:MM format
+                    const hours = date.getHours().toString().padStart(2, "0");
+                    const minutes = date.getMinutes().toString().padStart(2, "0");
+                    return `${hours}:${minutes}`;
+                  } catch (error) {
+                    return "Just now";
+                  }
+                };
+
+                return (
+                  <Link
+                    key={conv.id}
+                    to={`/messages/${conv.id}`}
+                    className="conversation-preview-card"
+                  >
+                    <div className="conversation-preview-header">
+                      <div className="conversation-preview-avatar">
+                        <FiUser />
+                      </div>
+                      <div className="conversation-preview-info">
+                        <div className="conversation-preview-name-group">
+                          <h4>{conv.agent_name || conv.agent_business_name || "Travel Agent"}</h4>
+                          {conv.agent_business_name && conv.agent_owner_name && (
+                            <span className="conversation-preview-subtitle">
+                              {conv.agent_owner_name}
+                            </span>
+                          )}
+                        </div>
+                        <span className="conversation-preview-time">
+                          {formatTime(conv.last_message_at)}
+                        </span>
+                      </div>
+                      {conv.unread_count > 0 && (
+                        <div className="conversation-preview-badge">
+                          {conv.unread_count}
+                        </div>
+                      )}
+                    </div>
+                    <p className="conversation-preview-text">
+                      {conv.last_message_preview || "No messages yet"}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="home-section">
         <div className="section-header">
           <h2>Quick Actions</h2>
@@ -721,6 +848,13 @@ function Home() {
             <h3>Manage Documents</h3>
             <p>Upload and organize your visa documents</p>
           </Link>
+          <Link to="/messages" className="action-card">
+            <div className="action-icon green">
+              <FiMessageCircle />
+            </div>
+            <h3>Messages</h3>
+            <p>Chat with travel agents</p>
+          </Link>
           <Link to="/profile" className="action-card">
             <div className="action-icon teal">
               <FiCheckCircle />
@@ -728,6 +862,15 @@ function Home() {
             <h3>Update Profile</h3>
             <p>Keep your information up to date</p>
           </Link>
+          {user?.role !== "TRAVEL_AGENT" && (
+            <Link to="/agents" className="action-card">
+              <div className="action-icon orange">
+                <FiMessageCircle />
+              </div>
+              <h3>Talk to a Travel Agent</h3>
+              <p>Get personalized help from experts</p>
+            </Link>
+          )}
         </div>
       </div>
     </div>

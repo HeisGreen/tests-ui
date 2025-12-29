@@ -85,7 +85,7 @@ export function AuthProvider({ children }) {
       // Load profile data
       await loadProfileData()
       
-      return true
+      return userData // Return user data so caller can check role
     } catch (error) {
       console.error('Login error:', error)
       throw error
@@ -160,7 +160,7 @@ export function AuthProvider({ children }) {
       // Load profile data
       await loadProfileData()
       
-      return true
+      return userData // Return user data so caller can check role
     } catch (error) {
       console.error('Google login error:', error)
       // Provide more helpful error message

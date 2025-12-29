@@ -11,7 +11,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle, user } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -26,8 +26,13 @@ function Login() {
     }
 
     try {
-      await login(email, password);
-      navigate("/home");
+      const userData = await login(email, password);
+      // Redirect based on role
+      if (userData?.role === "TRAVEL_AGENT") {
+        navigate("/agent/home");
+      } else {
+        navigate("/home");
+      }
     } catch (err) {
       setError(err.message || "Invalid credentials");
     } finally {
@@ -39,8 +44,13 @@ function Login() {
     setError("");
     setLoading(true);
     try {
-      await loginWithGoogle();
-      navigate("/home");
+      const userData = await loginWithGoogle();
+      // Redirect based on role
+      if (userData?.role === "TRAVEL_AGENT") {
+        navigate("/agent/home");
+      } else {
+        navigate("/home");
+      }
     } catch (err) {
       setError(err.message || "Google sign-in failed");
       setLoading(false);

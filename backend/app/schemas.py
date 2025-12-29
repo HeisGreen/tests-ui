@@ -179,6 +179,7 @@ class UserCreate(BaseModel):
     email: str
     name: str
     password: str
+    role: Optional[str] = "USER"  # "USER" or "TRAVEL_AGENT"
 
 
 class UserLogin(BaseModel):
@@ -190,6 +191,7 @@ class UserResponse(BaseModel):
     id: int
     email: str
     name: str
+    role: Optional[str] = "USER"
     is_active: bool
     created_at: datetime
 
@@ -342,3 +344,186 @@ class ChecklistProgressResponse(BaseModel):
     model_config = {
         "from_attributes": True,
     }
+
+
+# Travel Agent Onboarding Schema (JSON Schema for UI generation)
+class TravelAgentOnboardingData(BaseModel):
+    """Schema for travel agent onboarding - used to generate UI forms"""
+    # Personal Information
+    full_name: Optional[str] = None
+    business_name: Optional[str] = None  # Optional
+    
+    # Location & Coverage
+    country_of_operation: Optional[str] = None
+    cities_covered: Optional[List[str]] = None  # List of cities
+    
+    # Experience
+    years_of_experience: Optional[int] = None
+    
+    # Specializations
+    specializations: Optional[List[str]] = None  # e.g., ["visas", "relocation", "student_migration", "work_permits"]
+    
+    # Destination Expertise
+    supported_destination_countries: Optional[List[str]] = None  # List of country codes
+    
+    # Contact Preferences
+    preferred_contact_method: Optional[str] = None  # "in_app_chat", "whatsapp", "email"
+    contact_details: Optional[dict] = None  # { "whatsapp": "...", "email": "...", "phone": "..." }
+    
+    # Languages
+    languages_spoken: Optional[List[str]] = None  # e.g., ["English", "Spanish", "French"]
+    
+    # Professional Info
+    bio: Optional[str] = None  # Short professional bio
+    
+    # Availability
+    availability_status: Optional[str] = "available"  # "available" or "unavailable"
+    
+    # Verification (admin-controlled, default unverified)
+    verification_status: Optional[str] = "unverified"  # "unverified", "verified", "rejected"
+
+
+# Travel Agent Profile Schemas
+class TravelAgentProfileCreate(BaseModel):
+    onboarding_data: Optional[TravelAgentOnboardingData] = None
+
+
+class TravelAgentProfileUpdate(BaseModel):
+    onboarding_data: Optional[TravelAgentOnboardingData] = None
+
+
+class TravelAgentProfileResponse(BaseModel):
+    id: int
+    user_id: int
+    onboarding_data: Optional[TravelAgentOnboardingData] = None
+    is_verified: bool
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+        "json_encoders": {datetime: lambda v: v.isoformat() + "Z"},
+    }
+
+
+# Travel Agent Listing Schemas
+class TravelAgentListItem(BaseModel):
+    """Simplified agent info for listing page"""
+    id: int
+    user_id: int
+    name: str  # Business name (primary) or full_name if no business_name
+    owner_name: Optional[str] = None  # Owner's full name
+    business_name: Optional[str] = None  # Business/agency name
+    email: str
+    profile_photo_url: Optional[str] = None
+    country_of_operation: Optional[str] = None
+    cities_covered: Optional[List[str]] = None
+    years_of_experience: Optional[int] = None
+    specializations: Optional[List[str]] = None
+    supported_destination_countries: Optional[List[str]] = None
+    languages_spoken: Optional[List[str]] = None
+    availability_status: Optional[str] = None
+    is_verified: bool
+    bio: Optional[str] = None
+
+
+class AgentListFilters(BaseModel):
+    country: Optional[str] = None
+    destination_expertise: Optional[str] = None  # Country code
+    availability: Optional[str] = None  # "available" or "unavailable"
+    experience_level: Optional[str] = None  # "junior" (<5), "mid" (5-10), "senior" (>10)
+    specialization: Optional[str] = None
+
+
+# Conversation Schemas
+class ConversationCreate(BaseModel):
+    agent_id: int
+    initial_message: Optional[str] = None
+
+
+class ConversationResponse(BaseModel):
+    id: int
+    user_id: int
+    agent_id: int
+    last_message_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+    # Include user/agent names for display
+    user_name: Optional[str] = None
+    agent_name: Optional[str] = None  # Business name (primary)
+    agent_owner_name: Optional[str] = None  # Owner's full name
+    agent_business_name: Optional[str] = None  # Business/agency name
+    last_message_preview: Optional[str] = None
+    unread_count: Optional[int] = 0
+
+    model_config = {
+        "from_attributes": True,
+        "json_encoders": {datetime: lambda v: v.isoformat() + "Z"},
+    }
+    
+    def model_dump(self, **kwargs):
+        """Override to ensure proper datetime serialization"""
+        data = super().model_dump(**kwargs)
+        for key, value in data.items():
+            if isinstance(value, datetime):
+                data[key] = value.isoformat()
+        return data
+
+
+# Message Schemas
+class MessageCreate(BaseModel):
+    conversation_id: int
+    content: str
+
+
+class MessageResponse(BaseModel):
+    id: int
+    conversation_id: int
+    sender_id: int
+    content: str
+    is_read: bool
+    created_at: datetime
+    sender_name: Optional[str] = None
+
+    model_config = {
+        "from_attributes": True,
+        "json_encoders": {datetime: lambda v: v.isoformat() + "Z"},
+    }
+    
+    def model_dump(self, **kwargs):
+        """Override to ensure proper datetime serialization"""
+        data = super().model_dump(**kwargs)
+        for key, value in data.items():
+            if isinstance(value, datetime):
+                data[key] = value.isoformat()
+        return data
+
+
+# User Registration with Role
+class UserCreateWithRole(BaseModel):
+    email: str
+    name: str
+    password: str
+    role: Optional[str] = "USER"  # "USER" or "TRAVEL_AGENT"
+
+
+# User Response with Role
+class UserResponseWithRole(BaseModel):
+    id: int
+    email: str
+    name: str
+    role: str
+    is_active: bool
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+    }
+    
+    def model_dump(self, **kwargs):
+        """Override to ensure proper datetime serialization"""
+        data = super().model_dump(**kwargs)
+        for key, value in data.items():
+            if isinstance(value, datetime):
+                data[key] = value.isoformat()
+        return data

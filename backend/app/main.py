@@ -10,10 +10,15 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
 from openai import OpenAI
 from sqlalchemy.orm import Session
+from sqlalchemy import Integer
+from sqlalchemy import cast as sql_cast
 
 from app.config import Settings, get_settings
 from app.database import engine, get_db
-from app.models import Base, User, UserProfile, Recommendation, Document, ChecklistProgress, ChecklistCache
+from app.models import (
+    Base, User, UserProfile, Recommendation, Document, ChecklistProgress, ChecklistCache,
+    TravelAgentProfile, Conversation, Message, UserRole
+)
 from app.schemas import (
     IntakeCreate,
     IntakeData,
@@ -40,6 +45,16 @@ from app.schemas import (
     ChecklistProgressCreate,
     ChecklistProgressUpdate,
     ChecklistProgressResponse,
+    TravelAgentOnboardingData,
+    TravelAgentProfileCreate,
+    TravelAgentProfileUpdate,
+    TravelAgentProfileResponse,
+    TravelAgentListItem,
+    AgentListFilters,
+    ConversationCreate,
+    ConversationResponse,
+    MessageCreate,
+    MessageResponse,
 )
 
 # Setup logging for recommendations
@@ -114,7 +129,7 @@ def health() -> Dict[str, str]:
 # Authentication endpoints
 @app.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
-    """Register a new user"""
+    """Register a new user with optional role selection"""
     # Check if user already exists
     db_user = get_user_by_email(db, email=user_data.email)
     if db_user:
@@ -123,12 +138,24 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
             detail="Email already registered"
         )
     
+    # Validate role
+    role = UserRole.USER
+    if user_data.role:
+        try:
+            role = UserRole(user_data.role.upper())
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid role. Must be 'USER' or 'TRAVEL_AGENT'"
+            )
+    
     # Create new user
     hashed_password = get_password_hash(user_data.password)
     db_user = User(
         email=user_data.email,
         name=user_data.name,
-        hashed_password=hashed_password
+        hashed_password=hashed_password,
+        role=role
     )
     db.add(db_user)
     db.commit()
@@ -210,10 +237,12 @@ async def login_with_google(
         if not user:
             # Create new user without password (OAuth users don't need passwords)
             # Use a special marker for OAuth users
+            # Default to USER role for OAuth (can be changed later)
             db_user = User(
                 email=email,
                 name=name,
-                hashed_password="oauth_google"  # Marker to indicate OAuth user
+                hashed_password="oauth_google",  # Marker to indicate OAuth user
+                role=UserRole.USER
             )
             db.add(db_user)
             db.commit()
@@ -1307,6 +1336,694 @@ def update_document(
     db.commit()
     db.refresh(document)
     return document
+
+
+# ============================================================================
+# TRAVEL AGENT ENDPOINTS
+# ============================================================================
+
+@app.get("/travel-agents/onboarding-schema")
+def get_travel_agent_onboarding_schema():
+    """Get JSON schema for travel agent onboarding form generation"""
+    import json
+    import os
+    schema_path = os.path.join(os.path.dirname(__file__), "..", "travel_agent_onboarding_schema.json")
+    try:
+        with open(schema_path, "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Onboarding schema file not found"
+        )
+
+
+@app.get("/travel-agents/profile", response_model=TravelAgentProfileResponse)
+def get_travel_agent_profile(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get travel agent profile for current user"""
+    if current_user.role != UserRole.TRAVEL_AGENT:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only travel agents can access this endpoint"
+        )
+    
+    profile = db.query(TravelAgentProfile).filter(
+        TravelAgentProfile.user_id == current_user.id
+    ).first()
+    
+    if not profile:
+        # Create empty profile if it doesn't exist
+        profile = TravelAgentProfile(user_id=current_user.id, onboarding_data=None)
+        db.add(profile)
+        db.commit()
+        db.refresh(profile)
+    
+    return profile
+
+
+@app.post("/travel-agents/profile", response_model=TravelAgentProfileResponse, status_code=status.HTTP_201_CREATED)
+def create_travel_agent_profile(
+    profile_data: TravelAgentProfileCreate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Create or update travel agent profile"""
+    if current_user.role != UserRole.TRAVEL_AGENT:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only travel agents can access this endpoint"
+        )
+    
+    existing_profile = db.query(TravelAgentProfile).filter(
+        TravelAgentProfile.user_id == current_user.id
+    ).first()
+    
+    if existing_profile:
+        # Update existing profile
+        if profile_data.onboarding_data:
+            existing_data = existing_profile.onboarding_data or {}
+            new_data = profile_data.onboarding_data.model_dump(exclude_none=False)
+            merged_data = {**existing_data, **new_data}
+            existing_profile.onboarding_data = merged_data
+        existing_profile.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(existing_profile)
+        return existing_profile
+    else:
+        # Create new profile
+        onboarding_dict = None
+        if profile_data.onboarding_data:
+            onboarding_dict = profile_data.onboarding_data.model_dump(exclude_none=False)
+        
+        new_profile = TravelAgentProfile(
+            user_id=current_user.id,
+            onboarding_data=onboarding_dict
+        )
+        db.add(new_profile)
+        db.commit()
+        db.refresh(new_profile)
+        return new_profile
+
+
+@app.put("/travel-agents/profile", response_model=TravelAgentProfileResponse)
+def update_travel_agent_profile(
+    profile_data: TravelAgentProfileUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Update travel agent profile"""
+    if current_user.role != UserRole.TRAVEL_AGENT:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only travel agents can access this endpoint"
+        )
+    
+    profile = db.query(TravelAgentProfile).filter(
+        TravelAgentProfile.user_id == current_user.id
+    ).first()
+    
+    if not profile:
+        onboarding_dict = None
+        if profile_data.onboarding_data:
+            onboarding_dict = profile_data.onboarding_data.model_dump(exclude_none=False)
+        
+        profile = TravelAgentProfile(
+            user_id=current_user.id,
+            onboarding_data=onboarding_dict
+        )
+        db.add(profile)
+    else:
+        if profile_data.onboarding_data:
+            existing_data = profile.onboarding_data or {}
+            new_data = profile_data.onboarding_data.model_dump(exclude_none=False)
+            merged_data = {**existing_data, **new_data}
+            profile.onboarding_data = merged_data
+        profile.updated_at = datetime.utcnow()
+    
+    db.commit()
+    db.refresh(profile)
+    return profile
+
+
+@app.get("/travel-agents/list", response_model=List[TravelAgentListItem])
+def list_travel_agents(
+    country: Optional[str] = None,
+    destination_expertise: Optional[str] = None,
+    availability: Optional[str] = None,
+    experience_level: Optional[str] = None,
+    specialization: Optional[str] = None,
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 50
+):
+    """List travel agents with optional filtering"""
+    query = db.query(TravelAgentProfile, User).join(
+        User, TravelAgentProfile.user_id == User.id
+    ).filter(
+        User.role == UserRole.TRAVEL_AGENT,
+        User.is_active == True
+    )
+    
+    # Apply filters
+    if country:
+        query = query.filter(
+            TravelAgentProfile.onboarding_data["country_of_operation"].astext == country
+        )
+    
+    if availability:
+        query = query.filter(
+            TravelAgentProfile.onboarding_data["availability_status"].astext == availability
+        )
+    
+    if destination_expertise:
+        # Check if destination is in supported_destination_countries array
+        query = query.filter(
+            TravelAgentProfile.onboarding_data["supported_destination_countries"].astext.contains(
+                destination_expertise
+            )
+        )
+    
+    if specialization:
+        query = query.filter(
+            TravelAgentProfile.onboarding_data["specializations"].astext.contains(
+                specialization
+            )
+        )
+    
+    # Experience level filter
+    if experience_level:
+        if experience_level == "junior":
+            query = query.filter(
+                sql_cast(TravelAgentProfile.onboarding_data["years_of_experience"].astext, Integer) < 5
+            )
+        elif experience_level == "mid":
+            query = query.filter(
+                sql_cast(TravelAgentProfile.onboarding_data["years_of_experience"].astext, Integer).between(5, 10)
+            )
+        elif experience_level == "senior":
+            query = query.filter(
+                sql_cast(TravelAgentProfile.onboarding_data["years_of_experience"].astext, Integer) > 10
+            )
+    
+    # Only show verified agents (or agents with completed onboarding)
+    query = query.filter(
+        TravelAgentProfile.onboarding_data.isnot(None)
+    )
+    
+    results = query.offset(skip).limit(limit).all()
+    
+    agents = []
+    for profile, user in results:
+        onboarding = profile.onboarding_data or {}
+        business_name = onboarding.get("business_name")
+        full_name = onboarding.get("full_name") or user.name
+        # Primary name is business_name if available, otherwise full_name
+        primary_name = business_name or full_name
+        
+        agents.append(TravelAgentListItem(
+            id=profile.id,
+            user_id=user.id,
+            name=primary_name,
+            owner_name=full_name if business_name else None,  # Only show if business_name exists
+            business_name=business_name,
+            email=user.email,
+            profile_photo_url=onboarding.get("profile_photo_url"),
+            country_of_operation=onboarding.get("country_of_operation"),
+            cities_covered=onboarding.get("cities_covered", []),
+            years_of_experience=onboarding.get("years_of_experience"),
+            specializations=onboarding.get("specializations", []),
+            supported_destination_countries=onboarding.get("supported_destination_countries", []),
+            languages_spoken=onboarding.get("languages_spoken", []),
+            availability_status=onboarding.get("availability_status", "unavailable"),
+            is_verified=profile.is_verified,
+            bio=onboarding.get("bio")
+        ))
+    
+    return agents
+
+
+@app.get("/travel-agents/{agent_id}", response_model=TravelAgentListItem)
+def get_travel_agent(
+    agent_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get a specific travel agent's public profile"""
+    profile = db.query(TravelAgentProfile).filter(
+        TravelAgentProfile.user_id == agent_id
+    ).first()
+    
+    if not profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Travel agent not found"
+        )
+    
+    user = db.query(User).filter(User.id == agent_id).first()
+    if not user or user.role != UserRole.TRAVEL_AGENT or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Travel agent not found"
+        )
+    
+    onboarding = profile.onboarding_data or {}
+    business_name = onboarding.get("business_name")
+    full_name = onboarding.get("full_name") or user.name
+    # Primary name is business_name if available, otherwise full_name
+    primary_name = business_name or full_name
+    
+    return TravelAgentListItem(
+        id=profile.id,
+        user_id=user.id,
+        name=primary_name,
+        owner_name=full_name if business_name else None,  # Only show if business_name exists
+        business_name=business_name,
+        email=user.email,
+        profile_photo_url=onboarding.get("profile_photo_url"),
+        country_of_operation=onboarding.get("country_of_operation"),
+        cities_covered=onboarding.get("cities_covered", []),
+        years_of_experience=onboarding.get("years_of_experience"),
+        specializations=onboarding.get("specializations", []),
+        supported_destination_countries=onboarding.get("supported_destination_countries", []),
+        languages_spoken=onboarding.get("languages_spoken", []),
+        availability_status=onboarding.get("availability_status", "unavailable"),
+        is_verified=profile.is_verified,
+        bio=onboarding.get("bio")
+    )
+
+
+# ============================================================================
+# MESSAGING ENDPOINTS
+# ============================================================================
+
+@app.post("/conversations", response_model=ConversationResponse, status_code=status.HTTP_201_CREATED)
+def create_conversation(
+    conversation_data: ConversationCreate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new conversation between user and agent"""
+    if current_user.role != UserRole.USER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only regular users can initiate conversations"
+        )
+    
+    # Verify agent exists and is a travel agent
+    agent = db.query(User).filter(
+        User.id == conversation_data.agent_id,
+        User.role == UserRole.TRAVEL_AGENT,
+        User.is_active == True
+    ).first()
+    
+    if not agent:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Travel agent not found"
+        )
+    
+    # Get agent profile for business name
+    agent_profile = db.query(TravelAgentProfile).filter(
+        TravelAgentProfile.user_id == agent.id
+    ).first()
+    agent_onboarding = agent_profile.onboarding_data if agent_profile else {}
+    agent_business_name = agent_onboarding.get("business_name")
+    agent_full_name = agent_onboarding.get("full_name") or agent.name
+    agent_primary_name = agent_business_name or agent_full_name
+    
+    # Check if conversation already exists
+    existing_conv = db.query(Conversation).filter(
+        Conversation.user_id == current_user.id,
+        Conversation.agent_id == conversation_data.agent_id
+    ).first()
+    
+    if existing_conv:
+        # Return existing conversation
+        last_message = db.query(Message).filter(
+            Message.conversation_id == existing_conv.id
+        ).order_by(Message.created_at.desc()).first()
+        
+        unread_count = db.query(Message).filter(
+            Message.conversation_id == existing_conv.id,
+            Message.sender_id != current_user.id,
+            Message.is_read == False
+        ).count()
+        
+        return ConversationResponse(
+            id=existing_conv.id,
+            user_id=existing_conv.user_id,
+            agent_id=existing_conv.agent_id,
+            last_message_at=existing_conv.last_message_at,
+            created_at=existing_conv.created_at,
+            updated_at=existing_conv.updated_at,
+            user_name=current_user.name,
+            agent_name=agent_primary_name,
+            agent_owner_name=agent_full_name if agent_business_name else None,
+            agent_business_name=agent_business_name,
+            last_message_preview=last_message.content[:100] if last_message else None,
+            unread_count=unread_count
+        )
+    
+    # Create new conversation
+    conversation = Conversation(
+        user_id=current_user.id,
+        agent_id=conversation_data.agent_id
+    )
+    db.add(conversation)
+    db.commit()
+    db.refresh(conversation)
+    
+    # Create initial message if provided
+    if conversation_data.initial_message:
+        message = Message(
+            conversation_id=conversation.id,
+            sender_id=current_user.id,
+            content=conversation_data.initial_message,
+            is_read=False
+        )
+        db.add(message)
+        conversation.last_message_at = datetime.utcnow()
+        db.commit()
+    
+    return ConversationResponse(
+        id=conversation.id,
+        user_id=conversation.user_id,
+        agent_id=conversation.agent_id,
+        last_message_at=conversation.last_message_at,
+        created_at=conversation.created_at,
+        updated_at=conversation.updated_at,
+        user_name=current_user.name,
+        agent_name=agent_primary_name,
+        agent_owner_name=agent_full_name if agent_business_name else None,
+        agent_business_name=agent_business_name,
+        last_message_preview=conversation_data.initial_message[:100] if conversation_data.initial_message else None,
+        unread_count=0
+    )
+
+
+@app.get("/conversations", response_model=List[ConversationResponse])
+def get_conversations(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get all conversations for current user"""
+    if current_user.role == UserRole.USER:
+        conversations = db.query(Conversation).filter(
+            Conversation.user_id == current_user.id
+        ).order_by(Conversation.last_message_at.desc()).all()
+    elif current_user.role == UserRole.TRAVEL_AGENT:
+        conversations = db.query(Conversation).filter(
+            Conversation.agent_id == current_user.id
+        ).order_by(Conversation.last_message_at.desc()).all()
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid user role"
+        )
+    
+    result = []
+    for conv in conversations:
+        # Get other party
+        if current_user.role == UserRole.USER:
+            other_party = db.query(User).filter(User.id == conv.agent_id).first()
+            # Get agent profile for business name
+            agent_profile = db.query(TravelAgentProfile).filter(
+                TravelAgentProfile.user_id == conv.agent_id
+            ).first()
+            agent_onboarding = agent_profile.onboarding_data if agent_profile else {}
+            agent_business_name = agent_onboarding.get("business_name")
+            agent_full_name = agent_onboarding.get("full_name") or (other_party.name if other_party else None)
+            agent_primary_name = agent_business_name or agent_full_name
+        else:
+            other_party = db.query(User).filter(User.id == conv.user_id).first()
+            agent_business_name = None
+            agent_full_name = None
+            agent_primary_name = None
+        
+        # Get last message
+        last_message = db.query(Message).filter(
+            Message.conversation_id == conv.id
+        ).order_by(Message.created_at.desc()).first()
+        
+        # Get unread count
+        unread_count = db.query(Message).filter(
+            Message.conversation_id == conv.id,
+            Message.sender_id != current_user.id,
+            Message.is_read == False
+        ).count()
+        
+        result.append(ConversationResponse(
+            id=conv.id,
+            user_id=conv.user_id,
+            agent_id=conv.agent_id,
+            last_message_at=conv.last_message_at,
+            created_at=conv.created_at,
+            updated_at=conv.updated_at,
+            user_name=db.query(User).filter(User.id == conv.user_id).first().name if current_user.role == UserRole.TRAVEL_AGENT else None,
+            agent_name=agent_primary_name if current_user.role == UserRole.USER else None,
+            agent_owner_name=agent_full_name if (current_user.role == UserRole.USER and agent_business_name) else None,
+            agent_business_name=agent_business_name if current_user.role == UserRole.USER else None,
+            last_message_preview=last_message.content[:100] if last_message else None,
+            unread_count=unread_count
+        ))
+    
+    return result
+
+
+@app.get("/conversations/{conversation_id}", response_model=ConversationResponse)
+def get_conversation(
+    conversation_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get a specific conversation"""
+    conversation = db.query(Conversation).filter(
+        Conversation.id == conversation_id
+    ).first()
+    
+    if not conversation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation not found"
+        )
+    
+    # Verify user has access
+    if current_user.role == UserRole.USER and conversation.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
+    elif current_user.role == UserRole.TRAVEL_AGENT and conversation.agent_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
+    
+    user = db.query(User).filter(User.id == conversation.user_id).first()
+    agent = db.query(User).filter(User.id == conversation.agent_id).first()
+    
+    # Get agent profile for business name (if user is viewing as USER)
+    agent_business_name = None
+    agent_full_name = None
+    agent_primary_name = None
+    if current_user.role == UserRole.USER and agent:
+        agent_profile = db.query(TravelAgentProfile).filter(
+            TravelAgentProfile.user_id == agent.id
+        ).first()
+        agent_onboarding = agent_profile.onboarding_data if agent_profile else {}
+        agent_business_name = agent_onboarding.get("business_name")
+        agent_full_name = agent_onboarding.get("full_name") or (agent.name if agent else None)
+        agent_primary_name = agent_business_name or agent_full_name
+    
+    last_message = db.query(Message).filter(
+        Message.conversation_id == conversation.id
+    ).order_by(Message.created_at.desc()).first()
+    
+    unread_count = db.query(Message).filter(
+        Message.conversation_id == conversation.id,
+        Message.sender_id != current_user.id,
+        Message.is_read == False
+    ).count()
+    
+    return ConversationResponse(
+        id=conversation.id,
+        user_id=conversation.user_id,
+        agent_id=conversation.agent_id,
+        last_message_at=conversation.last_message_at,
+        created_at=conversation.created_at,
+        updated_at=conversation.updated_at,
+        user_name=user.name if user else None,
+        agent_name=agent_primary_name if current_user.role == UserRole.USER else None,
+        agent_owner_name=agent_full_name if (current_user.role == UserRole.USER and agent_business_name) else None,
+        agent_business_name=agent_business_name if current_user.role == UserRole.USER else None,
+        last_message_preview=last_message.content[:100] if last_message else None,
+        unread_count=unread_count
+    )
+
+
+@app.post("/messages", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
+def create_message(
+    message_data: MessageCreate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Send a message in a conversation"""
+    # Verify conversation exists and user has access
+    conversation = db.query(Conversation).filter(
+        Conversation.id == message_data.conversation_id
+    ).first()
+    
+    if not conversation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation not found"
+        )
+    
+    # Verify user is part of conversation
+    if current_user.role == UserRole.USER and conversation.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
+    elif current_user.role == UserRole.TRAVEL_AGENT and conversation.agent_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
+    
+    # Create message
+    message = Message(
+        conversation_id=message_data.conversation_id,
+        sender_id=current_user.id,
+        content=message_data.content,
+        is_read=False
+    )
+    db.add(message)
+    
+    # Update conversation timestamp
+    conversation.last_message_at = datetime.utcnow()
+    conversation.updated_at = datetime.utcnow()
+    
+    db.commit()
+    db.refresh(message)
+    
+    return MessageResponse(
+        id=message.id,
+        conversation_id=message.conversation_id,
+        sender_id=message.sender_id,
+        content=message.content,
+        is_read=message.is_read,
+        created_at=message.created_at,
+        sender_name=current_user.name
+    )
+
+
+@app.get("/conversations/{conversation_id}/messages", response_model=List[MessageResponse])
+def get_messages(
+    conversation_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100
+):
+    """Get messages in a conversation"""
+    # Verify conversation exists and user has access
+    conversation = db.query(Conversation).filter(
+        Conversation.id == conversation_id
+    ).first()
+    
+    if not conversation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation not found"
+        )
+    
+    # Verify user is part of conversation
+    if current_user.role == UserRole.USER and conversation.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
+    elif current_user.role == UserRole.TRAVEL_AGENT and conversation.agent_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
+    
+    # Get messages
+    messages = db.query(Message).filter(
+        Message.conversation_id == conversation_id
+    ).order_by(Message.created_at.desc()).offset(skip).limit(limit).all()
+    
+    # Mark messages as read if viewing as recipient
+    for msg in messages:
+        if msg.sender_id != current_user.id and not msg.is_read:
+            msg.is_read = True
+    db.commit()
+    
+    # Reverse to show oldest first
+    messages.reverse()
+    
+    result = []
+    for msg in messages:
+        sender = db.query(User).filter(User.id == msg.sender_id).first()
+        result.append(MessageResponse(
+            id=msg.id,
+            conversation_id=msg.conversation_id,
+            sender_id=msg.sender_id,
+            content=msg.content,
+            is_read=msg.is_read,
+            created_at=msg.created_at,
+            sender_name=sender.name if sender else None
+        ))
+    
+    return result
+
+
+@app.get("/users/{user_id}/profile-summary")
+def get_user_profile_summary(
+    user_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get user profile summary for travel agents (limited info only)"""
+    if current_user.role != UserRole.TRAVEL_AGENT:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only travel agents can access this endpoint"
+        )
+    
+    # Verify user exists
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Get user profile
+    profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+    onboarding = profile.onboarding_data if profile else {}
+    
+    # Return only safe, necessary information
+    return {
+        "user_id": user.id,
+        "name": user.name,
+        "country_of_origin": onboarding.get("nationality") or onboarding.get("citizenship_country"),
+        "desired_destination_country": onboarding.get("preferred_destinations"),
+        "migration_purpose": onboarding.get("preferred_destinations"),  # Can be inferred from other fields
+        "timeline": onboarding.get("target_timeline") or onboarding.get("migration_timeline"),
+        "budget_range": {
+            "max_budget_usd": onboarding.get("max_budget_usd"),
+            "budget_amount": onboarding.get("budget_amount"),
+            "budget_currency": onboarding.get("budget_currency")
+        },
+        "has_recommendations": db.query(Recommendation).filter(
+            Recommendation.user_id == user_id
+        ).count() > 0
+    }
 
 
 @app.delete("/documents/{document_id}", status_code=status.HTTP_204_NO_CONTENT)

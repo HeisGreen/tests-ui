@@ -326,3 +326,126 @@ export const documentsAPI = {
     });
   },
 };
+
+// Travel Agent API functions
+export const travelAgentAPI = {
+  /**
+   * Get JSON schema for travel agent onboarding form
+   */
+  getOnboardingSchema: async () => {
+    return apiRequest("/travel-agents/onboarding-schema");
+  },
+
+  /**
+   * Get travel agent profile for current user
+   */
+  getProfile: async () => {
+    return apiRequest("/travel-agents/profile");
+  },
+
+  /**
+   * Create or update travel agent profile
+   * @param {object} onboardingData - Travel agent onboarding data
+   */
+  updateProfile: async (onboardingData) => {
+    return apiRequest("/travel-agents/profile", {
+      method: "PUT",
+      body: JSON.stringify({
+        onboarding_data: onboardingData,
+      }),
+    });
+  },
+
+  /**
+   * List travel agents with optional filters
+   * @param {object} filters - Filter options (country, destination_expertise, availability, etc.)
+   * @param {number} skip - Pagination offset
+   * @param {number} limit - Pagination limit
+   */
+  listAgents: async (filters = {}, skip = 0, limit = 50) => {
+    const params = new URLSearchParams();
+    if (filters.country) params.append("country", filters.country);
+    if (filters.destination_expertise) params.append("destination_expertise", filters.destination_expertise);
+    if (filters.availability) params.append("availability", filters.availability);
+    if (filters.experience_level) params.append("experience_level", filters.experience_level);
+    if (filters.specialization) params.append("specialization", filters.specialization);
+    params.append("skip", skip.toString());
+    params.append("limit", limit.toString());
+    
+    return apiRequest(`/travel-agents/list?${params.toString()}`);
+  },
+
+  /**
+   * Get a specific travel agent's public profile
+   * @param {number} agentId - Agent user ID
+   */
+  getAgent: async (agentId) => {
+    return apiRequest(`/travel-agents/${agentId}`);
+  },
+};
+
+// Messaging API functions
+export const messagingAPI = {
+  /**
+   * Create a new conversation with an agent
+   * @param {number} agentId - Agent user ID
+   * @param {string} initialMessage - Optional initial message
+   */
+  createConversation: async (agentId, initialMessage = null) => {
+    return apiRequest("/conversations", {
+      method: "POST",
+      body: JSON.stringify({
+        agent_id: agentId,
+        initial_message: initialMessage,
+      }),
+    });
+  },
+
+  /**
+   * Get all conversations for current user
+   */
+  getConversations: async () => {
+    return apiRequest("/conversations");
+  },
+
+  /**
+   * Get a specific conversation
+   * @param {number} conversationId - Conversation ID
+   */
+  getConversation: async (conversationId) => {
+    return apiRequest(`/conversations/${conversationId}`);
+  },
+
+  /**
+   * Get messages in a conversation
+   * @param {number} conversationId - Conversation ID
+   * @param {number} skip - Pagination offset
+   * @param {number} limit - Pagination limit
+   */
+  getMessages: async (conversationId, skip = 0, limit = 100) => {
+    return apiRequest(`/conversations/${conversationId}/messages?skip=${skip}&limit=${limit}`);
+  },
+
+  /**
+   * Send a message in a conversation
+   * @param {number} conversationId - Conversation ID
+   * @param {string} content - Message content
+   */
+  sendMessage: async (conversationId, content) => {
+    return apiRequest("/messages", {
+      method: "POST",
+      body: JSON.stringify({
+        conversation_id: conversationId,
+        content: content,
+      }),
+    });
+  },
+
+  /**
+   * Get user profile summary (for agents)
+   * @param {number} userId - User ID
+   */
+  getUserProfileSummary: async (userId) => {
+    return apiRequest(`/users/${userId}/profile-summary`);
+  },
+};

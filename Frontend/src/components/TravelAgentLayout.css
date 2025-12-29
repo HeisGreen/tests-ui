@@ -1,0 +1,247 @@
+.travel-agent-layout {
+  min-height: 100vh;
+  display: flex;
+  background: #f8f9fa;
+}
+
+/* Desktop Sidebar */
+.agent-sidebar {
+  width: 260px;
+  background: white;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  z-index: 100;
+}
+
+.sidebar-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: #1a1a1a;
+}
+
+.sidebar-logo .logo-mark {
+  height: 32px;
+  width: auto;
+}
+
+.logo-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 1rem 0;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  color: #666;
+  text-decoration: none;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+}
+
+.sidebar-nav-item:hover {
+  background: #f8f9fa;
+  color: #007bff;
+}
+
+.sidebar-nav-item.active {
+  background: #e3f2fd;
+  color: #007bff;
+  border-right: 3px solid #007bff;
+  font-weight: 500;
+}
+
+.sidebar-nav-item svg {
+  font-size: 1.25rem;
+}
+
+.sidebar-footer {
+  border-top: 1px solid #e0e0e0;
+  padding: 1rem 1.5rem;
+}
+
+.sidebar-logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+  font-size: 0.95rem;
+}
+
+.sidebar-logout:hover {
+  background: #fff5f5;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  margin-top: 0.75rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-role {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+/* Mobile Header */
+.agent-mobile-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  z-index: 1000;
+}
+
+.mobile-logo .logo-mark {
+  height: 32px;
+  width: auto;
+}
+
+.user-avatar-small {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Main Content */
+.agent-main-content {
+  flex: 1;
+  min-height: 100vh;
+}
+
+.agent-main-content.desktop {
+  margin-left: 260px;
+}
+
+.agent-main-content.mobile {
+  padding-top: 60px;
+  padding-bottom: 70px;
+}
+
+/* Mobile Bottom Navigation */
+.agent-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  color: #999;
+  text-decoration: none;
+  transition: color 0.2s;
+  font-size: 0.75rem;
+  flex: 1;
+}
+
+.bottom-nav-item svg {
+  font-size: 1.5rem;
+}
+
+.bottom-nav-item.active {
+  color: #007bff;
+}
+
+.bottom-nav-item span {
+  font-size: 0.7rem;
+}
+
+@media (max-width: 767px) {
+  .agent-sidebar {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .agent-mobile-header,
+  .agent-bottom-nav {
+    display: none;
+  }
+}
+
