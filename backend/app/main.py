@@ -19,6 +19,7 @@ from app.models import (
     Base, User, UserProfile, Recommendation, Document, ChecklistProgress, ChecklistCache,
     TravelAgentProfile, Conversation, Message, UserRole
 )
+from app.migrations import ensure_role_column
 from app.schemas import (
     IntakeCreate,
     IntakeData,
@@ -74,6 +75,7 @@ from app.oauth import verify_google_token
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
+ensure_role_column(engine)
 
 # Single in-memory store so intakes persist across requests during runtime
 store = IntakeStore()

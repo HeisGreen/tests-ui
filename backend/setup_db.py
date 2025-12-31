@@ -8,10 +8,12 @@ from app.models import (
     User, UserProfile, Recommendation, Document, ChecklistProgress, ChecklistCache,
     TravelAgentProfile, Conversation, Message
 )
+from app.migrations import ensure_role_column
 
 if __name__ == "__main__":
     print("Creating database tables...")
     Base.metadata.create_all(bind=engine)
+    ensure_role_column(engine)
     print("Database tables created successfully!")
     print("\nTables created:")
     print("  - users (with role field)")
@@ -23,6 +25,4 @@ if __name__ == "__main__":
     print("  - travel_agent_profiles (NEW)")
     print("  - conversations (NEW)")
     print("  - messages (NEW)")
-    print("\nNote: If you have existing data, you may need to:")
-    print("  1. Add 'role' column to existing users table (defaults to 'USER')")
-    print("  2. Run: ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR DEFAULT 'USER';")
+    print("\nIf you already have data, rerunning this script now adds the 'role' column automatically.")

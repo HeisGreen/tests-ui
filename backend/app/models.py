@@ -5,6 +5,9 @@ from app.database import Base
 import enum
 
 
+ROLE_ENUM_NAME = "user_role_enum"
+
+
 class UserRole(str, enum.Enum):
     USER = "USER"
     TRAVEL_AGENT = "TRAVEL_AGENT"
@@ -17,7 +20,7 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     name = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
-    role = Column(SQLEnum(UserRole), default=UserRole.USER, nullable=False, index=True)
+    role = Column(SQLEnum(UserRole, name=ROLE_ENUM_NAME), default=UserRole.USER, nullable=False, index=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
