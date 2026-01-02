@@ -7,6 +7,8 @@ import {
   transformToBackendFormat,
   transformToFormFormat,
 } from "../utils/dataTransform";
+import NavigationHeader from "../components/kastamer/NavigationHeader";
+import ProgressSidebar from "../components/kastamer/ProgressSidebar";
 import "./Onboarding.css";
 
 function Onboarding() {
@@ -1838,8 +1840,11 @@ function Onboarding() {
     "Documents & Preferences",
   ];
 
+  // Use stepNames for sidebar
+  const kastamerStepNames = stepNames;
+
   return (
-    <div className="onboarding-page">
+    <div className="onboarding-page kastamer-onboarding-page">
       {submitting && (
         <div
           className="onboarding-loading-overlay"
@@ -1854,88 +1859,96 @@ function Onboarding() {
           </div>
         </div>
       )}
-      <div className="onboarding-container">
-        <div className="onboarding-header">
-          <h1>Let's get to know you</h1>
-          <p>Help us provide personalized visa recommendations</p>
-          <div className="progress-text-header">
-            Step {currentStep} of {totalSteps} • {stepNames[currentStep - 1]}
+      
+      <NavigationHeader userEmail={user?.email || 'jonathan@acme.com'} />
+      
+      <div className="onboarding-container kastamer-onboarding-container">
+        <ProgressSidebar currentStep={currentStep} totalSteps={totalSteps} stepNames={kastamerStepNames} />
+        
+        <div className="onboarding-content-wrapper">
+          {/* Decorative Background Elements */}
+          <div className="onboarding-decorative-bg">
+            <div className="decorative-circle decorative-circle-1"></div>
+            <div className="decorative-circle decorative-circle-2"></div>
+            <div className="decorative-circle decorative-circle-3"></div>
+            <div className="decorative-line decorative-line-1"></div>
+            <div className="decorative-line decorative-line-2"></div>
           </div>
-        </div>
 
-        {/* Step Navigation Dots */}
-        <div className="step-navigation">
-          {stepNames.map((name, index) => {
-            const stepNum = index + 1;
-            const isActive = stepNum === currentStep;
-            const isCompleted = stepNum < currentStep;
-            const isAccessible = stepNum <= currentStep || stepNum === currentStep + 1;
-            
-            return (
-              <div
-                key={stepNum}
-                className={`step-dot ${isActive ? "active" : ""} ${
-                  isCompleted ? "completed" : ""
-                } ${isAccessible ? "accessible" : ""}`}
-                onClick={() => isAccessible && handleStepClick(stepNum)}
-                title={name}
-              >
-                <div className="step-dot-circle">
-                  {isCompleted ? "✓" : stepNum}
+          {/* Progress Indicator */}
+          <div className="onboarding-progress-indicator">
+            <div className="progress-steps">
+              {Array.from({ length: totalSteps }, (_, i) => (
+                <div
+                  key={i + 1}
+                  className={`progress-step-dot ${
+                    i + 1 < currentStep ? 'completed' : ''
+                  } ${i + 1 === currentStep ? 'active' : ''}`}
+                >
+                  {i + 1 < currentStep && <span className="check-icon">✓</span>}
                 </div>
-                <span className="step-dot-label">{name}</span>
-              </div>
-            );
-          })}
-        </div>
+              ))}
+            </div>
+            <div className="progress-line">
+              <div 
+                className="progress-line-fill" 
+                style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
+              ></div>
+            </div>
+          </div>
 
-        <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-          ></div>
-        </div>
+          <div className="onboarding-header">
+            <div className="kastamer-step-header">
+              <div className="step-header-decoration"></div>
+              <h1 className="kastamer-step-title">
+                {currentStep === totalSteps ? 'LAST STEP' : `STEP ${currentStep} OF ${totalSteps}`}
+              </h1>
+              <h2 className="kastamer-step-subtitle">{stepNames[currentStep - 1]}</h2>
+            </div>
+          </div>
 
+          <div className="onboarding-content" ref={stepRef}>
+            <div className="content-fade-wrapper">
+              {renderStep()}
+            </div>
+          </div>
 
-        <div className="onboarding-content" ref={stepRef}>
-          {renderStep()}
-        </div>
+          <div className="keyboard-hint">
+            <small>
+              Tip: Press <kbd>Ctrl</kbd> + <kbd>→</kbd> to go next,{" "}
+              <kbd>Ctrl</kbd> + <kbd>←</kbd> to go back
+            </small>
+          </div>
 
-        <div className="keyboard-hint">
-          <small>
-            💡 Tip: Press <kbd>Ctrl</kbd> + <kbd>→</kbd> to go next,{" "}
-            <kbd>Ctrl</kbd> + <kbd>←</kbd> to go back
-          </small>
-        </div>
-
-        <div className="onboarding-actions">
-          {currentStep > 1 && (
-            <button
-              onClick={handlePrevious}
-              className="btn-secondary"
-              disabled={submitting}
-            >
-              ← Previous
-            </button>
-          )}
-          <div className="spacer"></div>
-          {currentStep < totalSteps ? (
-            <button
-              onClick={handleNext}
-              className="btn-primary"
-              disabled={submitting}
-            >
-              Next →
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              className="btn-primary btn-complete"
-              disabled={submitting}
-            >
-              {submitting ? "Generating…" : "✓ Complete Onboarding"}
-            </button>
-          )}
+          <div className="onboarding-actions">
+            {currentStep > 1 && (
+              <button
+                onClick={handlePrevious}
+                className="btn-secondary kastamer-btn-secondary"
+                disabled={submitting}
+              >
+                Previous
+              </button>
+            )}
+            <div className="spacer"></div>
+            {currentStep < totalSteps ? (
+              <button
+                onClick={handleNext}
+                className="btn-primary kastamer-btn-primary"
+                disabled={submitting}
+              >
+                Save and continue
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                className="btn-primary kastamer-btn-primary kastamer-btn-primary-final"
+                disabled={submitting}
+              >
+                {submitting ? "Generating…" : "Process and set up →"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

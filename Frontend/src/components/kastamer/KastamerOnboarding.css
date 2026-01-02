@@ -1,0 +1,154 @@
+/**
+ * Kastamer Onboarding Main Styles
+ * Based on on-design.json color palette:
+ * - White background (#FFFFFF)
+ * - Magenta/Hot Pink accent (#D81B85)
+ * - Black text (#1A1A1A)
+ * - Light grey (#F5F5F5)
+ */
+
+.kastamer-onboarding {
+  min-height: 100vh;
+  background-color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+}
+
+.kastamer-onboarding-container {
+  display: flex;
+  flex: 1;
+  min-height: calc(100vh - 60px);
+}
+
+.kastamer-onboarding-content {
+  flex: 1;
+  padding: 3rem 4rem;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.kastamer-step-header {
+  margin-bottom: 2.5rem;
+}
+
+.kastamer-step-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #D81B85;
+  margin: 0 0 0.5rem 0;
+}
+
+.kastamer-step-subtitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.kastamer-step-content {
+  margin-bottom: 3rem;
+  min-height: 400px;
+}
+
+.kastamer-step-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid #F5F5F5;
+}
+
+.kastamer-spacer {
+  flex: 1;
+}
+
+/* Primary Button - Magenta */
+.kastamer-btn-primary {
+  background-color: #D81B85;
+  color: #FFFFFF;
+  border: none;
+  padding: 0.875rem 2rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.kastamer-btn-primary:hover {
+  background-color: #C01775;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(216, 27, 133, 0.3);
+}
+
+.kastamer-btn-primary:active {
+  transform: translateY(0);
+}
+
+.kastamer-btn-primary-final {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.kastamer-btn-primary-final::after {
+  content: '→';
+  font-size: 1.2rem;
+}
+
+/* Secondary Button */
+.kastamer-btn-secondary {
+  background-color: transparent;
+  color: #1A1A1A;
+  border: 1px solid #E0E0E0;
+  padding: 0.875rem 2rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.kastamer-btn-secondary:hover {
+  background-color: #F5F5F5;
+  border-color: #D0D0D0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .kastamer-onboarding-container {
+    flex-direction: column;
+  }
+  
+  .kastamer-onboarding-content {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .kastamer-step-subtitle {
+    font-size: 1.5rem;
+  }
+  
+  .kastamer-step-actions {
+    flex-direction: column;
+  }
+  
+  .kastamer-spacer {
+    display: none;
+  }
+  
+  .kastamer-btn-primary,
+  .kastamer-btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

@@ -1,0 +1,124 @@
+/**
+ * Step 2: Email Forwarding Styles
+ * Maps to: on-design.json -> screen_02
+ */
+
+.kastamer-step2 {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.kastamer-step2-email-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.kastamer-email-copy-field {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.kastamer-input-readonly {
+  flex: 1;
+  background-color: #F5F5F5;
+  cursor: default;
+}
+
+.kastamer-input-readonly:focus {
+  border-color: #E0E0E0;
+  box-shadow: none;
+}
+
+.kastamer-copy-button {
+  padding: 0.875rem 1.5rem;
+  background-color: #1A1A1A;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.kastamer-copy-button:hover {
+  background-color: #333333;
+}
+
+.kastamer-step2-checkbox-section {
+  padding: 1rem 0;
+}
+
+.kastamer-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  color: #1A1A1A;
+}
+
+.kastamer-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #D81B85;
+}
+
+.kastamer-step2-guidance {
+  padding-top: 2rem;
+  border-top: 1px solid #F5F5F5;
+}
+
+.kastamer-guidance-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 1.5rem;
+}
+
+.kastamer-guidance-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.kastamer-guidance-card {
+  padding: 1.5rem;
+  background-color: #F5F5F5;
+  border-radius: 8px;
+  border: 1px solid #E0E0E0;
+}
+
+.kastamer-guidance-card-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #D81B85;
+  margin-bottom: 0.5rem;
+}
+
+.kastamer-guidance-card-text {
+  font-size: 0.875rem;
+  color: #666666;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .kastamer-email-copy-field {
+    flex-direction: column;
+  }
+  
+  .kastamer-copy-button {
+    width: 100%;
+  }
+  
+  .kastamer-guidance-cards {
+    grid-template-columns: 1fr;
+  }
+}
+

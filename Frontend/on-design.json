@@ -1,0 +1,239 @@
+{
+    "meta": {
+    "image_quality": "High",
+    "image_type": "UI Design Mockup / Composite View",
+    "resolution_estimation": "High resolution, vector-based clarity"
+    },
+    "global_context": {
+    "scene_description": "A flat-lay presentation of a four-step SaaS onboarding wizard for a platform named 'Kastamer'. The image displays four distinct interface screens arranged in a 2x2 grid, representing the sequential user flow. The design is clean and professional, featuring a left-hand progress sidebar and a right-hand content area. The aesthetic utilizes a white background, soft drop shadows, and a primary accent color of magenta/hot pink for active states and primary buttons, contrasted with black text and grey structural elements.",
+    "time_of_day": "N/A (Digital Interface)",
+    "weather_atmosphere": "Organized/Professional/Clean",
+    "lighting": {
+    "source": "Digital/Screen",
+    "direction": "Flat/Front-lit",
+    "quality": "Soft",
+    "color_temp": "Cool White"
+    }
+    },
+    "color_palette": {
+    "dominant_hex_estimates": [
+    "#FFFFFF",
+    "#F5F5F5",
+    "#D81B85",
+    "#1A1A1A"
+    ],
+    "accent_colors": [
+    "Hot Pink / Magenta",
+    "Light Grey",
+    "Black"
+    ],
+    "contrast_level": "High (Text vs Background)"
+    },
+    "composition": {
+    "camera_angle": "Front-facing",
+    "framing": "Wide-shot showing multiple screens",
+    "depth_of_field": "Deep (Digital)",
+    "focal_point": "The sequential flow from Step 1 (top-left) to Step 4 (bottom-right)"
+    },
+    "objects": [
+    {
+    "id": "screen_01",
+    "label": "Step 1: Create Workspace Screen",
+    "category": "UI Interface",
+    "location": "Top-Left Quadrant",
+    "prominence": "Foreground",
+    "visual_attributes": {
+    "color": "White background",
+    "state": "Active Step 1",
+    "dimensions_relative": "Quarter of the image"
+    },
+    "micro_details": [
+    "Sidebar progress shows 'Add Workspace' active (Pink icon)",
+    "Input field for 'Acme Support'",
+    "Input field for 'support@acme.com'",
+    "Three documentation buttons at bottom"
+    ],
+    "text_content": "STEP 1 OF 4\nCreate your workspace"
+    },
+    {
+    "id": "screen_02",
+    "label": "Step 2: Email Forwarding Screen",
+    "category": "UI Interface",
+    "location": "Top-Right Quadrant",
+    "prominence": "Foreground",
+    "visual_attributes": {
+    "color": "White background",
+    "state": "Active Step 2",
+    "dimensions_relative": "Quarter of the image"
+    },
+    "micro_details": [
+    "Sidebar shows first step completed (Pink check), second step active",
+    "Generated email address displayed in copy-field",
+    "Checkbox 'Email forwarding has been activated'",
+    "Three guidance cards at bottom"
+    ],
+    "text_content": "STEP 2 OF 4\nSet up email forwarding"
+    },
+    {
+    "id": "screen_03",
+    "label": "Step 3: Outbound Emails Screen",
+    "category": "UI Interface",
+    "location": "Bottom-Left Quadrant",
+    "prominence": "Foreground",
+    "visual_attributes": {
+    "color": "White background",
+    "state": "Active Step 3",
+    "dimensions_relative": "Quarter of the image"
+    },
+    "micro_details": [
+    "Sidebar shows first two steps completed",
+    "Black button 'Proceed to Verification'",
+    "DNS Record table showing TXT and CNAME records",
+    "Red 'Not Verified' status indicators"
+    ],
+    "text_content": "STEP 3 OF 4\nOutbound emails"
+    },
+    {
+    "id": "screen_04",
+    "label": "Step 4: Create Issue Types Screen",
+    "category": "UI Interface",
+    "location": "Bottom-Right Quadrant",
+    "prominence": "Foreground",
+    "visual_attributes": {
+    "color": "White background",
+    "state": "Active Step 4",
+    "dimensions_relative": "Quarter of the image"
+    },
+    "micro_details": [
+    "Sidebar shows first three steps completed",
+    "Input field with '+ Add' button",
+    "Row of selected tags (Follow up, Support, Finance service...)",
+    "Row of suggestion tags (+ General question...)",
+    "Primary action button 'Process and set up' with arrow"
+    ],
+    "text_content": "LAST STEP\nCreate issue types"
+    },
+    {
+    "id": "ui_sidebar",
+    "label": "Progress Sidebar",
+    "category": "UI Component",
+    "location": "Left side of each screen",
+    "prominence": "Feature",
+    "visual_attributes": {
+    "color": "Light gradient background",
+    "structure": "Vertical stepper",
+    "state": "Dynamic based on step"
+    },
+    "micro_details": [
+    "Step 1: Add Workspace (Pink Icon)",
+    "Step 2: Verification & Setting (Checkmark)",
+    "Step 3: Sending Emails (Paper plane)",
+    "Step 4: Create Issue (Tag icon)"
+    ],
+    "text_content": "Get started by setting up your workspace..."
+    },
+    {
+    "id": "nav_header",
+    "label": "Global Navigation Header",
+    "category": "UI Component",
+    "location": "Top of each screen",
+    "prominence": "Background",
+    "visual_attributes": {
+    "color": "White",
+    "text_color": "Grey/Black",
+    "layout": "Flex spread"
+    },
+    "micro_details": [
+    "Kastamer Logo (left)",
+    "User email 'jonathan@acme.com'",
+    "Help Assistance link",
+    "Log out link"
+    ],
+    "text_content": "Kastamer Login as jonathan@acme.com Help Assistance Log out"
+    }
+    ],
+    "text_ocr": {
+    "present": true,
+    "content": [
+    {
+    "text": "Kastamer",
+    "location": "Top Left Logo",
+    "font_style": "Bold Sans-serif",
+    "legibility": "Clear"
+    },
+    {
+    "text": "STEP 1 OF 4",
+    "location": "Screen 1 Header Label",
+    "font_style": "Pink Uppercase Bold",
+    "legibility": "Clear"
+    },
+    {
+    "text": "Create your workspace",
+    "location": "Screen 1 Title",
+    "font_style": "Bold Headline",
+    "legibility": "Clear"
+    },
+    {
+    "text": "Set up email forwarding",
+    "location": "Screen 2 Title",
+    "font_style": "Bold Headline",
+    "legibility": "Clear"
+    },
+    {
+    "text": "Outbound emails",
+    "location": "Screen 3 Title",
+    "font_style": "Bold Headline",
+    "legibility": "Clear"
+    },
+    {
+    "text": "Create issue types",
+    "location": "Screen 4 Title",
+    "font_style": "Bold Headline",
+    "legibility": "Clear"
+    },
+    {
+    "text": "Save and continue",
+    "location": "Primary Button (Screens 1, 2, 3)",
+    "font_style": "White Text on Pink Button",
+    "legibility": "Clear"
+    },
+    {
+    "text": "Process and set up",
+    "location": "Primary Button (Screen 4)",
+    "font_style": "White Text on Pink Button",
+    "legibility": "Clear"
+    },
+    {
+    "text": "Add Workspace",
+    "location": "Sidebar Step 1",
+    "font_style": "Bold Sans-serif",
+    "legibility": "Clear"
+    },
+    {
+    "text": "Verification & Setting",
+    "location": "Sidebar Step 2",
+    "font_style": "Bold Sans-serif",
+    "legibility": "Clear"
+    },
+    {
+    "text": "Sending Emails",
+    "location": "Sidebar Step 3",
+    "font_style": "Bold Sans-serif",
+    "legibility": "Clear"
+    },
+    {
+    "text": "Create Issue",
+    "location": "Sidebar Step 4",
+    "font_style": "Bold Sans-serif",
+    "legibility": "Clear"
+    }
+    ]
+    },
+    "semantic_relationships": [
+    "The progress sidebar on the left visually tracks the user's journey through the four screens displayed in the grid.",
+    "The primary button 'Save and continue' (Steps 1-3) transitions to 'Process and set up' on the final step, indicating completion.",
+    "The pink accent color is used consistently for the current active step in the sidebar and the primary action button.",
+    "Data input in Step 1 (Workspace Name) conceptually leads to the DNS settings required in Step 3.",
+    "The 'Not Verified' status in Step 3 implies a dependency on the external actions described in the 'Updating DNS Settings Guide'."
+    ]
+    }

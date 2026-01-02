@@ -1,0 +1,138 @@
+/**
+ * Step 4: Create Issue Types Styles
+ * Maps to: on-design.json -> screen_04
+ */
+
+.kastamer-step4 {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.kastamer-step4-input-section {
+  margin-bottom: 1rem;
+}
+
+.kastamer-step4-input-wrapper {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.kastamer-step4-input {
+  flex: 1;
+}
+
+.kastamer-btn-add {
+  padding: 0.875rem 1.5rem;
+  background-color: #1A1A1A;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.kastamer-btn-add:hover:not(:disabled) {
+  background-color: #333333;
+}
+
+.kastamer-btn-add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kastamer-step4-section-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 1rem;
+}
+
+.kastamer-step4-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.kastamer-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.kastamer-tag-selected {
+  background-color: #D81B85;
+  color: #FFFFFF;
+  border: none;
+}
+
+.kastamer-tag-suggestion {
+  background-color: #F5F5F5;
+  color: #1A1A1A;
+  border: 1px solid #E0E0E0;
+  cursor: pointer;
+  padding: 0.625rem 1rem;
+}
+
+.kastamer-tag-suggestion:hover:not(.disabled) {
+  background-color: #E8E8E8;
+  border-color: #D0D0D0;
+}
+
+.kastamer-tag-suggestion.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kastamer-tag-remove {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  opacity: 0.8;
+}
+
+.kastamer-tag-remove:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.kastamer-step4-selected {
+  padding-top: 1.5rem;
+  border-top: 1px solid #F5F5F5;
+}
+
+.kastamer-step4-suggestions {
+  padding-top: 1.5rem;
+  border-top: 1px solid #F5F5F5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .kastamer-step4-input-wrapper {
+    flex-direction: column;
+  }
+  
+  .kastamer-btn-add {
+    width: 100%;
+  }
+}
+

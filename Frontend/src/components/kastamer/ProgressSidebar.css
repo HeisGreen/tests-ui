@@ -1,0 +1,266 @@
+/**
+ * Progress Sidebar Styles
+ * Maps to: on-design.json -> ui_sidebar
+ * Light gradient background, vertical stepper
+ */
+
+.kastamer-sidebar {
+  width: 320px;
+  background: linear-gradient(180deg, #E8F0F5 0%, #F0F5F8 50%, #F5F8FA 100%);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 3rem 2rem;
+  flex-shrink: 0;
+  position: sticky;
+  top: 70px;
+  height: calc(100vh - 70px);
+  overflow-y: auto;
+  border-radius: 0 24px 24px 0;
+  margin: 0;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.kastamer-sidebar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  position: relative;
+}
+
+.kastamer-sidebar-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.8) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+.kastamer-sidebar-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  position: relative;
+  padding: 1rem;
+  border-radius: 16px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-left: -1rem;
+  margin-right: -1rem;
+  cursor: pointer;
+}
+
+.kastamer-sidebar-step::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--onboarding-accent) 0%, transparent 100%);
+  border-radius: 0 2px 2px 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.kastamer-sidebar-step:hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: translateX(4px);
+}
+
+.kastamer-sidebar-step.active {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.8) 0%, 
+    rgba(50, 215, 75, 0.05) 50%,
+    rgba(99, 102, 241, 0.05) 100%);
+  box-shadow: 
+    0 6px 24px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(50, 215, 75, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 0 0 1px rgba(50, 215, 75, 0.2);
+  transform: translateX(6px);
+}
+
+.kastamer-sidebar-step.active::after {
+  opacity: 1;
+  background: linear-gradient(180deg, 
+    var(--onboarding-accent) 0%, 
+    rgba(99, 102, 241, 0.6) 50%,
+    transparent 100%);
+  box-shadow: 0 0 15px rgba(50, 215, 75, 0.5);
+}
+
+.kastamer-sidebar-step::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 50px;
+  bottom: -2rem;
+  width: 3px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, transparent 100%);
+  z-index: 0;
+  border-radius: 2px;
+}
+
+.kastamer-sidebar-step:last-child::before {
+  display: none;
+}
+
+.kastamer-sidebar-step.completed::before {
+  background: linear-gradient(180deg, var(--onboarding-accent) 0%, rgba(50, 215, 75, 0.3) 100%);
+}
+
+.kastamer-sidebar-step-indicator {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: var(--onboarding-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.kastamer-sidebar-step.active .kastamer-sidebar-step-indicator {
+  background: linear-gradient(135deg, 
+    var(--onboarding-accent) 0%, 
+    #28c143 30%,
+    #6366f1 70%,
+    var(--onboarding-accent) 100%);
+  background-size: 200% 200%;
+  animation: pulseGlow 2s ease-in-out infinite, gradientMove 3s ease infinite;
+  color: #FFFFFF;
+  box-shadow: 
+    0 6px 24px rgba(50, 215, 75, 0.4),
+    0 4px 16px rgba(99, 102, 241, 0.3),
+    0 0 0 4px rgba(50, 215, 75, 0.15),
+    0 0 0 8px rgba(99, 102, 241, 0.1);
+  transform: scale(1.05);
+  border-color: rgba(50, 215, 75, 0.4);
+}
+
+@keyframes gradientMove {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 
+      0 4px 16px rgba(50, 215, 75, 0.3),
+      0 0 0 4px rgba(50, 215, 75, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 4px 20px rgba(50, 215, 75, 0.4),
+      0 0 0 6px rgba(50, 215, 75, 0.15);
+  }
+}
+
+.kastamer-sidebar-step.completed .kastamer-sidebar-step-indicator {
+  background: linear-gradient(135deg, var(--onboarding-accent) 0%, var(--accent-strong) 100%);
+  color: #FFFFFF;
+  box-shadow: 
+    0 2px 8px rgba(50, 215, 75, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-color: rgba(50, 215, 75, 0.3);
+}
+
+.kastamer-sidebar-checkmark {
+  font-size: 1.2rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kastamer-sidebar-icon {
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kastamer-sidebar-step-content {
+  flex: 1;
+  padding-top: 0.25rem;
+}
+
+.kastamer-sidebar-step-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--onboarding-text-primary);
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.01em;
+  transition: color 0.3s ease;
+}
+
+.kastamer-sidebar-step.active .kastamer-sidebar-step-label {
+  color: var(--onboarding-accent);
+}
+
+.kastamer-sidebar-step-description {
+  font-size: 0.8125rem;
+  color: #666666;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+  opacity: 0.85;
+}
+
+.kastamer-sidebar-step.active .kastamer-sidebar-step-description {
+  opacity: 1;
+  color: #555555;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .kastamer-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 0 0 24px 24px;
+    padding: 1.5rem;
+    margin: 0;
+    top: 70px;
+    height: auto;
+    max-height: 300px;
+    box-shadow: 
+      0 4px 20px rgba(0, 0, 0, 0.06),
+      0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+  
+  .kastamer-sidebar-content {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 1.5rem;
+  }
+  
+  .kastamer-sidebar-step {
+    min-width: 150px;
+  }
+  
+  .kastamer-sidebar-step::before {
+    display: none;
+  }
+  
+  .kastamer-sidebar-step-description {
+    display: none;
+  }
+}
+

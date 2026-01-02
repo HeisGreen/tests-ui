@@ -1,0 +1,378 @@
+/**
+ * Navigation Header Styles for Onboarding
+ * JAPA-branded header with improved UX
+ */
+
+.onboarding-nav-header {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.98) 0%, 
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(255, 255, 255, 0.98) 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0 2rem;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(50, 215, 75, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  position: relative;
+  overflow: hidden;
+}
+
+.onboarding-nav-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(50, 215, 75, 0.4) 20%,
+    rgba(99, 102, 241, 0.3) 50%,
+    rgba(50, 215, 75, 0.4) 80%,
+    transparent 100%);
+  animation: headerGlow 3s ease-in-out infinite;
+}
+
+.onboarding-nav-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(50, 215, 75, 0.2) 50%,
+    transparent 100%);
+}
+
+@keyframes headerGlow {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.onboarding-nav-header-content {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.onboarding-nav-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0.5rem 1rem;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.onboarding-nav-logo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    rgba(50, 215, 75, 0.1) 0%, 
+    rgba(99, 102, 241, 0.08) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 16px;
+}
+
+.onboarding-nav-logo:hover {
+  transform: translateY(-2px);
+}
+
+.onboarding-nav-logo:hover::before {
+  opacity: 1;
+}
+
+.onboarding-nav-logo:hover .onboarding-logo-mark {
+  transform: scale(1.1) rotate(5deg);
+  filter: drop-shadow(0 4px 12px rgba(50, 215, 75, 0.3));
+}
+
+.onboarding-logo-mark {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Logo text removed - using only image */
+
+.onboarding-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.onboarding-nav-user-email {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  padding: 0.625rem 1.25rem;
+  background: linear-gradient(135deg, 
+    rgba(50, 215, 75, 0.1) 0%, 
+    rgba(99, 102, 241, 0.08) 100%);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(50, 215, 75, 0.2);
+  box-shadow: 
+    0 2px 8px rgba(50, 215, 75, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.onboarding-nav-user-email::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.4), 
+    transparent);
+  transition: left 0.5s ease;
+}
+
+.onboarding-nav-user-email:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 4px 16px rgba(50, 215, 75, 0.2),
+    0 2px 8px rgba(99, 102, 241, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-color: rgba(50, 215, 75, 0.4);
+  background: linear-gradient(135deg, 
+    rgba(50, 215, 75, 0.15) 0%, 
+    rgba(99, 102, 241, 0.12) 100%);
+}
+
+.onboarding-nav-user-email:hover::before {
+  left: 100%;
+}
+
+.onboarding-nav-link {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.625rem 1.25rem;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 24px;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.onboarding-nav-link::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    rgba(50, 215, 75, 0.12) 0%, 
+    rgba(99, 102, 241, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 24px;
+}
+
+.onboarding-nav-link svg {
+  transition: all 0.3s ease;
+  font-size: 1.125rem;
+}
+
+.onboarding-nav-link:hover {
+  color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 4px 12px rgba(50, 215, 75, 0.2),
+    0 2px 6px rgba(99, 102, 241, 0.15);
+}
+
+.onboarding-nav-link:hover::before {
+  opacity: 1;
+}
+
+.onboarding-nav-link:hover svg {
+  transform: scale(1.15) rotate(5deg);
+  color: var(--accent);
+}
+
+.onboarding-nav-link-button {
+  color: var(--text-secondary);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.onboarding-nav-link-button::before {
+  background: linear-gradient(135deg, 
+    rgba(231, 76, 60, 0.1) 0%, 
+    rgba(231, 76, 60, 0.05) 100%);
+}
+
+.onboarding-nav-link-button:hover {
+  color: #e74c3c;
+  border-color: rgba(231, 76, 60, 0.3);
+  box-shadow: 
+    0 4px 12px rgba(231, 76, 60, 0.2),
+    0 2px 6px rgba(231, 76, 60, 0.15);
+}
+
+.onboarding-nav-link-button:hover::before {
+  opacity: 1;
+}
+
+/* Decorative Elements */
+.nav-header-decoration {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(30px);
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.nav-header-decoration-1 {
+  width: 150px;
+  height: 150px;
+  top: -50px;
+  left: 10%;
+  background: linear-gradient(135deg, 
+    rgba(50, 215, 75, 0.15) 0%, 
+    rgba(99, 102, 241, 0.1) 100%);
+  animation: headerFloat1 8s ease-in-out infinite;
+}
+
+.nav-header-decoration-2 {
+  width: 100px;
+  height: 100px;
+  top: -30px;
+  right: 15%;
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.12) 0%, 
+    rgba(50, 215, 75, 0.08) 100%);
+  animation: headerFloat2 10s ease-in-out infinite;
+}
+
+@keyframes headerFloat1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(20px, 10px) scale(1.1);
+  }
+}
+
+@keyframes headerFloat2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-15px, 15px) scale(0.9);
+  }
+}
+
+.logo-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-glow {
+  position: absolute;
+  inset: -8px;
+  background: radial-gradient(circle, 
+    rgba(50, 215, 75, 0.3) 0%, 
+    rgba(99, 102, 241, 0.2) 50%,
+    transparent 70%);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: -1;
+  filter: blur(12px);
+}
+
+.onboarding-nav-logo:hover .logo-glow {
+  opacity: 1;
+  animation: logoPulse 2s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .onboarding-nav-header {
+    padding: 0 1rem;
+    height: 70px;
+  }
+  
+  .nav-header-decoration {
+    display: none;
+  }
+  
+  .onboarding-nav-right {
+    gap: 0.75rem;
+  }
+  
+  .onboarding-nav-user-email {
+    display: none;
+  }
+  
+  .onboarding-nav-link {
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .onboarding-nav-link span {
+    display: none;
+  }
+  
+  .onboarding-logo-mark {
+    height: 28px;
+  }
+}
+
