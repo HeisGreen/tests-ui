@@ -1,0 +1,151 @@
+/**
+ * Step 3: Outbound Emails Styles
+ * Maps to: on-design.json -> screen_03
+ */
+
+.kastamer-step3 {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.kastamer-step3-info {
+  margin-bottom: 0.5rem;
+}
+
+.kastamer-step3-description {
+  font-size: 0.9375rem;
+  color: #666666;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.kastamer-step3-dns-table {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.kastamer-dns-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.kastamer-dns-table thead {
+  background-color: #F5F5F5;
+}
+
+.kastamer-dns-table th {
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1A1A1A;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #E0E0E0;
+}
+
+.kastamer-dns-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #F5F5F5;
+  font-size: 0.9375rem;
+  color: #1A1A1A;
+}
+
+.kastamer-dns-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.kastamer-dns-table tbody tr:hover {
+  background-color: #FAFAFA;
+}
+
+.kastamer-dns-type {
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.kastamer-dns-name {
+  font-family: monospace;
+  color: #666666;
+}
+
+.kastamer-dns-value {
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+.kastamer-dns-value code {
+  background-color: #F5F5F5;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  color: #1A1A1A;
+  font-family: 'Courier New', monospace;
+}
+
+.kastamer-dns-status {
+  text-align: right;
+}
+
+.kastamer-status-badge {
+  display: inline-block;
+  padding: 0.375rem 0.875rem;
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kastamer-status-badge.not-verified {
+  background-color: #FFEBEE;
+  color: #C62828;
+}
+
+.kastamer-status-badge.verified {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+}
+
+.kastamer-step3-actions {
+  padding-top: 1rem;
+}
+
+.kastamer-btn-black {
+  background-color: #1A1A1A;
+  color: #FFFFFF;
+  border: none;
+  padding: 0.875rem 2rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.kastamer-btn-black:hover {
+  background-color: #333333;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 26, 26, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .kastamer-dns-table {
+    font-size: 0.8125rem;
+  }
+  
+  .kastamer-dns-table th,
+  .kastamer-dns-table td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .kastamer-btn-black {
+    width: 100%;
+  }
+}
+
