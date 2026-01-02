@@ -157,7 +157,9 @@ function Register() {
                   className="role-select"
                 >
                   <option value="USER">User (Looking for visa help)</option>
-                  <option value="TRAVEL_AGENT">Travel Agent (Providing services)</option>
+                  <option value="TRAVEL_AGENT">
+                    Travel Agent (Providing services)
+                  </option>
                 </select>
                 <small className="help-text">
                   {formData.role === "USER"

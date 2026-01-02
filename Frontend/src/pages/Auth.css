@@ -288,7 +288,11 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.18), transparent 45%),
+  background: radial-gradient(
+      circle at 20% 20%,
+      rgba(255, 255, 255, 0.18),
+      transparent 45%
+    ),
     linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.28));
   pointer-events: none;
 }

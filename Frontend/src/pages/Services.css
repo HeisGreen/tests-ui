@@ -1,0 +1,220 @@
+.services-page {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.services-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 0.85rem 0;
+}
+
+.services-nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.services-logo {
+  display: flex;
+  align-items: center;
+}
+
+.services-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+}
+
+.services-hero {
+  padding: 4.5rem 0 3rem;
+  background: linear-gradient(
+    180deg,
+    rgba(50, 215, 75, 0.08),
+    rgba(255, 255, 255, 1)
+  );
+}
+
+.services-hero-inner {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  text-align: center;
+}
+
+.services-hero h1 {
+  font-size: clamp(2.2rem, 4vw, 3.25rem);
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+  color: #111;
+}
+
+.services-hero p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: rgba(17, 17, 17, 0.65);
+  margin: 0 auto;
+  max-width: 720px;
+}
+
+.services-hero-actions {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.services-content {
+  padding: 3.5rem 0 6rem;
+}
+
+.services-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.services-card {
+  position: relative;
+  padding: 2.75rem 2rem 2rem;
+  border-radius: 28px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 15px 40px rgba(15, 23, 42, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  overflow: hidden;
+}
+
+.service-badge {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.04);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.service-badge--available {
+  background: rgba(50, 215, 75, 0.14);
+  border-color: rgba(50, 215, 75, 0.28);
+  color: rgba(31, 139, 63, 1);
+}
+
+.service-badge--coming_soon {
+  background: rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.12);
+  color: rgba(15, 23, 42, 0.75);
+}
+
+.services-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(50, 215, 75, 0.35);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.14);
+}
+
+.services-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.5rem;
+  background: rgba(50, 215, 75, 0.1);
+  color: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+}
+
+.services-card h3 {
+  font-size: 1.1rem;
+  line-height: 1.4;
+  color: #111;
+  margin-bottom: 0.75rem;
+}
+
+.services-card p {
+  color: #565656;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.services-detail {
+  margin-top: 1.5rem;
+  text-align: left;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 1.25rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.services-detail-block h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: rgba(17, 17, 17, 0.7);
+}
+
+.services-detail-block p {
+  margin: 0;
+  color: #565656;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.services-detail-block ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #565656;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.services-example {
+  padding: 0.85rem 1rem;
+  border-radius: 16px;
+  background: rgba(50, 215, 75, 0.08);
+  border: 1px solid rgba(50, 215, 75, 0.18);
+}
+
+.services-card-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .services-nav-container,
+  .services-hero-inner,
+  .services-grid {
+    padding: 0 1.25rem;
+  }
+
+  .services-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

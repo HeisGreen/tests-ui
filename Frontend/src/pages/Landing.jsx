@@ -23,6 +23,7 @@ import {
 import { initScrollAnimations } from "../utils/scrollAnimation";
 import logoMark from "../assets/japa-logo.png";
 import heroVideo from "../assets/japa-bg.mp4";
+import { services } from "../data/services";
 import "./Landing.css";
 
 function Landing() {
@@ -73,6 +74,19 @@ function Landing() {
     },
   ];
 
+  const iconMap = {
+    FiCheckCircle,
+    FiGlobe,
+    FiClock,
+    FiShield,
+    FiUsers,
+    FiBriefcase,
+    FiZap,
+    FiSmile,
+    FiLock,
+    FiStar,
+  };
+
   return (
     <div className="landing">
       <nav className="landing-nav">
@@ -82,11 +96,19 @@ function Landing() {
           </Link>
           <div className="landing-nav-links">
             {isAuthenticated ? (
-              <Link to="/home" className="btn-primary">
-                Dashboard
-              </Link>
+              <>
+                <Link to="/services" className="nav-link-text">
+                  Services
+                </Link>
+                <Link to="/home" className="btn-primary">
+                  Dashboard
+                </Link>
+              </>
             ) : (
               <>
+                <Link to="/services" className="nav-link-text">
+                  Services
+                </Link>
                 <Link to="/login" className="nav-link-text">
                   Log in
                 </Link>
@@ -145,9 +167,12 @@ function Landing() {
                 because the migration process is hard to navigate.
               </p>
               <p>
+                Most tools stop at eligibility checks or generic advice.{" "}
                 <strong>JAPA exists</strong> to bring structure and clarity to
-                migration.
+                migration — pathway options, a guided plan, and the tools to
+                stay organized in one place.
               </p>
+              <p>It’s not about shortcuts. It’s about doing migration right.</p>
             </div>
           </div>
         </div>
@@ -242,48 +267,49 @@ function Landing() {
             Tools that keep you clear, organized, and moving forward.
           </p>
           <div className="features-grid">
-            <div className="feature-card scroll-animate">
-              <div className="feature-icon">
-                <FiGlobe />
-              </div>
-              <h3>AI Migration Pathway Matching</h3>
-              <p>
-                Personalized visa and immigration routes based on your
-                background.
-              </p>
-            </div>
-            <div className="feature-card scroll-animate">
-              <div className="feature-icon">
-                <FiCheckCircle />
-              </div>
-              <h3>Smart Document Management</h3>
-              <p>
-                Country-specific document checklists with deadline tracking.
-              </p>
-            </div>
-            <div className="feature-card scroll-animate">
-              <div className="feature-icon">
-                <FiSmile />
-              </div>
-              <h3>AI Application & Interview Coaching</h3>
-              <p>Help with SOPs, forms, and immigration interviews.</p>
-            </div>
-            <div className="feature-card scroll-animate">
-              <div className="feature-icon">
-                <FiClock />
-              </div>
-              <h3>Task & Timeline Tracking</h3>
-              <p>Clear milestones so you always know what to do next.</p>
-            </div>
-            <div className="feature-card scroll-animate">
-              <div className="feature-icon">
-                <FiBriefcase />
-              </div>
-              <h3>Expert & Lawyer Connections (Optional)</h3>
-              <p>
-                Access verified professionals when legal judgment is required.
-              </p>
-            </div>
+            {services.map((service) => {
+              const IconComponent = iconMap[service.icon] || FiCheckCircle;
+              const badgeLabel =
+                service.status === "available" ? "Available" : "Coming soon";
+
+              return (
+                <div key={service.id} className="feature-card scroll-animate">
+                  <span
+                    className={`service-badge service-badge--${service.status}`}
+                  >
+                    {badgeLabel}
+                  </span>
+                  <div className="feature-icon">
+                    <IconComponent />
+                  </div>
+                  <h3>{service.title}</h3>
+                  <p>{service.description}</p>
+                  <button
+                    type="button"
+                    className="service-card-cta"
+                    onClick={handleGetStarted}
+                  >
+                    Sign up
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="services-cta-row">
+            <button
+              type="button"
+              className="btn-hero services-cta-primary"
+              onClick={handleGetStarted}
+            >
+              Create free account
+            </button>
+            <Link
+              to="/services"
+              className="btn-secondary services-cta-secondary"
+            >
+              View all services
+            </Link>
           </div>
         </div>
       </section>
@@ -340,31 +366,6 @@ function Landing() {
               <h4>Anyone migrating</h4>
               <p>From one country to another — step by step</p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="why-different">
-        <div className="container">
-          <h2 className="section-title underline">
-            Built for real migration journeys
-          </h2>
-          <p className="section-subtitle">
-            Most tools stop at eligibility checks or generic advice. JAPA guides
-            you through the entire migration process — from understanding your
-            options to preparing strong applications.
-          </p>
-          <div className="checklist-box">
-            <ul className="checklist">
-              <li>
-                <FiCheckCircle className="check-icon" />
-                It’s not about shortcuts.
-              </li>
-              <li>
-                <FiCheckCircle className="check-icon" />
-                It’s about doing migration right.
-              </li>
-            </ul>
           </div>
         </div>
       </section>

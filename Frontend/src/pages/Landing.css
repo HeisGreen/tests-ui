@@ -410,6 +410,72 @@
   overflow: hidden;
 }
 
+.service-badge {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.04);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.service-badge--available {
+  background: rgba(50, 215, 75, 0.14);
+  border-color: rgba(50, 215, 75, 0.28);
+  color: rgba(31, 139, 63, 1);
+}
+
+.service-badge--coming_soon {
+  background: rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.12);
+  color: rgba(15, 23, 42, 0.75);
+}
+
+.services-cta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2.75rem;
+}
+
+.services-cta-row .services-cta-primary {
+  margin-top: 0;
+}
+
+.services-cta-secondary {
+  display: inline-flex;
+}
+
+.service-card-cta {
+  margin-top: 1.5rem;
+  padding: 0.65rem 1.5rem;
+  border-radius: 999px;
+  border: none;
+  background: rgba(17, 17, 17, 0.92);
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12);
+}
+
+.service-card-cta:hover {
+  background: rgba(17, 17, 17, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.14);
+}
+
+.service-card-cta:active {
+  transform: translateY(0);
+}
+
 .features-grid .feature-card::before {
   content: "";
   position: absolute;
@@ -1134,5 +1200,10 @@
 
   .hero-subtitle {
     margin: 0 auto 2.5rem;
+  }
+
+  .services-cta-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

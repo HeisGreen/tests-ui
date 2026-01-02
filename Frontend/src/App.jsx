@@ -1,73 +1,80 @@
-import React, { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import Landing from './pages/Landing'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Onboarding from './pages/Onboarding'
-import Home from './pages/Home'
-import Recommendation from './pages/Recommendation'
-import Checklist from './pages/Checklist'
-import Profile from './pages/Profile'
-import Documents from './pages/Documents'
-import FAQ from './pages/FAQ'
-import GoogleCallback from './pages/GoogleCallback'
-import AgentOnboarding from './pages/AgentOnboarding'
-import Agents from './pages/Agents'
-import Messages from './pages/Messages'
-import TravelAgentHome from './pages/TravelAgentHome'
-import TravelAgentProfile from './pages/TravelAgentProfile'
-import Layout from './components/Layout'
-import TravelAgentLayout from './components/TravelAgentLayout'
-import RoleBasedRedirect from './components/RoleBasedRedirect'
-import { AuthProvider, useAuth } from './context/AuthContext'
-import { initScrollAnimations } from './utils/scrollAnimation'
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
+import Landing from "./pages/Landing";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Services from "./pages/Services";
+import Onboarding from "./pages/Onboarding";
+import Home from "./pages/Home";
+import Recommendation from "./pages/Recommendation";
+import Checklist from "./pages/Checklist";
+import Profile from "./pages/Profile";
+import Documents from "./pages/Documents";
+import FAQ from "./pages/FAQ";
+import GoogleCallback from "./pages/GoogleCallback";
+import AgentOnboarding from "./pages/AgentOnboarding";
+import Agents from "./pages/Agents";
+import Messages from "./pages/Messages";
+import TravelAgentHome from "./pages/TravelAgentHome";
+import TravelAgentProfile from "./pages/TravelAgentProfile";
+import Layout from "./components/Layout";
+import TravelAgentLayout from "./components/TravelAgentLayout";
+import RoleBasedRedirect from "./components/RoleBasedRedirect";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { initScrollAnimations } from "./utils/scrollAnimation";
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth()
-  return isAuthenticated ? children : <Navigate to="/login" />
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? children : <Navigate to="/login" />;
 }
 
 function RoleBasedRoute({ allowedRoles, children }) {
-  const { user, loading } = useAuth()
-  
+  const { user, loading } = useAuth();
+
   if (loading) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
-  
+
   if (!user) {
-    return <Navigate to="/login" />
+    return <Navigate to="/login" />;
   }
-  
+
   if (!allowedRoles.includes(user.role)) {
     // Redirect to appropriate home based on role
     if (user.role === "TRAVEL_AGENT") {
-      return <Navigate to="/agent/home" />
+      return <Navigate to="/agent/home" />;
     } else {
-      return <Navigate to="/home" />
+      return <Navigate to="/home" />;
     }
   }
-  
-  return children
+
+  return children;
 }
 
 function ScrollToTop() {
-  const { pathname } = useLocation()
+  const { pathname } = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0)
+    window.scrollTo(0, 0);
     // Initialize scroll animations after route change
     setTimeout(() => {
-      initScrollAnimations()
-    }, 100)
-  }, [pathname])
+      initScrollAnimations();
+    }, 100);
+  }, [pathname]);
 
-  return null
+  return null;
 }
 
 function AppRoutes() {
   useEffect(() => {
-    initScrollAnimations()
-  }, [])
+    initScrollAnimations();
+  }, []);
 
   return (
     <>
@@ -76,6 +83,7 @@ function AppRoutes() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/services" element={<Services />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/auth/google/callback" element={<GoogleCallback />} />
         {/* Default redirect for authenticated users */}
@@ -199,7 +207,7 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        
+
         {/* Travel Agent Routes */}
         <Route
           path="/agent/home"
@@ -251,7 +259,7 @@ function AppRoutes() {
         />
       </Routes>
     </>
-  )
+  );
 }
 
 function App() {
@@ -261,8 +269,7 @@ function App() {
         <AppRoutes />
       </Router>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
-
+export default App;
