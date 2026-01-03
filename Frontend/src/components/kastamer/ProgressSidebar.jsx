@@ -1,5 +1,8 @@
 import React from 'react';
 import { FaFolder, FaCheck, FaPaperPlane, FaTag } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { FiHelpCircle, FiUser } from 'react-icons/fi';
 import './ProgressSidebar.css';
 
 /**
@@ -7,7 +10,14 @@ import './ProgressSidebar.css';
  * Maps to: on-design.json -> ui_sidebar
  * Displays vertical stepper with step indicators
  */
-function ProgressSidebar({ currentStep, totalSteps = 9, stepNames = [] }) {
+function ProgressSidebar({ currentStep, totalSteps = 9, stepNames = [], userEmail }) {
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    if (logout) {
+      logout();
+    }
+  };
   // Create steps array from stepNames or use default
   const steps = stepNames.length > 0 
     ? stepNames.map((name, index) => ({
@@ -46,37 +56,59 @@ function ProgressSidebar({ currentStep, totalSteps = 9, stepNames = [] }) {
   return (
     <div className="kastamer-sidebar">
       <div className="kastamer-sidebar-content">
-        {steps.map((step) => {
-          const isActive = step.id === currentStep;
-          const isCompleted = step.id < currentStep;
-          
-          return (
-            <div
-              key={step.id}
-              className={`kastamer-sidebar-step ${isActive ? 'active' : ''} ${
-                isCompleted ? 'completed' : ''
-              }`}
+        <div className="kastamer-sidebar-steps">
+          {steps.map((step) => {
+            const isActive = step.id === currentStep;
+            const isCompleted = step.id < currentStep;
+            
+            return (
+              <div
+                key={step.id}
+                className={`kastamer-sidebar-step ${isActive ? 'active' : ''} ${
+                  isCompleted ? 'completed' : ''
+                }`}
+              >
+                <div className="kastamer-sidebar-step-indicator">
+                  {isCompleted ? (
+                    <span className="kastamer-sidebar-checkmark">✓</span>
+                  ) : (
+                    <span className="kastamer-sidebar-icon">
+                      {React.createElement(step.icon)}
+                    </span>
+                  )}
+                </div>
+                <div className="kastamer-sidebar-step-content">
+                  <div className="kastamer-sidebar-step-label">{step.label}</div>
+                  {step.id === 1 && step.description && (
+                    <div className="kastamer-sidebar-step-description">
+                      {step.description}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        <div className="kastamer-sidebar-footer">
+          <div className="kastamer-sidebar-user-info">
+            <FiUser className="kastamer-sidebar-user-icon" />
+            <span className="kastamer-sidebar-user-email">{userEmail}</span>
+          </div>
+          <div className="kastamer-sidebar-actions">
+            <Link to="/faq" className="kastamer-sidebar-action-link">
+              <FiHelpCircle />
+              <span>Help</span>
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="kastamer-sidebar-action-link kastamer-sidebar-logout"
+              type="button"
             >
-              <div className="kastamer-sidebar-step-indicator">
-                {isCompleted ? (
-                  <span className="kastamer-sidebar-checkmark">✓</span>
-                ) : (
-                  <span className="kastamer-sidebar-icon">
-                    {React.createElement(step.icon)}
-                  </span>
-                )}
-              </div>
-              <div className="kastamer-sidebar-step-content">
-                <div className="kastamer-sidebar-step-label">{step.label}</div>
-                {step.id === 1 && step.description && (
-                  <div className="kastamer-sidebar-step-description">
-                    {step.description}
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+              Log out
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

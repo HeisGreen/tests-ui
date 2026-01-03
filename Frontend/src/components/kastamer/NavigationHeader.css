@@ -71,8 +71,25 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 2rem;
   position: relative;
   z-index: 1;
+}
+
+.onboarding-nav-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, 
+    #32d74b 0%, 
+    #6366f1 50%,
+    #32d74b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  letter-spacing: 0.05em;
+  position: relative;
+  text-transform: uppercase;
 }
 
 .onboarding-nav-logo {

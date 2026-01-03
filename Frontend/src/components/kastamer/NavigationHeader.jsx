@@ -1,23 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { FiHelpCircle } from 'react-icons/fi';
 import logoMark from '../../assets/japa-logo.png';
 import './NavigationHeader.css';
 
 /**
  * Navigation Header Component for Onboarding
- * JAPA-branded header with logo, user info, help, and logout
+ * JAPA-branded header with logo only
  */
-function NavigationHeader({ userEmail }) {
-  const { logout } = useAuth();
-
-  const handleLogout = () => {
-    if (logout) {
-      logout();
-    }
-  };
-
+function NavigationHeader() {
   return (
     <header className="onboarding-nav-header">
       <div className="nav-header-decoration nav-header-decoration-1"></div>
@@ -30,23 +20,7 @@ function NavigationHeader({ userEmail }) {
             <div className="logo-glow"></div>
           </div>
         </Link>
-        
-        <div className="onboarding-nav-right">
-          <span className="onboarding-nav-user-email">
-            {userEmail}
-          </span>
-          <Link to="/faq" className="onboarding-nav-link">
-            <FiHelpCircle />
-            <span>Help</span>
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="onboarding-nav-link onboarding-nav-link-button"
-            type="button"
-          >
-            Log out
-          </button>
-        </div>
+        <h1 className="onboarding-nav-title">Onboarding Section</h1>
       </div>
     </header>
   );

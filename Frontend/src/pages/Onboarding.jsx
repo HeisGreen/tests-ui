@@ -9,6 +9,7 @@ import {
 } from "../utils/dataTransform";
 import NavigationHeader from "../components/kastamer/NavigationHeader";
 import ProgressSidebar from "../components/kastamer/ProgressSidebar";
+import GoalSidebar from "../components/kastamer/GoalSidebar";
 import "./Onboarding.css";
 
 function Onboarding() {
@@ -1479,124 +1480,139 @@ function Onboarding() {
         return (
           <div className="onboarding-step">
             <h2>Special Items & Support</h2>
-            <div className="form-group">
-              <label>Do you have special needs?</label>
-              <div className="radio-group">
-                <label>
-                  <input
-                    type="radio"
-                    name="has_special_needs"
-                    value="true"
-                    checked={formData.has_special_needs === true}
-                    onChange={() => handleChange("has_special_needs", true)}
-                  />
-                  Yes
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="has_special_needs"
-                    value="false"
-                    checked={formData.has_special_needs === false}
-                    onChange={() => handleChange("has_special_needs", false)}
-                  />
-                  No
-                </label>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Do you have special needs?</label>
+                <div className="radio-group">
+                  <label>
+                    <input
+                      type="radio"
+                      name="has_special_needs"
+                      value="true"
+                      checked={formData.has_special_needs === true}
+                      onChange={() => handleChange("has_special_needs", true)}
+                    />
+                    Yes
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="has_special_needs"
+                      value="false"
+                      checked={formData.has_special_needs === false}
+                      onChange={() => handleChange("has_special_needs", false)}
+                    />
+                    No
+                  </label>
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Do you have medical conditions?</label>
+                <div className="radio-group">
+                  <label>
+                    <input
+                      type="radio"
+                      name="has_medical_conditions"
+                      value="true"
+                      checked={formData.has_medical_conditions === true}
+                      onChange={() =>
+                        handleChange("has_medical_conditions", true)
+                      }
+                    />
+                    Yes
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="has_medical_conditions"
+                      value="false"
+                      checked={formData.has_medical_conditions === false}
+                      onChange={() =>
+                        handleChange("has_medical_conditions", false)
+                      }
+                    />
+                    No
+                  </label>
+                </div>
               </div>
             </div>
-            <div className="form-group">
-              <label>Do you have medical conditions?</label>
-              <div className="radio-group">
-                <label>
-                  <input
-                    type="radio"
-                    name="has_medical_conditions"
-                    value="true"
-                    checked={formData.has_medical_conditions === true}
-                    onChange={() =>
-                      handleChange("has_medical_conditions", true)
-                    }
-                  />
-                  Yes
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="has_medical_conditions"
-                    value="false"
-                    checked={formData.has_medical_conditions === false}
-                    onChange={() =>
-                      handleChange("has_medical_conditions", false)
-                    }
-                  />
-                  No
-                </label>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Do you have an invitation?</label>
+                <div className="radio-group">
+                  <label>
+                    <input
+                      type="radio"
+                      name="has_invitation"
+                      value="true"
+                      checked={formData.has_invitation === true}
+                      onChange={() => handleChange("has_invitation", true)}
+                    />
+                    Yes
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="has_invitation"
+                      value="false"
+                      checked={formData.has_invitation === false}
+                      onChange={() => handleChange("has_invitation", false)}
+                    />
+                    No
+                  </label>
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Do you have a sponsor in destination?</label>
+                <div className="radio-group">
+                  <label>
+                    <input
+                      type="radio"
+                      name="sponsor_in_destination"
+                      value="true"
+                      checked={formData.sponsor_in_destination === true}
+                      onChange={() =>
+                        handleChange("sponsor_in_destination", true)
+                      }
+                    />
+                    Yes
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="sponsor_in_destination"
+                      value="false"
+                      checked={formData.sponsor_in_destination === false}
+                      onChange={() =>
+                        handleChange("sponsor_in_destination", false)
+                      }
+                    />
+                    No
+                  </label>
+                </div>
               </div>
             </div>
-            <div className="form-group">
-              <label>Do you have an invitation?</label>
-              <div className="radio-group">
-                <label>
-                  <input
-                    type="radio"
-                    name="has_invitation"
-                    value="true"
-                    checked={formData.has_invitation === true}
-                    onChange={() => handleChange("has_invitation", true)}
-                  />
-                  Yes
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="has_invitation"
-                    value="false"
-                    checked={formData.has_invitation === false}
-                    onChange={() => handleChange("has_invitation", false)}
-                  />
-                  No
-                </label>
+            <div className="form-row">
+              <div className="form-group">
+                <label>International Achievements</label>
+                <textarea
+                  value={formData.international_achievements || ""}
+                  onChange={(e) =>
+                    handleChange("international_achievements", e.target.value)
+                  }
+                  placeholder="Research, patents, awards, etc."
+                  rows="2"
+                />
               </div>
-            </div>
-            <div className="form-group">
-              <label>Do you have a sponsor in destination?</label>
-              <div className="radio-group">
-                <label>
-                  <input
-                    type="radio"
-                    name="sponsor_in_destination"
-                    value="true"
-                    checked={formData.sponsor_in_destination === true}
-                    onChange={() =>
-                      handleChange("sponsor_in_destination", true)
-                    }
-                  />
-                  Yes
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="sponsor_in_destination"
-                    value="false"
-                    checked={formData.sponsor_in_destination === false}
-                    onChange={() =>
-                      handleChange("sponsor_in_destination", false)
-                    }
-                  />
-                  No
-                </label>
+              <div className="form-group">
+                <label>Awards</label>
+                <textarea
+                  value={formData.awards || ""}
+                  onChange={(e) => handleChange("awards", e.target.value)}
+                  placeholder="List your awards..."
+                  rows="2"
+                />
               </div>
-            </div>
-            <div className="form-group">
-              <label>International Achievements</label>
-              <textarea
-                value={formData.international_achievements || ""}
-                onChange={(e) =>
-                  handleChange("international_achievements", e.target.value)
-                }
-                placeholder="Research, patents, awards, etc."
-                rows="3"
-              />
             </div>
             <div className="form-row">
               <div className="form-group">
@@ -1628,34 +1644,27 @@ function Onboarding() {
                 />
               </div>
             </div>
-            <div className="form-group">
-              <label>Awards</label>
-              <textarea
-                value={formData.awards || ""}
-                onChange={(e) => handleChange("awards", e.target.value)}
-                placeholder="List your awards..."
-                rows="2"
-              />
-            </div>
-            <div className="form-group">
-              <label>Media Features</label>
-              <textarea
-                value={formData.media_features || ""}
-                onChange={(e) => handleChange("media_features", e.target.value)}
-                placeholder="Media mentions, features..."
-                rows="2"
-              />
-            </div>
-            <div className="form-group">
-              <label>Professional Memberships</label>
-              <textarea
-                value={formData.professional_memberships || ""}
-                onChange={(e) =>
-                  handleChange("professional_memberships", e.target.value)
-                }
-                placeholder="Professional organizations..."
-                rows="2"
-              />
+            <div className="form-row">
+              <div className="form-group">
+                <label>Media Features</label>
+                <textarea
+                  value={formData.media_features || ""}
+                  onChange={(e) => handleChange("media_features", e.target.value)}
+                  placeholder="Media mentions, features..."
+                  rows="2"
+                />
+              </div>
+              <div className="form-group">
+                <label>Professional Memberships</label>
+                <textarea
+                  value={formData.professional_memberships || ""}
+                  onChange={(e) =>
+                    handleChange("professional_memberships", e.target.value)
+                  }
+                  placeholder="Professional organizations..."
+                  rows="2"
+                />
+              </div>
             </div>
             <div className="form-group">
               <label>Recommendation Letters Count</label>
@@ -1843,8 +1852,42 @@ function Onboarding() {
   // Use stepNames for sidebar
   const kastamerStepNames = stepNames;
 
+  // Step-specific background themes
+  const getStepTheme = (step) => {
+    const themes = {
+      1: { gradient: 'theme-personal', icon: '👤' },
+      2: { gradient: 'theme-destination', icon: '🌍' },
+      3: { gradient: 'theme-education', icon: '🎓' },
+      4: { gradient: 'theme-work', icon: '💼' },
+      5: { gradient: 'theme-skills', icon: '✨' },
+      6: { gradient: 'theme-history', icon: '📋' },
+      7: { gradient: 'theme-financial', icon: '💰' },
+      8: { gradient: 'theme-special', icon: '⭐' },
+      9: { gradient: 'theme-documents', icon: '📄' },
+    };
+    return themes[step] || themes[1];
+  };
+
+  const currentTheme = getStepTheme(currentStep);
+
+  // Calculate answered questions (count non-null and non-empty values)
+  const questionsAnswered = useMemo(() => {
+    const answeredFields = Object.values(formData).filter(
+      (value) => value !== null && value !== "" && value !== undefined
+    );
+    // Cap at 9 for display purposes
+    return Math.min(answeredFields.length, 9);
+  }, [formData]);
+
+  // Calculate score based on completed sections (steps) only
+  const scorePercent = useMemo(() => {
+    // Score is based only on completed steps (sections)
+    const completedSteps = currentStep - 1;
+    return Math.round((completedSteps / totalSteps) * 100);
+  }, [currentStep, totalSteps]);
+
   return (
-    <div className="onboarding-page kastamer-onboarding-page">
+    <div className={`onboarding-page modern-onboarding ${currentTheme.gradient}`}>
       {submitting && (
         <div
           className="onboarding-loading-overlay"
@@ -1860,95 +1903,125 @@ function Onboarding() {
         </div>
       )}
       
-      <NavigationHeader userEmail={user?.email || 'jonathan@acme.com'} />
+      <NavigationHeader />
       
-      <div className="onboarding-container kastamer-onboarding-container">
-        <ProgressSidebar currentStep={currentStep} totalSteps={totalSteps} stepNames={kastamerStepNames} />
+      <div className="onboarding-container modern-onboarding-container">
+        <ProgressSidebar currentStep={currentStep} totalSteps={totalSteps} stepNames={kastamerStepNames} userEmail={user?.email || 'jonathan@acme.com'} />
         
-        <div className="onboarding-content-wrapper">
-          {/* Decorative Background Elements */}
-          <div className="onboarding-decorative-bg">
-            <div className="decorative-circle decorative-circle-1"></div>
-            <div className="decorative-circle decorative-circle-2"></div>
-            <div className="decorative-circle decorative-circle-3"></div>
-            <div className="decorative-line decorative-line-1"></div>
-            <div className="decorative-line decorative-line-2"></div>
-          </div>
+        <div className="onboarding-main-content-area">
+          <div className="onboarding-content-wrapper modern-content-wrapper">
+            {/* Step-specific Background Visuals */}
+            <div className="step-background-visuals">
+              <div className="bg-gradient-orb bg-orb-1"></div>
+              <div className="bg-gradient-orb bg-orb-2"></div>
+              <div className="bg-gradient-orb bg-orb-3"></div>
+              <div className="bg-grid-pattern"></div>
+              <div className="bg-shape-1"></div>
+              <div className="bg-shape-2"></div>
+            </div>
 
-          {/* Progress Indicator */}
-          <div className="onboarding-progress-indicator">
-            <div className="progress-steps">
-              {Array.from({ length: totalSteps }, (_, i) => (
-                <div
-                  key={i + 1}
-                  className={`progress-step-dot ${
-                    i + 1 < currentStep ? 'completed' : ''
-                  } ${i + 1 === currentStep ? 'active' : ''}`}
-                >
-                  {i + 1 < currentStep && <span className="check-icon">✓</span>}
+            {/* Modern Step Header */}
+            <div className="modern-step-header">
+              <h1 className="modern-step-title">{stepNames[currentStep - 1]}</h1>
+              <p className="modern-step-description">
+                {currentStep === 1 && "Let's start by getting to know you better"}
+                {currentStep === 2 && "Tell us about your destination goals"}
+                {currentStep === 3 && "Share your educational background"}
+                {currentStep === 4 && "Help us understand your work experience"}
+                {currentStep === 5 && "What skills and languages do you have?"}
+                {currentStep === 6 && "Any previous immigration history?"}
+                {currentStep === 7 && "Financial information for visa planning"}
+                {currentStep === 8 && "Special achievements and support needs"}
+                {currentStep === 9 && "Final details and document preferences"}
+              </p>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="modern-content-area" ref={stepRef}>
+              <div className="content-card">
+                <div className="content-fade-wrapper">
+                  {renderStep()}
                 </div>
-              ))}
+              </div>
             </div>
-            <div className="progress-line">
-              <div 
-                className="progress-line-fill" 
-                style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
-              ></div>
+
+            {/* Modern Action Buttons */}
+            <div className="modern-actions">
+              {currentStep > 1 && (
+                <button
+                  onClick={handlePrevious}
+                  className="modern-btn-secondary"
+                  disabled={submitting}
+                  aria-label="Go to previous step"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Previous
+                </button>
+              )}
+              <div className="spacer"></div>
+                  {currentStep < totalSteps ? (
+                    <button
+                      onClick={handleNext}
+                      className="modern-btn-primary"
+                      disabled={submitting}
+                      aria-label="Continue to next step"
+                    >
+                      Next Step
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleSubmit}
+                      className="modern-btn-primary modern-btn-final"
+                      disabled={submitting}
+                      aria-label="Complete onboarding"
+                    >
+                      {submitting ? (
+                        <>
+                          <span className="btn-spinner"></span>
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          Complete Onboarding
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M13 4L6 11L3 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </>
+                      )}
+                    </button>
+                  )}
+            </div>
+
+            {/* Progress Indicator Below Buttons */}
+            <div className="bottom-progress-indicator">
+              <div className="bottom-progress-steps">
+                {Array.from({ length: totalSteps }, (_, i) => (
+                  <div
+                    key={i + 1}
+                    className={`bottom-progress-step ${
+                      i + 1 < currentStep ? 'completed' : ''
+                    } ${i + 1 === currentStep ? 'active' : ''}`}
+                    title={stepNames[i]}
+                  >
+                    {i + 1 < currentStep && <span className="bottom-check">✓</span>}
+                    {i + 1 === currentStep && <span className="bottom-step-number">{i + 1}</span>}
+                  </div>
+                ))}
+              </div>
+              <div className="bottom-progress-text">
+                <span className="bottom-progress-current">{currentStep}</span>
+                <span className="bottom-progress-separator">/</span>
+                <span className="bottom-progress-total">{totalSteps}</span>
+              </div>
             </div>
           </div>
-
-          <div className="onboarding-header">
-            <div className="kastamer-step-header">
-              <div className="step-header-decoration"></div>
-              <h1 className="kastamer-step-title">
-                {currentStep === totalSteps ? 'LAST STEP' : `STEP ${currentStep} OF ${totalSteps}`}
-              </h1>
-              <h2 className="kastamer-step-subtitle">{stepNames[currentStep - 1]}</h2>
-            </div>
-          </div>
-
-          <div className="onboarding-content" ref={stepRef}>
-            <div className="content-fade-wrapper">
-              {renderStep()}
-            </div>
-          </div>
-
-          <div className="keyboard-hint">
-            <small>
-              Tip: Press <kbd>Ctrl</kbd> + <kbd>→</kbd> to go next,{" "}
-              <kbd>Ctrl</kbd> + <kbd>←</kbd> to go back
-            </small>
-          </div>
-
-          <div className="onboarding-actions">
-            {currentStep > 1 && (
-              <button
-                onClick={handlePrevious}
-                className="btn-secondary kastamer-btn-secondary"
-                disabled={submitting}
-              >
-                Previous
-              </button>
-            )}
-            <div className="spacer"></div>
-            {currentStep < totalSteps ? (
-              <button
-                onClick={handleNext}
-                className="btn-primary kastamer-btn-primary"
-                disabled={submitting}
-              >
-                Save and continue
-              </button>
-            ) : (
-              <button
-                onClick={handleSubmit}
-                className="btn-primary kastamer-btn-primary kastamer-btn-primary-final"
-                disabled={submitting}
-              >
-                {submitting ? "Generating…" : "Process and set up →"}
-              </button>
-            )}
-          </div>
+          
+          <GoalSidebar currentStep={currentStep} totalSteps={totalSteps} questionsAnswered={questionsAnswered} scorePercent={scorePercent} />
         </div>
       </div>
     </div>
