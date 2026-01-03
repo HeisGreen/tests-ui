@@ -34,7 +34,12 @@ function Recommendation() {
     // hydrate the page immediately.
     const initial = location?.state?.initialRecommendations;
     if (initial) {
+      console.log("Received initial recommendations:", initial);
       setRecommendations(initial);
+      // If options is empty, show an error
+      if (!initial.options || initial.options.length === 0) {
+        setError("No recommendations found in the response. Please try generating again.");
+      }
     }
   }, [location?.state]);
 
@@ -45,11 +50,24 @@ function Recommendation() {
       if (!cached) {
         setRefreshing(true);
       }
-      const data = await recommendationsAPI.getRecommendations(cached);
-      setRecommendations(data);
+      const response = await recommendationsAPI.getRecommendations(cached);
+      
+      // Handle both direct response and nested response.data structure
+      const data = response?.data || response;
+      
+      console.log("Fetched recommendations response:", response);
+      console.log("Processed recommendations:", data);
+      
+      if (!data || !data.options || data.options.length === 0) {
+        setError("No recommendations found. Please try generating new recommendations.");
+        setRecommendations(null);
+      } else {
+        setRecommendations(data);
+      }
     } catch (err) {
       console.error("Error fetching recommendations:", err);
       setError(err.message);
+      setRecommendations(null);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -244,6 +262,18 @@ function Recommendation() {
               new recommendations.
             </p>
           )}
+        </div>
+      )}
+
+      {/* Empty State - when recommendations exist but no options */}
+      {!loading && !error && recommendations && options.length === 0 && (
+        <div className="empty-state">
+          <FiAlertCircle style={{ fontSize: "3rem", color: "#64748B", marginBottom: "1rem" }} />
+          <h2>No Recommendations Available</h2>
+          <p>The recommendation response didn't include any visa options.</p>
+          <button onClick={handleFetch} className="btn-primary fetch-btn" style={{ marginTop: "1rem" }}>
+            <FiZap /> Generate New Recommendations
+          </button>
         </div>
       )}
 
