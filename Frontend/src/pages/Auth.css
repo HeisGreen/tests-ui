@@ -200,7 +200,10 @@
 
 .btn-auth {
   width: 100%;
-  background: #111111;
+  background: linear-gradient(135deg, 
+    var(--accent) 0%, 
+    var(--accent-strong) 50%,
+    rgba(99, 102, 241, 0.9) 100%);
   color: #ffffff;
   padding: 1rem 1.25rem;
   border: none;
@@ -209,12 +212,16 @@
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 16px 30px rgba(50, 215, 75, 0.3);
 }
 
 .btn-auth:hover {
-  background: #0b0b0b;
+  background: linear-gradient(135deg, 
+    var(--accent-strong) 0%, 
+    var(--accent-dark) 50%,
+    rgba(99, 102, 241, 1) 100%);
   transform: translateY(-1px);
+  box-shadow: 0 20px 40px rgba(50, 215, 75, 0.4);
 }
 
 .btn-auth:active {
@@ -226,6 +233,9 @@
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+  background: linear-gradient(135deg, 
+    rgba(50, 215, 75, 0.5) 0%, 
+    rgba(50, 215, 75, 0.4) 100%);
 }
 
 .error-message {
