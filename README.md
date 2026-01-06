@@ -14,98 +14,93 @@ JAPA simplifies the complex world of immigration by:
 - **Travel Agent Marketplace**: Connect with professional travel agents for personalized assistance
 - **Real-time Messaging**: Communicate directly with travel agents within the platform
 
-## The real problem JAPA solves
+## Problem statement (what JAPA solves)
 
-Migration information today is:
+Migration guidance today is often:
 
-- **Fragmented**
-- **Outdated**
-- **Contradictory**
-- **Gatekept by lawyers**
-- **Full of middlemen inflating prices**
+- **Scattered across many sources**
+- **Out of date**
+- **Inconsistent**
+- **Hard to access without paying experts**
+- **Overrun with intermediaries that increase cost**
 
-People do not fail because they lack motivation. They fail because they miss one step, one deadline, or one rule change.
+Most people do not fail because they lack motivation. They fail because they miss a step, a deadline, or a rule change.
 
-**JAPA exists to reduce migration risk, not just give information.**
+**JAPA is built to reduce migration risk by turning information into an actionable plan.**
 
-## What makes JAPA different
+## What’s different about JAPA
 
-Most platforms do one of these:
+Many products optimize for information delivery:
 
-- **Static content**
-- **One country only**
-- **One visa type**
-- **Lawyer-first workflows**
+- **Static articles**
+- **Single country coverage**
+- **Single visa type coverage**
+- **Expert-first workflows**
 - **High upfront fees**
 
-JAPA is:
+JAPA is designed around decision-making and execution:
 
-- **Scenario based**
-- **Status aware**
-- **Timeline driven**
-- **Multi country**
-- **AI first, human escalation later**
+- **Scenario-based** (your situation drives the output)
+- **Status-aware** (constraints and eligibility matter)
+- **Timeline-driven** (deadlines and dependencies are explicit)
+- **Multi-country**
+- **AI-first with human help only when needed**
 
-It behaves like a **GPS**, not a Wikipedia page.
+It behaves more like navigation than a knowledge base: it adapts as your situation changes.
 
-## How the product actually works
+## How the product works
 
-1. **Identity and intent intake**
-   - The user answers: nationality, current country, current status, education, work experience, family situation, long-term goal
-   - No jargon. Plain language.
+1. **Intake (identity + intent)**
 
-2. **Path engine**
-   - JAPA generates all viable legal paths
-   - Ranked by risk, cost, and time
-   - With disqualifiers clearly explained
-   - Not “you can try this”, but “this fails because X”
+   - The user provides: nationality, current country, current status, education, work experience, family situation, and long-term goal
+   - Plain language, minimal jargon
 
-3. **Timeline and checklist**
-   - For the chosen path: step-by-step timeline, documents needed, deadlines, dependencies, and what breaks the path
-   - This is where people usually mess up today
+2. **Path generation**
 
-4. **Ongoing monitoring**
-   - JAPA watches for: visa expiry, rule changes, country policy updates, missed actions
-   - It warns you before things go wrong
+   - Produces the viable legal pathways
+   - Ranks them by risk, cost, and time
+   - Explains disqualifiers directly (e.g., “this path fails because X”)
+
+3. **Plan (timeline + checklist)**
+
+   - Step-by-step timeline
+   - Required documents
+   - Deadlines and dependencies
+   - What can break the path
+
+4. **Monitoring**
+
+   - Tracks: visa expiry, policy/rule changes, and missed actions
+   - Alerts early so users can course-correct
 
 5. **Human escalation**
-   - Only when needed: lawyer review, employer sponsorship advice, school or government form help
-   - AI first, humans last. This keeps costs down.
+   - Only when needed: lawyer review, sponsorship strategy, or help with official forms
+   - AI handles the default path; humans handle exceptions to keep costs down
 
-## Who JAPA is really for
+## Who JAPA is for
 
-- **Students**: “If I study here, what happens after graduation?” (OPT, post-study work, residency probability, country switching)
-- **Skilled workers**: “Does my job actually lead to residency?” (title alignment, sponsorship likelihood, fallback options)
-- **Founders and freelancers**: “Where can I legally build long term?” (startup visas, self-sponsorship paths, tax implications)
-- **Families**: “How do I move everyone without breaking status?” (dependents, schooling, healthcare, timelines)
-- **People already in the system**: “What happens if my visa expires or I need to switch?” (status transitions, grace periods, damage control)
+- **Students**: “If I study here, what are my options after graduation?”
+- **Skilled workers**: “Does my job realistically lead to residency, and what are the fallback paths?”
+- **Founders and freelancers**: “Where can I build long-term legally, and what are the tradeoffs?”
+- **Families**: “How do we move together while staying compliant?”
+- **People already in the system**: “What happens if my status changes, expires, or needs a switch?”
 
-## Why JAPA can win
+## Why this approach matters
 
-Because this problem is:
+This problem is high-stakes and constantly changing. People want:
 
-- **Emotionally charged**
-- **High consequence**
-- **Global**
-- **Constantly changing**
+- **Clarity**
+- **Control**
+- **A plan they can execute**
 
-And no one wants:
+## Business model (high level)
 
-- **Ten tabs open**
-- **Conflicting TikToks**
-- **Lawyers too early**
-- **Middlemen commissions**
-
-They want **clarity and control**.
-
-## Monetization that actually makes sense
-
-- **Free**: Path exploration and risk assessment
-- **Paid (monthly)**: Timeline tracking and alerts
-- **Paid (one-time)**: Deep dive migration plan
+- **Free**: Path exploration + risk assessment
+- **Paid (monthly)**: Timeline tracking + alerts
+- **Paid (one-time)**: Deep-dive migration plan
 - **B2B**: Schools, employers, relocation firms
 
-Lawyers become partners, not gatekeepers.
+Experts become partners in escalation, not the default gate.
 
 ## Architecture
 
@@ -135,28 +130,29 @@ Lawyers become partners, not gatekeepers.
 
 ### For Regular Users (Visa Applicants)
 
-| Feature | Description |
-|---------|-------------|
-| **User Onboarding** | Multi-step form collecting personal details, education, work experience, immigration goals, and preferences |
-| **AI Recommendations** | Get personalized visa pathway recommendations based on your profile using GPT-4 |
-| **Interactive Checklists** | AI-generated step-by-step checklists with progress tracking for each visa type |
-| **Document Management** | Upload, organize, and track the status of required documents |
-| **Agent Discovery** | Browse and filter travel agents by country, expertise, and availability |
-| **Messaging** | Direct communication with travel agents for personalized assistance |
-| **Profile Management** | View and update your profile information |
+| Feature                    | Description                                                                                                 |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **User Onboarding**        | Multi-step form collecting personal details, education, work experience, immigration goals, and preferences |
+| **AI Recommendations**     | Get personalized visa pathway recommendations based on your profile using GPT-4                             |
+| **Interactive Checklists** | AI-generated step-by-step checklists with progress tracking for each visa type                              |
+| **Document Management**    | Upload, organize, and track the status of required documents                                                |
+| **Agent Discovery**        | Browse and filter travel agents by country, expertise, and availability                                     |
+| **Messaging**              | Direct communication with travel agents for personalized assistance                                         |
+| **Profile Management**     | View and update your profile information                                                                    |
 
 ### For Travel Agents
 
-| Feature | Description |
-|---------|-------------|
+| Feature              | Description                                                                         |
+| -------------------- | ----------------------------------------------------------------------------------- |
 | **Agent Onboarding** | Comprehensive profile setup including specializations, experience, and availability |
-| **Client Messaging** | Receive and respond to inquiries from potential clients |
-| **Client Insights** | View relevant client profile summaries (non-sensitive information only) |
-| **Dashboard** | Manage conversations and track client interactions |
+| **Client Messaging** | Receive and respond to inquiries from potential clients                             |
+| **Client Insights**  | View relevant client profile summaries (non-sensitive information only)             |
+| **Dashboard**        | Manage conversations and track client interactions                                  |
 
 ## Tech Stack
 
 ### Frontend
+
 - **React 18** - UI library
 - **Vite** - Build tool and dev server
 - **React Router v6** - Client-side routing
@@ -167,6 +163,7 @@ Lawyers become partners, not gatekeepers.
 - **Supabase JS** - Database client (optional)
 
 ### Backend
+
 - **FastAPI** - Modern Python web framework
 - **SQLAlchemy** - ORM for database operations
 - **PostgreSQL** - Primary database
@@ -287,72 +284,79 @@ messages (
 
 ### User Roles
 
-| Role | Description |
-|------|-------------|
-| `USER` | Regular visa applicants - can view recommendations, manage documents, contact agents |
+| Role           | Description                                                                                   |
+| -------------- | --------------------------------------------------------------------------------------------- |
+| `USER`         | Regular visa applicants - can view recommendations, manage documents, contact agents          |
 | `TRAVEL_AGENT` | Professional travel agents - can receive inquiries, view client profiles, respond to messages |
 
 ## API Endpoints
 
 ### Authentication
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/register` | Register new user (with optional role) |
-| POST | `/auth/login` | Login and receive JWT token |
-| POST | `/auth/google` | Google OAuth login |
-| GET | `/auth/me` | Get current user info |
-| PUT | `/auth/me` | Update current user info |
+
+| Method | Endpoint         | Description                            |
+| ------ | ---------------- | -------------------------------------- |
+| POST   | `/auth/register` | Register new user (with optional role) |
+| POST   | `/auth/login`    | Login and receive JWT token            |
+| POST   | `/auth/google`   | Google OAuth login                     |
+| GET    | `/auth/me`       | Get current user info                  |
+| PUT    | `/auth/me`       | Update current user info               |
 
 ### User Profile
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/profile` | Get user profile with onboarding data |
-| POST | `/profile` | Create or update profile |
-| PUT | `/profile` | Update profile onboarding data |
+
+| Method | Endpoint   | Description                           |
+| ------ | ---------- | ------------------------------------- |
+| GET    | `/profile` | Get user profile with onboarding data |
+| POST   | `/profile` | Create or update profile              |
+| PUT    | `/profile` | Update profile onboarding data        |
 
 ### Recommendations
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/recommendations` | Get AI visa recommendations |
-| GET | `/recommendations/history` | Get recommendation history |
-| GET | `/recommendations/{id}` | Get specific recommendation |
+
+| Method | Endpoint                   | Description                 |
+| ------ | -------------------------- | --------------------------- |
+| POST   | `/recommendations`         | Get AI visa recommendations |
+| GET    | `/recommendations/history` | Get recommendation history  |
+| GET    | `/recommendations/{id}`    | Get specific recommendation |
 
 ### Checklists
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/checklist` | Get or generate cached checklist |
-| POST | `/recommendations/checklist` | Generate new checklist |
-| GET | `/checklist/progress` | Get checklist progress |
-| GET | `/checklist/progress/all` | Get all checklist progress |
-| PUT | `/checklist/progress` | Save checklist progress |
+
+| Method | Endpoint                     | Description                      |
+| ------ | ---------------------------- | -------------------------------- |
+| POST   | `/checklist`                 | Get or generate cached checklist |
+| POST   | `/recommendations/checklist` | Generate new checklist           |
+| GET    | `/checklist/progress`        | Get checklist progress           |
+| GET    | `/checklist/progress/all`    | Get all checklist progress       |
+| PUT    | `/checklist/progress`        | Save checklist progress          |
 
 ### Documents
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/documents` | Upload document |
-| GET | `/documents` | List all documents |
-| GET | `/documents/{id}` | Get specific document |
-| PUT | `/documents/{id}` | Update document |
-| DELETE | `/documents/{id}` | Delete document |
+
+| Method | Endpoint          | Description           |
+| ------ | ----------------- | --------------------- |
+| POST   | `/documents`      | Upload document       |
+| GET    | `/documents`      | List all documents    |
+| GET    | `/documents/{id}` | Get specific document |
+| PUT    | `/documents/{id}` | Update document       |
+| DELETE | `/documents/{id}` | Delete document       |
 
 ### Travel Agents
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/travel-agents/onboarding-schema` | Get agent onboarding form schema |
-| GET | `/travel-agents/profile` | Get current agent's profile |
-| POST | `/travel-agents/profile` | Create agent profile |
-| PUT | `/travel-agents/profile` | Update agent profile |
-| GET | `/travel-agents/list` | List agents with filters |
-| GET | `/travel-agents/{id}` | Get agent public profile |
+
+| Method | Endpoint                           | Description                      |
+| ------ | ---------------------------------- | -------------------------------- |
+| GET    | `/travel-agents/onboarding-schema` | Get agent onboarding form schema |
+| GET    | `/travel-agents/profile`           | Get current agent's profile      |
+| POST   | `/travel-agents/profile`           | Create agent profile             |
+| PUT    | `/travel-agents/profile`           | Update agent profile             |
+| GET    | `/travel-agents/list`              | List agents with filters         |
+| GET    | `/travel-agents/{id}`              | Get agent public profile         |
 
 ### Messaging
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/conversations` | Create conversation |
-| GET | `/conversations` | List conversations |
-| GET | `/conversations/{id}` | Get conversation |
-| POST | `/messages` | Send message |
-| GET | `/conversations/{id}/messages` | Get messages |
+
+| Method | Endpoint                       | Description         |
+| ------ | ------------------------------ | ------------------- |
+| POST   | `/conversations`               | Create conversation |
+| GET    | `/conversations`               | List conversations  |
+| GET    | `/conversations/{id}`          | Get conversation    |
+| POST   | `/messages`                    | Send message        |
+| GET    | `/conversations/{id}/messages` | Get messages        |
 
 ## Getting Started
 
@@ -366,33 +370,39 @@ messages (
 ### Backend Setup
 
 1. **Navigate to backend directory:**
+
    ```bash
    cd backend
    ```
 
 2. **Create virtual environment:**
+
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
 3. **Install dependencies:**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 4. **Set up PostgreSQL database:**
+
    ```bash
    createdb visa_agent
    # Or via psql: CREATE DATABASE visa_agent;
    ```
 
 5. **Configure environment variables:**
+
    ```bash
    cp env.example .env
    ```
-   
+
    Edit `.env` and set:
+
    ```env
    DATABASE_URL=postgresql://postgres:postgres@localhost:5432/visa_agent
    SECRET_KEY=your-secret-key-here
@@ -401,31 +411,35 @@ messages (
    ```
 
 6. **Start the server:**
+
    ```bash
    uvicorn app.main:app --reload
    ```
-   
+
    API available at: `http://localhost:8000`
-   
+
    Swagger docs at: `http://localhost:8000/docs`
 
 ### Frontend Setup
 
 1. **Navigate to frontend directory:**
+
    ```bash
    cd Frontend
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Start development server:**
+
    ```bash
    npm run dev
    ```
-   
+
    App available at: `http://localhost:5173`
 
 ### Building for Production
@@ -444,16 +458,19 @@ gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker
 ## Authentication Flow
 
 ### Email/Password Registration
+
 ```
 Register → Auto-login → Onboarding (based on role) → Dashboard
 ```
 
 ### Google OAuth
+
 ```
 Google Sign-in → Backend verification → JWT issued → Dashboard
 ```
 
 ### JWT Token Flow
+
 - Token stored in `localStorage`
 - Included in `Authorization: Bearer <token>` header
 - Auto-refresh user data on app load
@@ -491,6 +508,7 @@ Google Sign-in → Backend verification → JWT issued → Dashboard
 ## Design System
 
 ### Colors
+
 - Primary Blue: `#4A90E2`
 - Background Light: `#E8F1FF`
 - Text Dark: `#333333`
@@ -498,10 +516,12 @@ Google Sign-in → Backend verification → JWT issued → Dashboard
 - White: `#FFFFFF`
 
 ### Typography
+
 - Headings: Custom fonts with motion effects
 - Body: Clean, readable sans-serif
 
 ### Components
+
 - Built on Radix UI primitives
 - Consistent spacing and borders
 - Responsive design (mobile-first)
@@ -520,6 +540,7 @@ Google Sign-in → Backend verification → JWT issued → Dashboard
 ## Environment Variables
 
 ### Backend (`.env`)
+
 ```env
 # Required
 DATABASE_URL=postgresql://user:pass@localhost:5432/visa_agent
@@ -534,6 +555,7 @@ GOOGLE_CLIENT_SECRET=...
 ```
 
 ### Frontend (`.env`)
+
 ```env
 VITE_API_URL=http://localhost:8000
 VITE_FIREBASE_API_KEY=...
@@ -544,6 +566,7 @@ VITE_FIREBASE_AUTH_DOMAIN=...
 ## Troubleshooting
 
 ### Database Connection Issues
+
 ```bash
 # Check PostgreSQL is running
 pg_isready
@@ -553,14 +576,17 @@ psql -U postgres -l | grep visa_agent
 ```
 
 ### CORS Errors
+
 - Ensure backend CORS origins include frontend URL
 - Check browser console for specific error messages
 
 ### OpenAI API Errors
+
 - Verify API key is valid and has credits
 - Check rate limits
 
 ### Authentication Issues
+
 - Clear localStorage and try again
 - Check JWT token in browser dev tools
 - Verify backend is running
@@ -568,6 +594,7 @@ psql -U postgres -l | grep visa_agent
 ## Roadmap
 
 ### Planned Features
+
 - [ ] WebSocket support for real-time messaging
 - [ ] File attachments in messages
 - [ ] Agent verification workflow
@@ -584,6 +611,7 @@ This project is proprietary. All rights reserved.
 ## Contributing
 
 For internal team members:
+
 1. Create a feature branch
 2. Make changes and test locally
 3. Submit pull request for review
@@ -592,4 +620,3 @@ For internal team members:
 ---
 
 Built for a world without borders.
-
