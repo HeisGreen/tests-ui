@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { travelAgentAPI } from "../utils/api";
+import { supabase } from "../config/firebase";
 import {
   FiUser,
   FiEdit,
@@ -13,6 +14,9 @@ import {
   FiMail,
   FiPhone,
   FiMessageCircle,
+  FiCamera,
+  FiUpload,
+  FiX,
 } from "react-icons/fi";
 import { countries } from "../data/countries";
 import "./TravelAgentProfile.css";
@@ -24,6 +28,12 @@ function TravelAgentProfile() {
   const [loading, setLoading] = useState(true);
   const [availability, setAvailability] = useState("available");
   const [updatingAvailability, setUpdatingAvailability] = useState(false);
+  
+  // Profile photo states
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState("");
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     loadProfile();
@@ -91,6 +101,116 @@ function TravelAgentProfile() {
     citizenship: "Citizenship",
   };
 
+  // Profile photo handlers
+  const handlePhotoSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      setPhotoError("Please select a valid image file (JPEG, PNG, GIF, or WebP)");
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setPhotoError("Image must be less than 5MB");
+      return;
+    }
+    
+    setPhotoError("");
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreviewUrl(e.target.result);
+    };
+    reader.readAsDataURL(file);
+    
+    // Upload the file
+    uploadProfilePhoto(file);
+  };
+
+  const uploadProfilePhoto = async (file) => {
+    setUploadingPhoto(true);
+    setPhotoError("");
+    
+    try {
+      // Generate unique filename
+      const fileExt = file.name.split(".").pop();
+      const fileName = `agent-avatars/${user.id}_${Date.now()}.${fileExt}`;
+      
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("documents")
+        .upload(fileName, file, {
+          cacheControl: "3600",
+          upsert: true,
+        });
+      
+      if (uploadError) {
+        throw new Error(uploadError.message || "Failed to upload image");
+      }
+      
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from("documents")
+        .getPublicUrl(fileName);
+      
+      const publicUrl = urlData?.publicUrl;
+      
+      if (!publicUrl) {
+        throw new Error("Failed to get public URL");
+      }
+      
+      // Update agent profile with new photo URL
+      const currentData = profile?.onboarding_data || {};
+      await travelAgentAPI.updateProfile({
+        ...currentData,
+        profile_photo_url: publicUrl,
+      });
+      
+      // Refresh profile
+      await loadProfile();
+      setPreviewUrl(null);
+      
+    } catch (err) {
+      console.error("Error uploading profile photo:", err);
+      setPhotoError(err.message || "Failed to upload photo");
+      setPreviewUrl(null);
+    } finally {
+      setUploadingPhoto(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const removeProfilePhoto = async () => {
+    setUploadingPhoto(true);
+    setPhotoError("");
+    
+    try {
+      const currentData = profile?.onboarding_data || {};
+      await travelAgentAPI.updateProfile({
+        ...currentData,
+        profile_photo_url: null,
+      });
+      
+      await loadProfile();
+    } catch (err) {
+      console.error("Error removing profile photo:", err);
+      setPhotoError(err.message || "Failed to remove photo");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   if (loading) {
     return (
       <div className="agent-profile-loading">
@@ -102,15 +222,45 @@ function TravelAgentProfile() {
 
   const onboardingData = profile?.onboarding_data || {};
   const isVerified = profile?.is_verified || false;
+  
+  // Get display photo URL (after onboardingData is defined)
+  const displayPhotoUrl = previewUrl || onboardingData?.profile_photo_url;
 
   return (
     <div className="travel-agent-profile">
       {/* Header Section */}
       <div className="profile-header">
         <div className="profile-avatar-section">
-          <div className="profile-avatar-large">
-            {onboardingData.full_name?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || "A"}
+          <div className="profile-avatar-container">
+            {displayPhotoUrl ? (
+              <img 
+                src={displayPhotoUrl} 
+                alt="Profile" 
+                className={`profile-avatar-large-img ${uploadingPhoto ? "uploading" : ""}`}
+              />
+            ) : (
+              <div className={`profile-avatar-large ${uploadingPhoto ? "uploading" : ""}`}>
+                {onboardingData.full_name?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || "A"}
+              </div>
+            )}
+            
+            {uploadingPhoto && (
+              <div className="avatar-loading-overlay">
+                <div className="avatar-spinner"></div>
+              </div>
+            )}
+            
+            <button 
+              type="button" 
+              className="avatar-edit-btn"
+              onClick={triggerFileInput}
+              disabled={uploadingPhoto}
+              title="Change photo"
+            >
+              <FiCamera />
+            </button>
           </div>
+          
           <div className="profile-header-info">
             <h1>{onboardingData.full_name || user?.name || "Travel Agent"}</h1>
             {onboardingData.business_name && (
@@ -127,6 +277,41 @@ function TravelAgentProfile() {
                 </span>
               )}
             </div>
+            
+            {/* Photo upload buttons */}
+            <div className="avatar-actions">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                onChange={handlePhotoSelect}
+                className="hidden-file-input"
+              />
+              
+              <button 
+                type="button" 
+                className="btn-upload-photo-small"
+                onClick={triggerFileInput}
+                disabled={uploadingPhoto}
+              >
+                <FiUpload />
+                {uploadingPhoto ? "Uploading..." : "Upload Photo"}
+              </button>
+              
+              {onboardingData.profile_photo_url && (
+                <button 
+                  type="button" 
+                  className="btn-remove-photo-small"
+                  onClick={removeProfilePhoto}
+                  disabled={uploadingPhoto}
+                >
+                  <FiX />
+                  Remove
+                </button>
+              )}
+            </div>
+            
+            {photoError && <p className="photo-error">{photoError}</p>}
           </div>
         </div>
         <div className="profile-actions">

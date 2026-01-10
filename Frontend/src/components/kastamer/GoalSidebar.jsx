@@ -24,9 +24,9 @@ function GoalSidebar({ currentStep, totalSteps = 9, questionsAnswered = 0, score
             <svg className="score-circle-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#32d74b" />
-                  <stop offset="50%" stopColor="#28c143" />
-                  <stop offset="100%" stopColor="#6366f1" />
+                  <stop offset="0%" stopColor="#ff6b4a" />
+                  <stop offset="50%" stopColor="#ff8066" />
+                  <stop offset="100%" stopColor="#a78bfa" />
                 </linearGradient>
               </defs>
               <circle

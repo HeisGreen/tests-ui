@@ -1,38 +1,153 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { recommendationsAPI, checklistProgressAPI, messagingAPI } from "../utils/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { recommendationsAPI, checklistProgressAPI, messagingAPI, documentsAPI } from "../utils/api";
 import {
-  FiAlertCircle,
   FiArrowRight,
   FiCheckCircle,
   FiClock,
   FiFileText,
-  FiList,
   FiTrendingUp,
   FiCalendar,
   FiTarget,
   FiMessageCircle,
-  FiUsers,
   FiUser,
+  FiGlobe,
+  FiFolder,
+  FiCompass,
+  FiZap,
+  FiUsers,
+  FiPlus,
+  FiChevronRight,
+  FiActivity,
+  FiAward,
+  FiMapPin,
+  FiStar,
+  FiSend,
+  FiBookOpen,
+  FiHeart,
+  FiShield,
+  FiTrendingDown,
+  FiAlertCircle,
+  FiInfo,
+  FiUpload,
+  FiEdit3,
+  FiNavigation,
+  FiFlag,
+  FiCoffee,
+  FiSun,
+  FiMoon,
+  FiCloudRain,
+  FiWind,
+  FiRefreshCw,
+  FiExternalLink,
+  FiBriefcase,
+  FiHome,
+  FiDollarSign,
+  FiPercent,
+  FiLayers,
+  FiPieChart,
+  FiBarChart2,
 } from "react-icons/fi";
-import { initScrollAnimations } from "../utils/scrollAnimation";
 import "./Home.css";
+
+// Animation variants
+const pageTransition = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      staggerChildren: 0.06,
+      delayChildren: 0.1
+    }
+  }
+};
+
+const slideUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: { 
+    opacity: 1, 
+    scale: 1,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+const staggerCards = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05
+    }
+  }
+};
+
+// Tips data
+const migrationTips = [
+  { id: 1, icon: FiShield, title: "Keep documents updated", desc: "Ensure all your documents are current and valid for at least 6 months" },
+  { id: 2, icon: FiClock, title: "Apply early", desc: "Start your visa application process at least 3-6 months before your planned move" },
+  { id: 3, icon: FiDollarSign, title: "Financial preparation", desc: "Have proof of funds ready showing you can support yourself abroad" },
+  { id: 4, icon: FiBriefcase, title: "Job market research", desc: "Research job opportunities and requirements in your destination country" },
+];
+
+// Popular destinations
+const popularDestinations = [
+  { country: "Canada", flag: "🇨🇦", visaTypes: 12, avgTime: "6-12 months" },
+  { country: "Germany", flag: "🇩🇪", visaTypes: 8, avgTime: "3-6 months" },
+  { country: "Australia", flag: "🇦🇺", visaTypes: 15, avgTime: "4-8 months" },
+  { country: "United Kingdom", flag: "🇬🇧", visaTypes: 10, avgTime: "3-8 weeks" },
+  { country: "United States", flag: "🇺🇸", visaTypes: 20, avgTime: "varies" },
+];
+
+// Journey milestones
+const journeyMilestones = [
+  { id: 1, title: "Profile Created", icon: FiUser, completed: true },
+  { id: 2, title: "First Recommendation", icon: FiCompass, completed: false },
+  { id: 3, title: "Documents Uploaded", icon: FiFolder, completed: false },
+  { id: 4, title: "Agent Connected", icon: FiUsers, completed: false },
+  { id: 5, title: "Checklist Started", icon: FiTarget, completed: false },
+  { id: 6, title: "Application Ready", icon: FiAward, completed: false },
+];
 
 function Home() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [latest, setLatest] = useState(null); // latest RecommendationRecord
+  const [latest, setLatest] = useState(null);
   const [historyCount, setHistoryCount] = useState(0);
   const [activeChecklists, setActiveChecklists] = useState([]);
   const [loadingChecklists, setLoadingChecklists] = useState(true);
-  const [checklistData, setChecklistData] = useState({}); // Map of visa_type -> checklist items
+  const [checklistData, setChecklistData] = useState({});
   const [conversations, setConversations] = useState([]);
   const [loadingConversations, setLoadingConversations] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [documents, setDocuments] = useState([]);
+  const [loadingDocuments, setLoadingDocuments] = useState(true);
+  const [currentTipIndex, setCurrentTipIndex] = useState(0);
 
+  // Rotate tips
   useEffect(() => {
-    initScrollAnimations();
+    const tipTimer = setInterval(() => {
+      setCurrentTipIndex((prev) => (prev + 1) % migrationTips.length);
+    }, 8000);
+    return () => clearInterval(tipTimer);
+  }, []);
+
+  // Update time every minute
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
   }, []);
 
   const options = useMemo(() => {
@@ -41,74 +156,59 @@ function Home() {
     return Array.isArray(opts) ? opts : [];
   }, [latest]);
 
-  useEffect(() => {
-    // When cards load dynamically, re-init scroll animations.
-    if (!options.length) return;
-    initScrollAnimations();
-  }, [options.length]);
-
-  // Show only checklists with progress > 0%
-  // Defined early so it can be used in useEffect hooks
   const activeChecklistsWithProgress = useMemo(() => {
     return activeChecklists.filter((checklist) => {
       if (!checklist || !(checklist.visa_type || checklist.visaType)) {
         return false;
       }
-      // Calculate progress percentage
       const progressJson = checklist.progress_json || checklist.progressJson || {};
       const items = Object.values(progressJson);
       if (items.length === 0) return false;
       const completed = items.filter((v) => v === true).length;
       const progressPercent = Math.round((completed / items.length) * 100);
-      // Only show checklists with progress > 0%
       return progressPercent > 0;
     });
   }, [activeChecklists]);
 
-  // Re-initialize scroll animations when checklist cards are loaded
-  useEffect(() => {
-    if (!loadingChecklists && activeChecklistsWithProgress.length > 0) {
-      // Use multiple attempts to ensure cards become visible
-      const makeCardsVisible = () => {
-        const cards = document.querySelectorAll('.checklist-card.scroll-animate');
-        
-        // First pass: Check if cards are already in viewport and make them visible immediately
-        cards.forEach((card) => {
-          const rect = card.getBoundingClientRect();
-          const isInView = rect.top < window.innerHeight && rect.bottom > 0 && rect.width > 0 && rect.height > 0;
-          // If card is in viewport or close to it, make it visible immediately
-          if (isInView || rect.top < 300) {
-            card.classList.add('animate-in');
-          }
-        });
-        
-        // Initialize scroll animations for cards not yet visible
-        initScrollAnimations();
-      };
-      
-      // Multiple attempts with increasing delays to catch cards at different render stages
-      requestAnimationFrame(() => {
-        makeCardsVisible();
-        
-        // Second attempt after a short delay
-        setTimeout(() => {
-          makeCardsVisible();
-        }, 100);
-        
-        // Final fallback: Force all cards visible if they're still not animated after 300ms
-        setTimeout(() => {
-          const hiddenCards = document.querySelectorAll('.checklist-card.scroll-animate:not(.animate-in)');
-          hiddenCards.forEach((card) => {
-            const rect = card.getBoundingClientRect();
-            // If card exists in DOM and has dimensions, make it visible
-            if (rect.width > 0 && rect.height > 0) {
-              card.classList.add('animate-in');
-            }
-          });
-        }, 300);
-      });
-    }
-  }, [loadingChecklists, activeChecklistsWithProgress.length]);
+  const totalProgress = useMemo(() => {
+    if (activeChecklistsWithProgress.length === 0) return 0;
+    const sum = activeChecklistsWithProgress.reduce((acc, checklist) => {
+      const progressJson = checklist.progress_json || checklist.progressJson || {};
+      const items = Object.values(progressJson);
+      if (items.length === 0) return acc;
+      const completed = items.filter((v) => v === true).length;
+      return acc + Math.round((completed / items.length) * 100);
+    }, 0);
+    return Math.round(sum / activeChecklistsWithProgress.length);
+  }, [activeChecklistsWithProgress]);
+
+  // Calculate profile completion
+  const profileCompletion = useMemo(() => {
+    if (!user) return 0;
+    let score = 0;
+    if (user.name) score += 15;
+    if (user.email) score += 15;
+    if (user.profile_picture_url) score += 10;
+    if (user.nationality) score += 15;
+    if (user.current_country) score += 10;
+    if (user.occupation) score += 10;
+    if (user.education_level) score += 10;
+    if (user.budget) score += 5;
+    if (user.preferred_countries?.length > 0) score += 10;
+    return Math.min(score, 100);
+  }, [user]);
+
+  // Calculate milestones
+  const completedMilestones = useMemo(() => {
+    let completed = [];
+    completed.push(1); // Profile created (since they're logged in)
+    if (historyCount > 0) completed.push(2);
+    if (documents.length > 0) completed.push(3);
+    if (conversations.length > 0) completed.push(4);
+    if (activeChecklistsWithProgress.length > 0) completed.push(5);
+    if (totalProgress === 100) completed.push(6);
+    return completed;
+  }, [historyCount, documents, conversations, activeChecklistsWithProgress, totalProgress]);
 
   useEffect(() => {
     let cancelled = false;
@@ -117,30 +217,10 @@ function Home() {
       try {
         setError(null);
         setLoading(true);
-
-        // Pull recent stored recommendations for this user.
-        // This uses the real, persisted database data (not dummy data).
         const history = await recommendationsAPI.getHistory(20);
         if (cancelled) return;
-
         setHistoryCount(history.length);
-        const latestRecord = history[0] || null;
-
-        // Debug: Check what we're getting
-        if (latestRecord) {
-          console.log("=== DEBUG: Latest record ===");
-          console.log("Full record:", JSON.stringify(latestRecord, null, 2));
-          console.log("created_at value:", latestRecord.created_at);
-          console.log("created_at type:", typeof latestRecord.created_at);
-          console.log("All keys:", Object.keys(latestRecord));
-        } else {
-          console.log(
-            "No latest record found. History length:",
-            history.length
-          );
-        }
-
-        setLatest(latestRecord);
+        setLatest(history[0] || null);
       } catch (err) {
         if (cancelled) return;
         console.error("Error loading recommendation history:", err);
@@ -152,13 +232,9 @@ function Home() {
     };
 
     load();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
-  // Load active checklists (checklists with saved progress) and fetch checklist data
   useEffect(() => {
     let cancelled = false;
 
@@ -167,12 +243,8 @@ function Home() {
         setLoadingChecklists(true);
         const progressList = await checklistProgressAPI.getAllProgress();
         if (cancelled) return;
-        console.log("Loaded checklist progress:", progressList);
-        console.log("Progress list length:", progressList?.length);
         if (progressList && Array.isArray(progressList)) {
-          console.log("Setting active checklists:", progressList);
           setActiveChecklists(progressList);
-          // Fetch cached checklist items per visa_type so we can show durations/steps
           try {
             const entries = await Promise.all(
               progressList.map(async (p) => {
@@ -200,7 +272,6 @@ function Home() {
             console.warn("Error loading checklist data from cache:", err);
           }
         } else {
-          console.warn("Progress list is not an array:", progressList);
           setActiveChecklists([]);
         }
       } catch (err) {
@@ -214,13 +285,9 @@ function Home() {
     };
 
     loadChecklists();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
-  // Load recent conversations for users
   useEffect(() => {
     if (user?.role === "USER") {
       const loadConversations = async () => {
@@ -238,7 +305,22 @@ function Home() {
     }
   }, [user]);
 
-  // Calculate progress percentage for a checklist
+  useEffect(() => {
+    const loadDocuments = async () => {
+      try {
+        setLoadingDocuments(true);
+        const docs = await documentsAPI.getDocuments();
+        setDocuments(docs || []);
+      } catch (err) {
+        console.error("Error loading documents:", err);
+        setDocuments([]);
+      } finally {
+        setLoadingDocuments(false);
+      }
+    };
+    loadDocuments();
+  }, []);
+
   const getChecklistProgress = (progressJson) => {
     if (!progressJson || typeof progressJson !== "object") return 0;
     const items = Object.values(progressJson);
@@ -247,18 +329,12 @@ function Home() {
     return Math.round((completed / items.length) * 100);
   };
 
-  // Calculate estimated remaining processing time for a checklist
   const calculateEstimatedRemainingTime = (visaType, progressJson) => {
     const checklistItems = checklistData[visaType];
-    if (
-      !checklistItems ||
-      !Array.isArray(checklistItems) ||
-      checklistItems.length === 0
-    ) {
+    if (!checklistItems || !Array.isArray(checklistItems) || checklistItems.length === 0) {
       return "—";
     }
 
-    // Get incomplete steps with duration estimates
     const incompleteSteps = checklistItems.filter((item, idx) => {
       const itemId = item?.id || `step-${idx + 1}`;
       const isCompleted = progressJson[itemId] === true;
@@ -266,12 +342,10 @@ function Home() {
     });
 
     if (incompleteSteps.length === 0) {
-      // Check if all steps are completed
       const allCompleted = Object.values(progressJson).every((v) => v === true);
       return allCompleted ? "Completed" : "—";
     }
 
-    // Sum up estimated durations for incomplete steps
     const totalDays = incompleteSteps.reduce((sum, step) => {
       const duration = step.estimated_duration;
       if (typeof duration === "number" && duration > 0) {
@@ -280,18 +354,13 @@ function Home() {
       return sum;
     }, 0);
 
-    if (totalDays === 0) {
-      return "—";
-    }
+    if (totalDays === 0) return "—";
 
-    // Format the duration nicely
     const weeks = Math.floor(totalDays / 7);
     const days = totalDays % 7;
 
     if (weeks > 0 && days > 0) {
-      return `~${weeks} week${weeks !== 1 ? "s" : ""}, ${days} day${
-        days !== 1 ? "s" : ""
-      }`;
+      return `~${weeks}w ${days}d`;
     } else if (weeks > 0) {
       return `~${weeks} week${weeks !== 1 ? "s" : ""}`;
     } else {
@@ -315,565 +384,704 @@ function Home() {
 
   const getVisaStateColor = (visa) => {
     const l = getVisaStateText(visa).toLowerCase();
-    if (
-      l.includes("approved") ||
-      l.includes("granted") ||
-      l.includes("eligible") ||
-      l.includes("high") ||
-      l.includes("strong") ||
-      l.includes("good")
-    ) {
-      return "#22C55E"; // green
+    if (l.includes("approved") || l.includes("granted") || l.includes("eligible") || l.includes("high") || l.includes("strong") || l.includes("good")) {
+      return "success";
     }
-    if (
-      l.includes("denied") ||
-      l.includes("rejected") ||
-      l.includes("refused") ||
-      l.includes("not_eligible") ||
-      l.includes("ineligible") ||
-      l.includes("not eligible")
-    ) {
-      return "#EF4444"; // red
+    if (l.includes("denied") || l.includes("rejected") || l.includes("refused") || l.includes("not_eligible") || l.includes("ineligible")) {
+      return "danger";
     }
-    if (
-      l.includes("pending") ||
-      l.includes("in_review") ||
-      l.includes("in review") ||
-      l.includes("review") ||
-      l.includes("processing") ||
-      l.includes("awaiting")
-    ) {
-      return "#F59E0B"; // amber
+    if (l.includes("pending") || l.includes("in_review") || l.includes("review") || l.includes("processing") || l.includes("awaiting")) {
+      return "warning";
     }
-    if (
-      l.includes("unlikely") ||
-      l.includes("low") ||
-      l.includes("challenging")
-    ) {
-      return "#8B5CF6"; // violet
+    if (l.includes("unlikely") || l.includes("low") || l.includes("challenging")) {
+      return "muted";
     }
-    if (
-      l.includes("possible") ||
-      l.includes("medium") ||
-      l.includes("moderate") ||
-      (l.includes("likely") && !l.includes("unlikely"))
-    ) {
-      return "#22C55E"; // green
-    }
-    return "#64748B"; // slate
+    return "success";
   };
 
-  const getStateIcon = (visa) => {
-    const l = getVisaStateText(visa).toLowerCase();
-    if (
-      l.includes("approved") ||
-      l.includes("granted") ||
-      l.includes("eligible") ||
-      l.includes("high") ||
-      l.includes("strong") ||
-      l.includes("good")
-    )
-      return <FiCheckCircle />;
-    if (
-      l.includes("pending") ||
-      l.includes("in_review") ||
-      l.includes("in review") ||
-      l.includes("review") ||
-      l.includes("processing") ||
-      l.includes("awaiting")
-    )
-      return <FiClock />;
-    if (
-      l.includes("denied") ||
-      l.includes("rejected") ||
-      l.includes("refused") ||
-      l.includes("not_eligible") ||
-      l.includes("ineligible") ||
-      l.includes("not eligible")
-    )
-      return <FiAlertCircle />;
-    return <FiFileText />;
+  const formatTime = (dateString) => {
+    if (!dateString) return "Just now";
+    try {
+      let date;
+      if (typeof dateString === "string") {
+        date = new Date(dateString.replace(/Z$/, ""));
+      } else if (dateString instanceof Date) {
+        date = dateString;
+      } else {
+        date = new Date(dateString);
+      }
+      if (isNaN(date.getTime())) return "Just now";
+      const now = new Date();
+      const diffMs = now - date;
+      if (diffMs < 0) return "Just now";
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return "Just now";
+      if (diffMins < 60) return `${diffMins}m ago`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    } catch {
+      return "Just now";
+    }
   };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
+  const formatCurrentDate = () => {
+    return currentTime.toLocaleDateString("en-US", { 
+      weekday: "long", 
+      month: "long", 
+      day: "numeric" 
+    });
+  };
+
+  const formatCurrentTime = () => {
+    return currentTime.toLocaleTimeString("en-US", { 
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true
+    });
+  };
+
+  const unreadCount = useMemo(() => {
+    return conversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
+  }, [conversations]);
+
+  const currentTip = migrationTips[currentTipIndex];
 
   return (
-    <div className="home">
-      <div className="home-header">
-        <h1>Welcome back, {user?.name || "User"}!</h1>
-        <p>Here's an overview of your visa applications and recommendations</p>
+    <motion.div 
+      className="home-v2"
+      variants={pageTransition}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Ambient Background */}
+      <div className="home-ambient">
+        <div className="ambient-orb ambient-orb-1" />
+        <div className="ambient-orb ambient-orb-2" />
+        <div className="ambient-orb ambient-orb-3" />
+        <div className="grid-overlay" />
       </div>
 
-      <div className="home-stats">
-        <div className="stat-card scroll-animate scroll-animate-delay-1">
-          <div className="stat-value">{historyCount}</div>
-          <div className="stat-label">Saved Recommendations</div>
-        </div>
-        <div className="stat-card scroll-animate scroll-animate-delay-2">
-          <div className="stat-value">{options.length}</div>
-          <div className="stat-label">Latest Options</div>
-        </div>
-        <div className="stat-card scroll-animate scroll-animate-delay-3">
-          <div className="stat-value">
-            {(() => {
-              if (!latest) {
-                return "—";
-              }
-
-              // Log everything for debugging
-              console.log("Latest object:", latest);
-              console.log("Latest keys:", Object.keys(latest));
-
-              // Try different possible field names
-              const dateValue =
-                latest.created_at ||
-                latest.createdAt ||
-                latest.date ||
-                latest["created_at"];
-
-              console.log("Date value found:", dateValue);
-
-              if (!dateValue) {
-                console.warn("No date field found. Full object:", latest);
-                return "—";
-              }
-
-              try {
-                // Handle string dates
-                let date;
-                if (typeof dateValue === "string") {
-                  // Remove trailing Z if present for better compatibility
-                  const cleanDate = dateValue.replace(/Z$/, "");
-                  date = new Date(cleanDate);
-                } else if (dateValue instanceof Date) {
-                  date = dateValue;
-                } else {
-                  date = new Date(dateValue);
-                }
-
-                if (isNaN(date.getTime())) {
-                  console.warn("Invalid date:", dateValue, "parsed as:", date);
-                  return "—";
-                }
-
-                const formatted = date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                });
-
-                console.log("Formatted date:", formatted);
-                return formatted;
-              } catch (e) {
-                console.error("Date parsing error:", e, "value:", dateValue);
-                return "—";
-              }
-            })()}
+      <div className="home-content">
+        {/* Hero Section */}
+        <motion.section className="hero-section" variants={slideUp}>
+          <div className="hero-left">
+            <div className="hero-meta">
+              <span className="hero-date">{formatCurrentDate()}</span>
+              <span className="hero-time">{formatCurrentTime()}</span>
+            </div>
+            <h1 className="hero-title">
+              {getGreeting()}, <span className="hero-name">{user?.name?.split(" ")[0] || "Explorer"}</span>
+            </h1>
+            <p className="hero-subtitle">
+              Your migration journey awaits. Track progress, explore options, and take the next step toward your goals.
+            </p>
+            <div className="hero-actions">
+              <Link to="/recommendation" className="hero-btn hero-btn-primary">
+                <FiCompass />
+                <span>Get Recommendations</span>
+              </Link>
+              <Link to="/profile" className="hero-btn hero-btn-secondary">
+                <FiUser />
+                <span>View Profile</span>
+              </Link>
+            </div>
           </div>
-          <div className="stat-label">Last Generated</div>
-        </div>
-      </div>
-
-      <div className="home-section">
-        <div className="section-header">
-          <h2>Your Recommendations</h2>
-          <Link to="/recommendation" className="link-primary">
-            Get New Recommendation <FiArrowRight />
-          </Link>
-        </div>
-
-        {loading ? (
-          <div className="empty-state">
-            <p>Loading your recommendations…</p>
-          </div>
-        ) : error ? (
-          <div className="empty-state">
-            <p>{error}</p>
-            <Link to="/recommendation" className="btn-primary">
-              Open Recommendations
-            </Link>
-          </div>
-        ) : options.length === 0 ? (
-          <div className="empty-state">
-            <p>You don't have any recommendations yet.</p>
-            <Link to="/recommendation" className="btn-primary">
-              Get Your First Recommendation
-            </Link>
-          </div>
-        ) : (
-          <div className="recommendations-grid">
-            {options.slice(0, 6).map((visa, index) => {
-              return (
-                <div
-                  key={`${visa.visa_type}-${index}`}
-                  className={`recommendation-card scroll-animate scroll-animate-delay-${
-                    (index % 3) + 1
-                  }`}
-                >
-                  <div className="card-header">
-                    <div>
-                      <h3>{visa.visa_type || "Visa option"}</h3>
-                      <p className="card-subtitle">
-                        {latest?.output_data?.summary ||
-                          "Personalized based on your profile"}
-                      </p>
-                    </div>
-                    <div
-                      className="status-badge"
-                      style={{ color: getVisaStateColor(visa) }}
-                    >
-                      {getStateIcon(visa)}
-                      <span>{getVisaStateLabel(visa)}</span>
-                    </div>
+          <div className="hero-right">
+            <div className="hero-profile-card">
+              <div className="profile-glow" />
+                {user?.profile_picture_url ? (
+                  <img 
+                    src={user.profile_picture_url} 
+                    alt={user?.name || "Profile"} 
+                  className="hero-avatar"
+                  />
+                ) : (
+                <div className="hero-avatar-placeholder">
+                    {user?.name?.charAt(0)?.toUpperCase() || "?"}
                   </div>
-
-                  <div className="card-info">
-                    <div className="info-item">
-                      <span className="info-label">Processing Time:</span>
-                      <span className="info-value">
-                        {visa.estimated_timeline || visa.processing_time || "—"}
-                      </span>
-                    </div>
-                    <div className="info-item">
-                      <span className="info-label">Estimated Cost:</span>
-                      <span className="info-value">
-                        {visa.estimated_costs || "—"}
-                      </span>
-                    </div>
-                    <div className="info-item">
-                      <span className="info-label">Next Step:</span>
-                      <span className="info-value">
-                        {Array.isArray(visa.next_steps) &&
-                        visa.next_steps.length > 0
-                          ? visa.next_steps[0]
-                          : "—"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <Link
-                    to={`/checklist/${encodeURIComponent(
-                      visa.visa_type || "visa"
-                    )}`}
-                    state={{ visaOption: visa }}
-                    className="btn-card-action"
-                  >
-                    View Checklist <FiArrowRight />
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {loadingChecklists ? (
-        <div className="home-section">
-          <div className="section-header">
-            <h2>Active Checklists</h2>
-          </div>
-          <div className="empty-state">
-            <p>Loading your checklists…</p>
-          </div>
-        </div>
-      ) : activeChecklistsWithProgress.length > 0 ? (
-        <div className="home-section">
-          <div className="section-header">
-            <h2>Active Checklists</h2>
-            <span className="section-subtitle">
-              {activeChecklistsWithProgress.length} checklist
-              {activeChecklistsWithProgress.length !== 1 ? "s" : ""} in progress
-            </span>
-          </div>
-          <div className="checklists-grid">
-            {activeChecklistsWithProgress.length === 0 ? (
-              <div className="empty-state">
-                <p>No active checklists found.</p>
+                )}
+              <div className="profile-info">
+                <h3>{user?.name || "Welcome"}</h3>
+                <span className="profile-role">
+                  {user?.role === "TRAVEL_AGENT" ? "Travel Agent" : "Explorer"}
+                </span>
               </div>
-            ) : activeChecklistsWithProgress.filter(
-                (c) => c && (c.visa_type || c.visaType)
-              ).length === 0 ? (
-              <div className="empty-state">
-                <p>Checklists found but missing visa_type field.</p>
-                <pre
-                  style={{
-                    fontSize: "0.8rem",
-                    textAlign: "left",
-                    maxWidth: "100%",
-                    overflow: "auto",
-                  }}
-                >
-                  {JSON.stringify(activeChecklistsWithProgress, null, 2)}
-                </pre>
+              <div className="profile-completion-mini">
+                <div className="completion-header">
+                  <span>Profile Completion</span>
+                  <span className="completion-percent">{profileCompletion}%</span>
+            </div>
+                <div className="completion-bar">
+                  <motion.div 
+                    className="completion-fill"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${profileCompletion}%` }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                  />
+                </div>
+              </div>
+              <div className="profile-stats-mini">
+                <div className="mini-stat">
+                  <span className="mini-stat-value">{historyCount}</span>
+                  <span className="mini-stat-label">Saved</span>
+                </div>
+                <div className="mini-stat">
+                  <span className="mini-stat-value">{activeChecklistsWithProgress.length}</span>
+                  <span className="mini-stat-label">Active</span>
+                </div>
+                <div className="mini-stat">
+                  <span className="mini-stat-value">{options.length}</span>
+                  <span className="mini-stat-label">Options</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Bento Grid */}
+        <motion.div className="bento-grid" variants={staggerCards}>
+          
+          {/* Progress Overview - Large Card */}
+          <motion.div className="bento-card bento-progress" variants={scaleIn}>
+            <div className="bento-card-header">
+              <div className="bento-icon bento-icon-gradient">
+                <FiActivity />
+              </div>
+              <h3>Journey Progress</h3>
+            </div>
+            <div className="progress-overview">
+              <div className="progress-circle-container">
+                <svg className="progress-circle" viewBox="0 0 100 100">
+                  <defs>
+                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#ff6b4a" />
+                      <stop offset="50%" stopColor="#f59e0b" />
+                      <stop offset="100%" stopColor="#8b5cf6" />
+                    </linearGradient>
+                  </defs>
+                  <circle className="progress-circle-bg" cx="50" cy="50" r="42" />
+                  <motion.circle 
+                    className="progress-circle-fill"
+                    cx="50" 
+                    cy="50" 
+                    r="42"
+                    initial={{ strokeDashoffset: 264 }}
+                    animate={{ strokeDashoffset: 264 - (264 * totalProgress / 100) }}
+                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+                  />
+                </svg>
+                <div className="progress-circle-text">
+                  <span className="progress-value">{totalProgress}</span>
+                  <span className="progress-percent">%</span>
+                </div>
+              </div>
+              <div className="progress-details">
+                <div className="progress-detail-row">
+                  <span className="detail-label">Active Checklists</span>
+                  <span className="detail-value">{activeChecklistsWithProgress.length}</span>
+                </div>
+                <div className="progress-detail-row">
+                  <span className="detail-label">Visa Options Explored</span>
+                  <span className="detail-value">{options.length}</span>
+                </div>
+                <div className="progress-detail-row">
+                  <span className="detail-label">Documents Uploaded</span>
+                  <span className="detail-value">{documents.length}</span>
+                </div>
+                <div className="progress-detail-row">
+                  <span className="detail-label">Saved Recommendations</span>
+                  <span className="detail-value">{historyCount}</span>
+                </div>
+                <Link to="/recommendation" className="progress-action">
+                  <span>Continue Journey</span>
+                  <FiArrowRight />
+            </Link>
+          </div>
+            </div>
+          </motion.div>
+
+          {/* Quick Stats Grid */}
+          <motion.div className="bento-card bento-stats" variants={scaleIn}>
+            <div className="stats-grid-mini">
+              <div className="stat-mini stat-mini-coral">
+              <FiFileText />
+                <div className="stat-mini-content">
+                  <span className="stat-mini-value">{historyCount}</span>
+                  <span className="stat-mini-label">Recommendations</span>
+            </div>
+            </div>
+              <div className="stat-mini stat-mini-emerald">
+              <FiGlobe />
+                <div className="stat-mini-content">
+                  <span className="stat-mini-value">{options.length}</span>
+                  <span className="stat-mini-label">Visa Options</span>
+            </div>
+            </div>
+              <div className="stat-mini stat-mini-violet">
+              <FiTarget />
+                <div className="stat-mini-content">
+                  <span className="stat-mini-value">{activeChecklistsWithProgress.length}</span>
+                  <span className="stat-mini-label">In Progress</span>
+            </div>
+            </div>
+              <div className="stat-mini stat-mini-amber">
+                <FiFolder />
+                <div className="stat-mini-content">
+                  <span className="stat-mini-value">{documents.length}</span>
+                  <span className="stat-mini-label">Documents</span>
+            </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Milestones Card */}
+          <motion.div className="bento-card bento-milestones" variants={scaleIn}>
+            <div className="bento-card-header">
+              <div className="bento-icon bento-icon-amber">
+                <FiAward />
+              </div>
+              <h3>Journey Milestones</h3>
+              <span className="milestone-count">{completedMilestones.length}/{journeyMilestones.length}</span>
+            </div>
+            <div className="milestones-list">
+              {journeyMilestones.map((milestone, index) => {
+                const isCompleted = completedMilestones.includes(milestone.id);
+                const MilestoneIcon = milestone.icon;
+                return (
+                  <div 
+                    key={milestone.id} 
+                    className={`milestone-item ${isCompleted ? 'completed' : ''}`}
+                  >
+                    <div className={`milestone-icon ${isCompleted ? 'done' : ''}`}>
+                      {isCompleted ? <FiCheckCircle /> : <MilestoneIcon />}
+              </div>
+                    <span className="milestone-title">{milestone.title}</span>
+                    {isCompleted && <span className="milestone-check">✓</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* Visa Recommendations */}
+          <motion.div className="bento-card bento-recommendations" variants={scaleIn}>
+            <div className="bento-card-header">
+              <div className="bento-icon bento-icon-coral">
+                <FiCompass />
+              </div>
+              <h3>Visa Options</h3>
+              <Link to="/recommendation" className="bento-card-link">
+                View All <FiChevronRight />
+              </Link>
+            </div>
+
+            {loading ? (
+              <div className="bento-loading">
+                <div className="loading-pulse" />
+                <span>Loading recommendations...</span>
+              </div>
+            ) : options.length === 0 ? (
+              <div className="bento-empty">
+                <div className="empty-illustration">
+                  <FiCompass />
+                </div>
+                <h4>Start Your Journey</h4>
+                <p>Get personalized visa recommendations based on your profile</p>
+                <Link to="/recommendation" className="empty-action">
+                  <FiZap />
+                  <span>Get Started</span>
+                </Link>
               </div>
             ) : (
-              activeChecklistsWithProgress
-                .map((checklist, index) => {
-                  console.log(`Rendering checklist card ${index}:`, checklist);
+              <div className="visa-options-list">
+                {options.slice(0, 4).map((visa, index) => (
+                  <motion.div
+                    key={`${visa.visa_type}-${index}`}
+                    className="visa-option-card"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 + 0.3 }}
+                    whileHover={{ x: 4 }}
+                  >
+                    <div className="visa-option-left">
+                      <div className={`visa-indicator visa-indicator-${getVisaStateColor(visa)}`} />
+                      <div className="visa-option-info">
+                        <h4>{visa.visa_type || "Visa Option"}</h4>
+                        <div className="visa-meta">
+                          <span><FiClock /> {visa.estimated_timeline || "Varies"}</span>
+                          <span><FiTrendingUp /> {visa.estimated_costs || "Varies"}</span>
+                    </div>
+                      </div>
+                    </div>
+                    <Link
+                      to={`/checklist/${encodeURIComponent(visa.visa_type || "visa")}`}
+                      state={{ visaOption: visa }}
+                      className="visa-option-action"
+                    >
+                      <FiArrowRight />
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </motion.div>
 
-                  // Handle missing or invalid data
-                  if (!checklist) {
-                    console.warn(
-                      `Checklist at index ${index} is null/undefined`
-                    );
-                    return null;
-                  }
+          {/* Active Checklists */}
+          <motion.div className="bento-card bento-checklists" variants={scaleIn}>
+            <div className="bento-card-header">
+              <div className="bento-icon bento-icon-emerald">
+                <FiCheckCircle />
+                </div>
+              <h3>Active Checklists</h3>
+              </div>
 
-                  const visaType =
-                    checklist.visa_type ||
-                    checklist.visaType ||
-                    `Checklist ${index + 1}`;
-                  const progressJson =
-                    checklist.progress_json || checklist.progressJson || {};
+            {loadingChecklists ? (
+              <div className="bento-loading">
+                <div className="loading-pulse" />
+              </div>
+            ) : activeChecklistsWithProgress.length === 0 ? (
+              <div className="bento-empty compact">
+                <FiTarget className="empty-icon-small" />
+                <p>No active checklists yet</p>
+                <Link to="/recommendation" className="empty-action-small">Get recommendations first</Link>
+              </div>
+            ) : (
+              <div className="checklists-compact">
+                {activeChecklistsWithProgress.slice(0, 3).map((checklist, index) => {
+                  const visaType = checklist.visa_type || checklist.visaType;
+                  const progressJson = checklist.progress_json || checklist.progressJson || {};
                   const progressPercent = getChecklistProgress(progressJson);
-                  const completedCount = Object.values(progressJson).filter(
-                    (v) => v === true
-                  ).length;
-                  const totalCount = Object.keys(progressJson).length || 0;
-                  const estimatedTime = calculateEstimatedRemainingTime(
-                    visaType,
-                    progressJson
-                  );
-
-                  console.log(`Checklist ${index} details:`, {
-                    visaType,
-                    progressPercent,
-                    completedCount,
-                    totalCount,
-                    progressJson,
-                    estimatedTime,
-                  });
+                  const estimatedTime = calculateEstimatedRemainingTime(visaType, progressJson);
 
                   return (
                     <Link
                       key={checklist.id || `checklist-${index}`}
                       to={`/checklist/${encodeURIComponent(visaType)}`}
-                      className={`checklist-card scroll-animate ${progressPercent === 100 ? 'checklist-completed' : ''}`}
+                      className="checklist-compact-item"
                     >
-                      <div className="checklist-card-header">
-                        <div className={`checklist-icon ${progressPercent === 100 ? 'completed' : ''}`}>
-                          {progressPercent === 100 ? (
-                            <FiCheckCircle />
-                          ) : (
-                            <FiTarget />
-                          )}
+                      <div className="checklist-compact-info">
+                        <span className="checklist-name">{visaType}</span>
+                        <span className="checklist-percent">{progressPercent}%</span>
                         </div>
-                        <div className="checklist-title-section">
-                          <h3>{visaType}</h3>
-                          <p className="checklist-meta">
-                            {totalCount > 0 ? (
-                              <>
-                                <span className="checklist-stats">
-                                  <FiTrendingUp className="stats-icon" />
-                                  {completedCount} of {totalCount} steps
-                                </span>
-                              </>
-                            ) : (
-                              "Getting started..."
-                            )}
-                          </p>
+                      <div className="checklist-bar-container">
+                        <motion.div 
+                          className="checklist-bar-fill"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${progressPercent}%` }}
+                          transition={{ duration: 1, delay: index * 0.1 + 0.5 }}
+                          />
                         </div>
+                      {estimatedTime !== "—" && (
+                        <div className="checklist-time">
+                            <FiClock /> {estimatedTime}
                       </div>
-                      
-                      <div className="checklist-progress-container">
-                        <div className="checklist-progress-header">
-                          <span className="progress-label">Progress</span>
-                          <span className="progress-percentage">{progressPercent}%</span>
-                        </div>
-                        <div className="checklist-progress-bar">
-                          <div
-                            className="checklist-progress-fill"
-                            style={{ width: `${Math.max(progressPercent, 0)}%` }}
-                          >
-                            {progressPercent > 0 && (
-                              <div className="progress-shine"></div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="checklist-footer">
-                        <div className="checklist-progress-info">
-                          {estimatedTime !== "—" &&
-                            estimatedTime !== "Completed" && (
-                              <div className="checklist-time-badge">
-                                <FiClock className="clock-icon" />
-                                <span>{estimatedTime}</span>
-                              </div>
-                            )}
-                          {estimatedTime === "Completed" && (
-                            <div className="checklist-completed-badge">
-                              <FiCheckCircle className="check-icon" />
-                              <span>All done!</span>
-                            </div>
-                          )}
-                          {totalCount > 0 && (
-                            <div className="checklist-steps-badge">
-                              <FiCalendar className="calendar-icon" />
-                              <span>{totalCount - completedCount} remaining</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="checklist-action">
-                          <span className="action-text">View Details</span>
-                          <FiArrowRight className="arrow-icon" />
-                        </div>
-                      </div>
+                      )}
                     </Link>
                   );
-                })
-                .filter(Boolean)
+                })}
+              </div>
             )}
-          </div>
-        </div>
-      ) : null}
+          </motion.div>
 
-      {/* Recent Conversations Section (for users) */}
-      {user?.role === "USER" && (
-        <div className="home-section">
-          <div className="section-header">
-            <h2>Recent Messages</h2>
-            <Link to="/messages" className="link-primary">
-              View All <FiArrowRight />
-            </Link>
-          </div>
-
-          {loadingConversations ? (
-            <div className="empty-state">
-              <p>Loading conversations...</p>
-            </div>
-          ) : conversations.length === 0 ? (
-            <div className="empty-state">
-              <FiMessageCircle size={48} style={{ color: "#999", marginBottom: "1rem" }} />
-              <p>No conversations yet</p>
-              <Link to="/agents" className="btn-primary">
-                Find a Travel Agent
+          {/* Documents Overview */}
+          <motion.div className="bento-card bento-documents" variants={scaleIn}>
+            <div className="bento-card-header">
+              <div className="bento-icon bento-icon-sky">
+                <FiFolder />
+              </div>
+              <h3>Documents</h3>
+              <Link to="/documents" className="bento-card-link">
+                Manage <FiChevronRight />
               </Link>
             </div>
-          ) : (
-            <div className="conversations-preview-grid">
-              {conversations.slice(0, 3).map((conv) => {
-                const formatTime = (dateString) => {
-                  if (!dateString) return "Just now";
-                  
-                  try {
-                    let date;
-                    if (typeof dateString === "string") {
-                      const cleanDate = dateString.replace(/Z$/, "");
-                      date = new Date(cleanDate);
-                    } else if (dateString instanceof Date) {
-                      date = dateString;
-                    } else {
-                      date = new Date(dateString);
-                    }
+            
+            {loadingDocuments ? (
+              <div className="bento-loading">
+                <div className="loading-pulse" />
+              </div>
+            ) : documents.length === 0 ? (
+              <div className="bento-empty compact">
+                <FiUpload className="empty-icon-small" />
+                <p>No documents uploaded</p>
+                <Link to="/documents" className="empty-action-small">Upload documents</Link>
+              </div>
+            ) : (
+              <div className="documents-compact">
+                <div className="documents-summary">
+                  <div className="doc-stat">
+                    <FiFileText />
+                    <span>{documents.length} files</span>
+                  </div>
+                </div>
+                <div className="recent-docs-list">
+                  {documents.slice(0, 3).map((doc, index) => (
+                    <div key={doc.id || index} className="recent-doc-item">
+                      <FiFileText className="doc-icon" />
+                      <span className="doc-name">{doc.original_filename || doc.name || "Document"}</span>
+                    </div>
+                  ))}
+                </div>
+                <Link to="/documents" className="view-all-docs">
+                  View all documents <FiArrowRight />
+                </Link>
+              </div>
+            )}
+          </motion.div>
 
-                    if (isNaN(date.getTime())) {
-                      return "Just now";
-                    }
+          {/* Quick Actions */}
+          <motion.div className="bento-card bento-actions" variants={scaleIn}>
+            <div className="bento-card-header">
+              <div className="bento-icon bento-icon-violet">
+                <FiZap />
+            </div>
+              <h3>Quick Actions</h3>
+                  </div>
+            <div className="quick-actions-grid">
+              <Link to="/recommendation" className="quick-action-item">
+                <div className="quick-action-icon qa-coral">
+                  <FiCompass />
+                  </div>
+                <span>Recommendations</span>
+                </Link>
+              <Link to="/documents" className="quick-action-item">
+                <div className="quick-action-icon qa-emerald">
+                  <FiFolder />
+                </div>
+                <span>Documents</span>
+              </Link>
+              <Link to="/messages" className="quick-action-item">
+                <div className="quick-action-icon qa-violet">
+                  <FiMessageCircle />
+                </div>
+                <span>Messages</span>
+                {unreadCount > 0 && (
+                  <span className="qa-badge">{unreadCount}</span>
+                )}
+              </Link>
+              <Link to="/profile" className="quick-action-item">
+                <div className="quick-action-icon qa-sky">
+                  <FiEdit3 />
+                </div>
+                <span>Edit Profile</span>
+              </Link>
+              {user?.role !== "TRAVEL_AGENT" && (
+                <Link to="/agents" className="quick-action-item">
+                  <div className="quick-action-icon qa-amber">
+                    <FiUsers />
+                  </div>
+                  <span>Find Agent</span>
+                </Link>
+              )}
+              <Link to="/faq" className="quick-action-item">
+                <div className="quick-action-icon qa-rose">
+                  <FiBookOpen />
+            </div>
+                <span>FAQ & Help</span>
+              </Link>
+            </div>
+          </motion.div>
 
-                    const now = new Date();
-                    const diffMs = now - date;
-                    
-                    if (diffMs < 0) {
-                      return "Just now";
-                    }
+          {/* Tips Card */}
+          <motion.div className="bento-card bento-tips" variants={scaleIn}>
+            <div className="bento-card-header">
+              <div className="bento-icon bento-icon-rose">
+                <FiInfo />
+              </div>
+              <h3>Migration Tips</h3>
+            </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentTipIndex}
+                className="tip-content"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+              >
+                <div className="tip-icon-large">
+                  <currentTip.icon />
+                </div>
+                <h4>{currentTip.title}</h4>
+                <p>{currentTip.desc}</p>
+              </motion.div>
+            </AnimatePresence>
+            <div className="tip-indicators">
+              {migrationTips.map((_, idx) => (
+                <button 
+                  key={idx}
+                  className={`tip-dot ${idx === currentTipIndex ? 'active' : ''}`}
+                  onClick={() => setCurrentTipIndex(idx)}
+                />
+              ))}
+            </div>
+          </motion.div>
 
-                    const diffMins = Math.floor(diffMs / 60000);
+          {/* Messages Preview */}
+          {user?.role === "USER" && (
+            <motion.div className="bento-card bento-messages" variants={scaleIn}>
+              <div className="bento-card-header">
+                <div className="bento-icon bento-icon-amber">
+                  <FiMessageCircle />
+                </div>
+                <h3>Recent Messages</h3>
+                <Link to="/messages" className="bento-card-link">
+                  View All <FiChevronRight />
+                </Link>
+              </div>
 
-                    // Less than 1 minute: "Just now"
-                    if (diffMins < 1) return "Just now";
-                    
-                    // 1 minute or more: Show time in HH:MM format
-                    const hours = date.getHours().toString().padStart(2, "0");
-                    const minutes = date.getMinutes().toString().padStart(2, "0");
-                    return `${hours}:${minutes}`;
-                  } catch (error) {
-                    return "Just now";
-                  }
-                };
-
-                return (
-                  <Link
-                    key={conv.id}
-                    to={`/messages/${conv.id}`}
-                    className="conversation-preview-card"
-                  >
-                    <div className="conversation-preview-header">
-                      <div className="conversation-preview-avatar">
-                        <FiUser />
+              {loadingConversations ? (
+                <div className="bento-loading">
+                  <div className="loading-pulse" />
+                </div>
+              ) : conversations.length === 0 ? (
+                <div className="bento-empty compact">
+                  <FiSend className="empty-icon-small" />
+                  <p>No conversations yet</p>
+                  <Link to="/agents" className="empty-action-small">Find an Agent</Link>
+                </div>
+              ) : (
+                <div className="messages-compact">
+                  {conversations.slice(0, 3).map((conv) => (
+                    <Link
+                      key={conv.id}
+                      to={`/messages/${conv.id}`}
+                      className="message-compact-item"
+                    >
+                      <div className="message-avatar-mini">
+                        {conv.agent_name?.charAt(0) || "A"}
                       </div>
-                      <div className="conversation-preview-info">
-                        <div className="conversation-preview-name-group">
-                          <h4>{conv.agent_name || conv.agent_business_name || "Travel Agent"}</h4>
-                          {conv.agent_business_name && conv.agent_owner_name && (
-                            <span className="conversation-preview-subtitle">
-                              {conv.agent_owner_name}
-                            </span>
-                          )}
+                      <div className="message-compact-content">
+                        <div className="message-compact-top">
+                          <span className="message-sender">{conv.agent_name || "Agent"}</span>
+                          <span className="message-time">{formatTime(conv.last_message_at)}</span>
                         </div>
-                        <span className="conversation-preview-time">
-                          {formatTime(conv.last_message_at)}
-                        </span>
+                        <p className="message-preview-text">{conv.last_message_preview || "No messages yet"}</p>
                       </div>
                       {conv.unread_count > 0 && (
-                        <div className="conversation-preview-badge">
-                          {conv.unread_count}
-                        </div>
+                        <span className="message-unread-dot" />
                       )}
-                    </div>
-                    <p className="conversation-preview-text">
-                      {conv.last_message_preview || "No messages yet"}
-                    </p>
-                  </Link>
-                );
-              })}
-            </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </motion.div>
           )}
-        </div>
-      )}
 
-      <div className="home-section">
-        <div className="section-header">
-          <h2>Quick Actions</h2>
+          {/* Popular Destinations */}
+          <motion.div className="bento-card bento-destinations" variants={scaleIn}>
+            <div className="bento-card-header">
+              <div className="bento-icon bento-icon-emerald">
+                <FiMapPin />
         </div>
-        <div className="quick-actions">
-          <Link to="/recommendation" className="action-card">
-            <div className="action-icon blue">
-              <FiFileText />
-            </div>
-            <h3>Get Recommendation</h3>
-            <p>Find the best visa options for you</p>
-          </Link>
-          <Link to="/documents" className="action-card">
-            <div className="action-icon purple">
-              <FiFileText />
-            </div>
-            <h3>Manage Documents</h3>
-            <p>Upload and organize your visa documents</p>
-          </Link>
-          <Link to="/messages" className="action-card">
-            <div className="action-icon green">
-              <FiMessageCircle />
-            </div>
-            <h3>Messages</h3>
-            <p>Chat with travel agents</p>
-          </Link>
-          <Link to="/profile" className="action-card">
-            <div className="action-icon teal">
-              <FiCheckCircle />
-            </div>
-            <h3>Update Profile</h3>
-            <p>Keep your information up to date</p>
-          </Link>
-          {user?.role !== "TRAVEL_AGENT" && (
-            <Link to="/agents" className="action-card">
-              <div className="action-icon orange">
-                <FiMessageCircle />
-              </div>
-              <h3>Talk to a Travel Agent</h3>
-              <p>Get personalized help from experts</p>
-            </Link>
-          )}
-        </div>
+              <h3>Popular Destinations</h3>
       </div>
+            <div className="destinations-list">
+              {popularDestinations.slice(0, 4).map((dest, index) => (
+                <motion.div 
+                  key={dest.country}
+                  className="destination-item"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.08 + 0.3 }}
+                >
+                  <span className="dest-flag">{dest.flag}</span>
+                  <div className="dest-info">
+                    <span className="dest-name">{dest.country}</span>
+                    <span className="dest-meta">{dest.visaTypes} visa types • {dest.avgTime}</span>
     </div>
+                  <FiChevronRight className="dest-arrow" />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Explore Card */}
+          <motion.div className="bento-card bento-explore" variants={scaleIn}>
+            <div className="explore-content">
+              <div className="explore-icon">
+                <FiGlobe />
+              </div>
+              <h3>Explore More Options</h3>
+              <p>Discover new visa pathways and opportunities tailored to your profile</p>
+              <Link to="/recommendation" className="explore-btn">
+                <span>Explore Now</span>
+                <FiArrowRight />
+              </Link>
+            </div>
+            <div className="explore-decoration">
+              <div className="deco-circle deco-1" />
+              <div className="deco-circle deco-2" />
+              <div className="deco-circle deco-3" />
+            </div>
+          </motion.div>
+
+          {/* Profile Completion Card */}
+          <motion.div className="bento-card bento-profile-completion" variants={scaleIn}>
+            <div className="bento-card-header">
+              <div className="bento-icon bento-icon-violet">
+                <FiUser />
+              </div>
+              <h3>Complete Your Profile</h3>
+            </div>
+            <div className="profile-completion-detail">
+              <div className="completion-ring-container">
+                <svg className="completion-ring" viewBox="0 0 80 80">
+                  <circle className="completion-ring-bg" cx="40" cy="40" r="32" />
+                  <motion.circle 
+                    className="completion-ring-fill"
+                    cx="40" 
+                    cy="40" 
+                    r="32"
+                    initial={{ strokeDashoffset: 201 }}
+                    animate={{ strokeDashoffset: 201 - (201 * profileCompletion / 100) }}
+                    transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
+                  />
+                </svg>
+                <span className="completion-ring-text">{profileCompletion}%</span>
+              </div>
+              <div className="completion-info">
+                <p>A complete profile helps us provide better recommendations</p>
+                <Link to="/profile" className="complete-profile-btn">
+                  <FiEdit3 />
+                  <span>Complete Profile</span>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Agent Connect Card (for users) */}
+          {user?.role !== "TRAVEL_AGENT" && (
+            <motion.div className="bento-card bento-agent-cta" variants={scaleIn}>
+              <div className="agent-cta-content">
+                <div className="agent-cta-icon">
+                  <FiUsers />
+                </div>
+                <h3>Need Expert Help?</h3>
+                <p>Connect with verified travel agents who specialize in your destination</p>
+                <Link to="/agents" className="agent-cta-btn">
+                  <span>Find an Agent</span>
+                  <FiArrowRight />
+                </Link>
+              </div>
+              <div className="agent-cta-badges">
+                <span className="cta-badge"><FiShield /> Verified</span>
+                <span className="cta-badge"><FiStar /> Expert</span>
+                <span className="cta-badge"><FiMessageCircle /> 24/7</span>
+              </div>
+            </motion.div>
+          )}
+
+        </motion.div>
+      </div>
+    </motion.div>
   );
 }
 

@@ -26,6 +26,7 @@ import TravelAgentProfile from "./pages/TravelAgentProfile";
 import Layout from "./components/Layout";
 import TravelAgentLayout from "./components/TravelAgentLayout";
 import RoleBasedRedirect from "./components/RoleBasedRedirect";
+import JapaChatbot from "./components/JapaChatbot";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { initScrollAnimations } from "./utils/scrollAnimation";
 
@@ -267,6 +268,7 @@ function App() {
     <AuthProvider>
       <Router>
         <AppRoutes />
+        <JapaChatbot />
       </Router>
     </AuthProvider>
   );

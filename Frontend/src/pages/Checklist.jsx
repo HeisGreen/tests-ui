@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import { recommendationsAPI, checklistProgressAPI } from "../utils/api";
 import {
   FiAlertCircle,
   FiArrowLeft,
+  FiArrowRight,
   FiCheckCircle,
   FiCircle,
   FiFileText,
@@ -13,6 +15,8 @@ import {
   FiBriefcase,
   FiBookOpen,
   FiLoader,
+  FiDollarSign,
+  FiTarget,
 } from "react-icons/fi";
 import { initScrollAnimations } from "../utils/scrollAnimation";
 import "./Checklist.css";
@@ -621,9 +625,15 @@ function Checklist() {
 
   return (
     <div className="checklist-page">
-      <Link to="/recommendation" className="back-link">
-        <FiArrowLeft /> Back to Recommendations
-      </Link>
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <Link to="/recommendation" className="back-link">
+          <FiArrowLeft /> Back to Recommendations
+        </Link>
+      </motion.div>
 
       {loading ? (
         <div className="loading-state">
@@ -652,107 +662,112 @@ function Checklist() {
         </div>
       ) : error ? (
         <div className="error-state">
-          <FiAlertCircle style={{ fontSize: "2rem", color: "#E74C3C" }} />
+          <FiAlertCircle />
           <p>{error}</p>
-          <Link to="/recommendation">Back to Recommendations</Link>
+          <Link to="/recommendation">
+            <FiArrowLeft /> Back to Recommendations
+          </Link>
         </div>
       ) : (
         <>
-          <div className="checklist-header">
+          <motion.div 
+            className="checklist-header"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <div>
               <h1>{visaOption?.visa_type || visaType || "Checklist"}</h1>
               <p className="visa-subtitle">
                 {visaOption?.likelihood
-                  ? `Prediction: ${String(visaOption.likelihood).replaceAll(
+                  ? `Eligibility: ${String(visaOption.likelihood).replaceAll(
                       "_",
                       " "
-                    )}`
-                  : "Personalized checklist from your recommendation"}
+                    ).charAt(0).toUpperCase() + String(visaOption.likelihood).replaceAll("_", " ").slice(1)}`
+                  : "Your personalized application roadmap"}
               </p>
             </div>
             <div className="progress-summary">
               <div className="progress-circle">
                 <svg
                   className="progress-ring"
-                  width="120"
-                  height="120"
-                  viewBox="0 0 120 120"
+                  width="140"
+                  height="140"
+                  viewBox="0 0 140 140"
                 >
-                  {/* Background circle - always visible */}
                   <circle
                     className="progress-ring-circle-bg"
-                    stroke="var(--accent-surface)"
-                    strokeWidth="8"
-                    fill="none"
-                    r="52"
-                    cx="60"
-                    cy="60"
+                    r="60"
+                    cx="70"
+                    cy="70"
                   />
-                  {/* Progress circle - shows completion */}
                   <circle
                     className="progress-ring-circle"
-                    stroke="var(--accent)"
-                    strokeWidth="8"
-                    fill="none"
-                    r="52"
-                    cx="60"
-                    cy="60"
-                    strokeDasharray={`${finalDashLength} ${finalCircumference}`}
+                    r="60"
+                    cx="70"
+                    cy="70"
+                    strokeDasharray={`${(progressPercent / 100) * (2 * Math.PI * 60)} ${2 * Math.PI * 60}`}
                     strokeDashoffset="0"
-                    transform="rotate(-90 60 60)"
                   />
                 </svg>
                 <div className="progress-text">
-                  <span
-                    className="progress-number"
-                    style={{
-                      display: "block",
-                      color: "var(--accent)",
-                      fontSize: "1.8rem",
-                      fontWeight: "bold",
-                    }}
-                  >
+                  <span className="progress-number">
                     {progress || 0}%
                   </span>
-                  <span
-                    className="progress-label"
-                    style={{
-                      display: "block",
-                      color: "#666666",
-                      fontSize: "0.85rem",
-                    }}
-                  >
+                  <span className="progress-label">
                     Complete
                   </span>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="visa-info-card">
+          <motion.div 
+            className="visa-info-card"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
             <div className="info-row">
               <div className="info-col">
-                <span className="info-label">Processing Time</span>
+                <span className="info-label">
+                  <FiClock style={{ marginRight: '6px', opacity: 0.6 }} />
+                  Est. Time Remaining
+                </span>
                 <span className="info-value">{processingTime}</span>
               </div>
               <div className="info-col">
-                <span className="info-label">Cost</span>
+                <span className="info-label">
+                  <FiDollarSign style={{ marginRight: '6px', opacity: 0.6 }} />
+                  Estimated Cost
+                </span>
                 <span className="info-value">
                   {visaOption?.estimated_costs || "—"}
                 </span>
               </div>
               <div className="info-col">
-                <span className="info-label">Next Step</span>
+                <span className="info-label">
+                  <FiTarget style={{ marginRight: '6px', opacity: 0.6 }} />
+                  Next Action
+                </span>
                 <span className="info-value">{getNextStep()}</span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="checklist-section">
+          <motion.div 
+            className="checklist-section"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             <div className="section-header">
-              <h2>Step-by-Step Application Guide</h2>
+              <h2>
+                <FiTarget className="section-icon" />
+                Step-by-Step Application Guide
+              </h2>
               <span className="checklist-count">
-                {completedCount} of {checklist.length} steps completed
+                {completedCount} of {checklist.length} completed
               </span>
             </div>
 
@@ -886,12 +901,17 @@ function Checklist() {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
 
-          <div className="requirements-section">
+          <motion.div 
+            className="requirements-section"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
             <h2>
               <FiInfo className="section-icon" />
-              Eligibility Requirements
+              Key Points & Requirements
             </h2>
             <ul className="requirements-list">
               {(Array.isArray(visaOption?.risk_flags)
@@ -907,20 +927,25 @@ function Checklist() {
               visaOption.risk_flags.length === 0 ? (
                 <li>
                   <FiCheckCircle className="check-icon" />
-                  No additional key points provided.
+                  Review the checklist steps above for detailed requirements.
                 </li>
               ) : null}
             </ul>
-          </div>
+          </motion.div>
 
-          <div className="documents-section">
+          <motion.div 
+            className="documents-section"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
             <div className="section-header">
               <h2>
                 <FiFileText className="section-icon" />
                 Required Documents
               </h2>
               <Link to="/documents" className="link-primary">
-                Manage Documents
+                Manage Documents <FiArrowRight />
               </Link>
             </div>
             <div className="documents-grid">
@@ -928,24 +953,26 @@ function Checklist() {
                 ? visaOption.requirements
                 : []
               ).map((doc, index) => (
-                <div
+                <motion.div
                   key={index}
-                  className={`document-card scroll-animate scroll-animate-delay-${
-                    (index % 4) + 1
-                  }`}
+                  className="document-card"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: 0.4 + index * 0.05 }}
+                  whileHover={{ y: -4 }}
                 >
                   <FiFileText className="doc-icon" />
                   <span>{doc}</span>
-                </div>
+                </motion.div>
               ))}
               {!Array.isArray(visaOption?.requirements) ||
               visaOption.requirements.length === 0 ? (
                 <div className="empty-state">
-                  <p>No document list provided.</p>
+                  <p>Documents will be listed in each checklist step above.</p>
                 </div>
               ) : null}
             </div>
-          </div>
+          </motion.div>
         </>
       )}
     </div>

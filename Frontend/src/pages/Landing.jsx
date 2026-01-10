@@ -1,38 +1,75 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import {
-  FiCheckCircle,
+  FiArrowRight,
+  FiCheck,
   FiGlobe,
   FiClock,
   FiShield,
   FiMail,
-  FiPhone,
   FiMapPin,
-  FiGithub,
-  FiTwitter,
-  FiLinkedin,
-  FiInstagram,
   FiUsers,
   FiBriefcase,
   FiZap,
-  FiSmile,
   FiLock,
   FiStar,
+  FiFileText,
+  FiTarget,
+  FiCompass,
+  FiAward,
 } from "react-icons/fi";
-import { initScrollAnimations } from "../utils/scrollAnimation";
+import { FaXTwitter, FaLinkedinIn, FaInstagram } from "react-icons/fa6";
 import logoMark from "../assets/japa-logo.png";
-import heroVideo from "../assets/japa-bg.mp4";
-import { services } from "../data/services";
 import "./Landing.css";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0 }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1
+    }
+  }
+};
+
+const AnimatedSection = ({ children, className, delay = 0 }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  
+  return (
+    <motion.div
+      ref={ref}
+      initial="hidden"
+      animate={isInView ? "visible" : "hidden"}
+      variants={fadeInUp}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 function Landing() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    initScrollAnimations();
-  }, []);
+  const heroRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  });
+  
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
+  const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 100]);
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
@@ -42,486 +79,458 @@ function Landing() {
     }
   };
 
-  const howWorksSteps = [
+  const features = [
     {
-      id: 1,
-      title: "Build your migration profile",
-      description:
-        "Share your nationality, education, work history, finances, and goals so we can recommend the right pathways.",
-      icon: FiUsers,
-      cta: "Get started",
+      icon: FiCompass,
+      title: "Pathway Discovery",
+      description: "AI analyzes your profile to reveal realistic visa routes you never knew existed.",
+      accent: "coral"
     },
     {
-      id: 2,
-      title: "Discover your migration pathways",
-      description:
-        "JAPA analyzes your profile and recommends realistic visa and immigration options, including side-by-side alternatives.",
-      icon: FiGlobe,
+      icon: FiTarget,
+      title: "Smart Matching",
+      description: "Get personalized recommendations based on 50+ eligibility factors.",
+      accent: "mint"
     },
     {
-      id: 3,
-      title: "Follow a guided migration plan",
-      description:
-        "Receive checklists, document reminders, timelines, and AI guidance for every milestone.",
+      icon: FiFileText,
+      title: "Document Mastery",
+      description: "Never miss a document. Track, organize, and prepare with precision.",
+      accent: "lavender"
+    },
+    {
       icon: FiClock,
-    },
-    {
-      id: 4,
-      title: "Prepare for interviews and decisions",
-      description:
-        "From applications to embassy interviews, JAPA helps you stay ready and confident.",
-      icon: FiStar,
-    },
+      title: "Timeline Intelligence",
+      description: "Automated reminders and milestones keep your journey on track.",
+      accent: "amber"
+    }
   ];
 
-  const iconMap = {
-    FiCheckCircle,
-    FiGlobe,
-    FiClock,
-    FiShield,
-    FiUsers,
-    FiBriefcase,
-    FiZap,
-    FiSmile,
-    FiLock,
-    FiStar,
-  };
+  const steps = [
+    {
+      number: "01",
+      title: "Build Your Profile",
+      description: "Share your background, skills, and migration goals in our intelligent questionnaire."
+    },
+    {
+      number: "02",
+      title: "Get Matched",
+      description: "Our AI cross-references your profile against global visa programs to find your best options."
+    },
+    {
+      number: "03",
+      title: "Plan Your Journey",
+      description: "Receive a personalized roadmap with checklists, timelines, and expert guidance."
+    },
+    {
+      number: "04",
+      title: "Move Forward",
+      description: "Execute your plan with confidence, supported by tools and resources at every step."
+    }
+  ];
+
+  const audiences = [
+    { icon: FiUsers, label: "Students", desc: "Study abroad pathways" },
+    { icon: FiBriefcase, label: "Professionals", desc: "Work visa routes" },
+    { icon: FiZap, label: "Entrepreneurs", desc: "Business immigration" },
+    { icon: FiGlobe, label: "Families", desc: "Family sponsorship" },
+    { icon: FiAward, label: "Talent", desc: "Exceptional ability" },
+    { icon: FiCompass, label: "Explorers", desc: "Digital nomad visas" }
+  ];
+
+  const trustItems = [
+    { icon: FiShield, title: "Not Legal Advice", desc: "Guidance & structure, not representation" },
+    { icon: FiLock, title: "Privacy First", desc: "Your data stays secure and private" },
+    { icon: FiStar, title: "No Guarantees", desc: "We inform, you decide" },
+    { icon: FiCheck, title: "Full Transparency", desc: "Clear about what we can and can't do" }
+  ];
 
   return (
-    <div className="landing">
-      <nav className="landing-nav">
-        <div className="landing-nav-container container">
-          <Link to="/" className="logo">
-            <img className="logo-mark" src={logoMark} alt="JAPA logo" />
+    <div className="landing-redesign">
+      {/* Ambient Background */}
+      <div className="ambient-bg">
+        <div className="gradient-orb orb-1"></div>
+        <div className="gradient-orb orb-2"></div>
+        <div className="gradient-orb orb-3"></div>
+        <div className="noise-overlay"></div>
+      </div>
+
+      {/* Navigation */}
+      <motion.nav 
+        className="nav-glass"
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <div className="nav-inner">
+          <Link to="/" className="nav-logo">
+            <img src={logoMark} alt="JAPA" className="nav-logo-img" />
           </Link>
-          <div className="landing-nav-links">
+          <div className="nav-links">
+            <Link to="/services" className="nav-link">Services</Link>
             {isAuthenticated ? (
-              <>
-                <Link to="/services" className="nav-link-text">
-                  Services
-                </Link>
-                <Link to="/home" className="btn-primary">
-                  Dashboard
-                </Link>
-              </>
+              <Link to="/home" className="nav-cta">
+                <span>Dashboard</span>
+                <FiArrowRight />
+              </Link>
             ) : (
               <>
-                <Link to="/services" className="nav-link-text">
-                  Services
-                </Link>
-                <Link to="/login" className="nav-link-text">
-                  Log in
-                </Link>
-                <Link to="/register" className="btn-primary">
-                  Sign up
-                </Link>
+                <Link to="/login" className="nav-link">Sign in</Link>
+                <button onClick={handleGetStarted} className="nav-cta">
+                  <span>Get Started</span>
+                  <FiArrowRight />
+                </button>
               </>
             )}
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
-      <section className="hero">
-        <video className="hero-video" autoPlay loop muted playsInline>
-          <source src={heroVideo} type="video/mp4" />
-        </video>
-        <div className="hero-overlay"></div>
-        <div className="hero-content container">
-          <div className="hero-panel">
-            <h1 className="hero-title">
-              Navigate migration with <span>clarity</span>, not confusion.
-            </h1>
-            <p className="hero-subtitle">
-              JAPA is an AI-powered migration assistant that guides you through
-              visas, documents, interviews, and immigration pathways — step by
-              step.
-            </p>
-            <div className="hero-actions">
-              <button onClick={handleGetStarted} className="btn-hero">
-                Get started for free
-              </button>
-            </div>
-          </div>
-          <div className="hero-scroll-indicator">
-            <a className="scroll-link" href="#how-japa-works">
+      {/* Hero Section */}
+      <section className="hero-section" ref={heroRef}>
+        <motion.div 
+          className="hero-content"
+          style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
+        >
+          <motion.div
+            className="hero-badge"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <span className="badge-dot"></span>
+            <span>AI-Powered Migration Assistant</span>
+          </motion.div>
+          
+          <motion.h1 
+            className="hero-title"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          >
+            Navigate your
+            <span className="title-gradient"> migration journey </span>
+            with clarity
+          </motion.h1>
+          
+          <motion.p 
+            className="hero-subtitle"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+          >
+            Stop guessing. Start moving. JAPA analyzes your profile and maps 
+            personalized visa pathways — so you know exactly what to do next.
+          </motion.p>
+          
+          <motion.div 
+            className="hero-actions"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.7 }}
+          >
+            <button onClick={handleGetStarted} className="btn-primary-hero">
+              <span>Start Free Assessment</span>
+              <FiArrowRight className="btn-icon" />
+            </button>
+            <a href="#how-it-works" className="btn-secondary-hero">
               <span>See How It Works</span>
-              <span className="arrow-down" aria-hidden="true">
-                ↓
-              </span>
             </a>
-          </div>
+          </motion.div>
+
+          <motion.div 
+            className="hero-stats"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.9 }}
+          >
+            <div className="stat-item">
+              <span className="stat-number">195+</span>
+              <span className="stat-label">Countries Covered</span>
+            </div>
+            <div className="stat-divider"></div>
+            <div className="stat-item">
+              <span className="stat-number">500+</span>
+              <span className="stat-label">Visa Programs</span>
+            </div>
+            <div className="stat-divider"></div>
+            <div className="stat-item">
+              <span className="stat-number">24/7</span>
+              <span className="stat-label">AI Assistance</span>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        <div className="hero-scroll-hint">
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="scroll-indicator"
+          >
+            <span>Scroll to explore</span>
+            <div className="scroll-line"></div>
+          </motion.div>
         </div>
       </section>
 
-      <section className="why-we-exist">
+      {/* Problem Statement */}
+      <section className="section-dark">
         <div className="container">
-          <h2 className="section-title underline">
-            Migration is complex. The information shouldn’t be.
-          </h2>
-          <div className="mission-box">
-            <div className="mission-copy">
-              <p>
-                Migrating to another country often means unclear requirements,
-                conflicting advice, scattered documents, and costly mistakes.
-                Many people don’t fail because they’re unqualified — they fail
-                because the migration process is hard to navigate.
-              </p>
-              <p>
-                Most tools stop at eligibility checks or generic advice.{" "}
-                <strong>JAPA exists</strong> to bring structure and clarity to
-                migration — pathway options, a guided plan, and the tools to
-                stay organized in one place.
-              </p>
-              <p>It’s not about shortcuts. It’s about doing migration right.</p>
+          <AnimatedSection>
+            <div className="problem-grid">
+              <div className="problem-text">
+                <span className="section-label">The Challenge</span>
+                <h2 className="section-heading">
+                  Migration is complex.<br/>
+                  <span className="text-muted">Information shouldn't be.</span>
+                </h2>
+                <p className="section-body">
+                  Unclear requirements. Conflicting advice. Scattered documents. 
+                  Most people don't fail because they're unqualified — they fail 
+                  because the process is impossible to navigate alone.
+                </p>
+                <p className="section-body accent-text">
+                  JAPA exists to change that.
+                </p>
+              </div>
+              <div className="problem-visual">
+                <div className="visual-card card-1">
+                  <FiGlobe />
+                  <span>Complex Requirements</span>
+                </div>
+                <div className="visual-card card-2">
+                  <FiFileText />
+                  <span>Scattered Documents</span>
+                </div>
+                <div className="visual-card card-3">
+                  <FiClock />
+                  <span>Missed Deadlines</span>
+                </div>
+                <div className="visual-card card-solution">
+                  <FiZap />
+                  <span>JAPA Solves This</span>
+                </div>
+              </div>
             </div>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
 
-      <section className="how-we-help" id="what-is-japa">
+      {/* Features Bento Grid */}
+      <section className="section-features" id="features">
         <div className="container">
-          <h2 className="section-title underline">What is JAPA?</h2>
-          <p className="section-subtitle">
-            JAPA is your personal AI migration guide.
-          </p>
-          <div className="features-grid">
-            <div className="feature-card scroll-animate">
-              <div className="feature-icon">
-                <FiZap />
-              </div>
-              <h3>Your personal guide</h3>
-              <p>
-                It helps you understand where you qualify, how to apply, and
-                what to do next — without endless Googling, guesswork, or
-                confusion.
-              </p>
-            </div>
-            <div className="feature-card scroll-animate">
-              <div className="feature-icon">
-                <FiCheckCircle />
-              </div>
-              <h3>Prepare & organize</h3>
-              <p>
-                JAPA helps you prepare, organize, and navigate migration
-                properly with checklists, tasks, and guidance.
-              </p>
-            </div>
-            <div className="feature-card scroll-animate">
-              <div className="feature-icon">
-                <FiShield />
-              </div>
-              <h3>Not a replacement for lawyers</h3>
-              <p>
-                JAPA does not replace immigration lawyers or governments. It
-                supports you with structure and clarity when legal judgment
-                isn’t required.
-              </p>
-            </div>
-          </div>
+          <AnimatedSection>
+            <span className="section-label center">What JAPA Does</span>
+            <h2 className="section-heading center">
+              Your personal migration<br/>command center
+            </h2>
+          </AnimatedSection>
+          
+          <motion.div 
+            className="bento-grid"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+          >
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                className={`bento-card bento-card-${feature.accent}`}
+                variants={fadeInUp}
+                transition={{ duration: 0.6 }}
+                whileHover={{ y: -8, transition: { duration: 0.3 } }}
+              >
+                <div className="bento-icon">
+                  <feature.icon />
+                </div>
+                <h3 className="bento-title">{feature.title}</h3>
+                <p className="bento-desc">{feature.description}</p>
+                <div className={`bento-glow glow-${feature.accent}`}></div>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
-      <section className="unique-features" id="how-japa-works">
+      {/* How It Works */}
+      <section className="section-steps" id="how-it-works">
         <div className="container">
-          <h2 className="section-title underline">How JAPA works</h2>
-          <p className="section-subtitle">
-            A guided, step-by-step flow — from profile to pathway to plan.
-          </p>
-          <div className="how-works-flow">
-            {howWorksSteps.map((step) => {
-              const IconComponent = step.icon;
+          <AnimatedSection>
+            <span className="section-label center">The Process</span>
+            <h2 className="section-heading center">
+              Four steps to<br/>migration clarity
+            </h2>
+          </AnimatedSection>
 
-              return (
-                <div
-                  key={step.id}
-                  className="feature-card how-works-step scroll-animate"
-                >
-                  <span className="step-pill">Step {step.id}</span>
-                  <div className="feature-icon">
-                    <IconComponent />
+          <div className="steps-timeline">
+            {steps.map((step, index) => (
+              <AnimatedSection key={index} delay={index * 0.1}>
+                <div className="step-card">
+                  <div className="step-number">{step.number}</div>
+                  <div className="step-content">
+                    <h3 className="step-title">{step.title}</h3>
+                    <p className="step-desc">{step.description}</p>
                   </div>
-                  <h3>{step.title}</h3>
-                  <p>{step.description}</p>
-                  {step.cta && (
-                    <button
-                      type="button"
-                      className="step-cta"
-                      onClick={handleGetStarted}
-                    >
-                      {step.cta}
+                  {index === 0 && (
+                    <button onClick={handleGetStarted} className="step-cta">
+                      Start Now <FiArrowRight />
                     </button>
                   )}
                 </div>
-              );
-            })}
+              </AnimatedSection>
+            ))}
+            <div className="timeline-line"></div>
           </div>
         </div>
       </section>
 
-      <section className="who-we-serve">
+      {/* Audience Section */}
+      <section className="section-audience">
         <div className="container">
-          <h2 className="section-title underline">
-            Everything you need to navigate migration — in one place
-          </h2>
-          <p className="section-subtitle">
-            Tools that keep you clear, organized, and moving forward.
-          </p>
-          <div className="features-grid">
-            {services.map((service) => {
-              const IconComponent = iconMap[service.icon] || FiCheckCircle;
-              const badgeLabel =
-                service.status === "available" ? "Available" : "Coming soon";
+          <AnimatedSection>
+            <span className="section-label center">Built For</span>
+            <h2 className="section-heading center">
+              Wherever you're going,<br/>whatever your story
+            </h2>
+          </AnimatedSection>
 
-              return (
-                <div key={service.id} className="feature-card scroll-animate">
-                  <span
-                    className={`service-badge service-badge--${service.status}`}
-                  >
-                    {badgeLabel}
-                  </span>
-                  <div className="feature-icon">
-                    <IconComponent />
+          <motion.div 
+            className="audience-grid"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {audiences.map((item, index) => (
+              <motion.div
+                key={index}
+                className="audience-card"
+                variants={fadeInUp}
+                whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
+              >
+                <div className="audience-icon">
+                  <item.icon />
+                </div>
+                <span className="audience-label">{item.label}</span>
+                <span className="audience-desc">{item.desc}</span>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Trust Section */}
+      <section className="section-trust">
+        <div className="container">
+          <AnimatedSection>
+            <div className="trust-content">
+              <div className="trust-header">
+                <span className="section-label">Our Promise</span>
+                <h2 className="section-heading">
+                  Transparent about<br/>what we do
+                </h2>
+                <p className="trust-intro">
+                  JAPA helps you prepare and organize — but we're not lawyers, 
+                  and we don't guarantee outcomes. Here's exactly what to expect.
+                </p>
+              </div>
+
+              <div className="trust-grid">
+                {trustItems.map((item, index) => (
+                  <div key={index} className="trust-card">
+                    <div className="trust-icon">
+                      <item.icon />
+                    </div>
+                    <div className="trust-text">
+                      <h4>{item.title}</h4>
+                      <p>{item.desc}</p>
+                    </div>
                   </div>
-                  <h3>{service.title}</h3>
-                  <p>{service.description}</p>
-                  <button
-                    type="button"
-                    className="service-card-cta"
-                    onClick={handleGetStarted}
-                  >
-                    Sign up
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="services-cta-row">
-            <button
-              type="button"
-              className="btn-hero services-cta-primary"
-              onClick={handleGetStarted}
-            >
-              Create free account
-            </button>
-            <Link
-              to="/services"
-              className="btn-secondary services-cta-secondary"
-            >
-              View all services
-            </Link>
-          </div>
+                ))}
+              </div>
+            </div>
+          </AnimatedSection>
         </div>
       </section>
 
-      <section className="vision">
+      {/* Final CTA */}
+      <section className="section-cta">
         <div className="container">
-          <h2 className="section-title white underline">
-            Who JAPA is built for
-          </h2>
-          <p className="section-subtitle white">
-            JAPA is global by design — built for real people navigating real
-            migration journeys.
-          </p>
-          <div className="vision-grid">
-            <div className="vision-item">
-              <div className="vision-icon">
-                <FiUsers />
-              </div>
-              <h4>Students</h4>
-              <p>Planning study routes and transitions</p>
+          <AnimatedSection>
+            <div className="cta-box">
+              <div className="cta-glow"></div>
+              <h2 className="cta-heading">
+                Ready to start your<br/>migration journey?
+              </h2>
+              <p className="cta-text">
+                Join thousands navigating their path with clarity. No credit card required.
+              </p>
+              <button onClick={handleGetStarted} className="cta-button">
+                <span>Get Started Free</span>
+                <FiArrowRight />
+              </button>
             </div>
-            <div className="vision-item">
-              <div className="vision-icon">
-                <FiBriefcase />
-              </div>
-              <h4>Skilled workers</h4>
-              <p>Finding realistic work and residency pathways</p>
-            </div>
-            <div className="vision-item">
-              <div className="vision-icon">
-                <FiZap />
-              </div>
-              <h4>Founders & freelancers</h4>
-              <p>Navigating business, talent, and relocation options</p>
-            </div>
-            <div className="vision-item">
-              <div className="vision-icon">
-                <FiGlobe />
-              </div>
-              <h4>Families</h4>
-              <p>Organizing dependents, documents, and timelines</p>
-            </div>
-            <div className="vision-item">
-              <div className="vision-icon">
-                <FiClock />
-              </div>
-              <h4>Status changes</h4>
-              <p>Renewals, switches, and in-country processes</p>
-            </div>
-            <div className="vision-item">
-              <div className="vision-icon">
-                <FiMapPin />
-              </div>
-              <h4>Anyone migrating</h4>
-              <p>From one country to another — step by step</p>
-            </div>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
 
-      <section className="trust">
+      {/* Footer */}
+      <footer className="footer-modern">
         <div className="container">
-          <h2 className="section-title underline">Trust & transparency</h2>
-          <p className="section-subtitle">
-            Clear boundaries. Clear expectations.
-          </p>
-          <div className="trust-box">
-            <div className="trust-grid">
-              <div className="trust-item">
-                <FiShield className="trust-icon" />
-                <div>
-                  <h4>No legal advice</h4>
-                  <p>Guidance and organization, not legal representation</p>
-                </div>
-              </div>
-              <div className="trust-item">
-                <FiLock className="trust-icon" />
-                <div>
-                  <h4>Privacy-first</h4>
-                  <p>Secure handling of your information</p>
-                </div>
-              </div>
-              <div className="trust-item">
-                <FiStar className="trust-icon" />
-                <div>
-                  <h4>No guarantees</h4>
-                  <p>We don’t guarantee visa approvals</p>
-                </div>
-              </div>
-              <div className="trust-item">
-                <FiUsers className="trust-icon" />
-                <div>
-                  <h4>Informed decisions</h4>
-                  <p>Clarity so you can act with confidence</p>
-                </div>
-              </div>
-            </div>
-            <p className="trust-disclaimer">
-              JAPA does not provide legal advice and does not guarantee visa
-              approvals. It helps users make informed decisions, stay organized,
-              and prepare thoroughly throughout the migration process.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="cta-bottom">
-        <div className="container">
-          <h2 className="section-title white">
-            Start your migration journey with confidence.
-          </h2>
-          <p className="section-subtitle white">
-            No guesswork. No chaos. Just clarity.
-          </p>
-          <button onClick={handleGetStarted} className="btn-hero">
-            Get started for free →
-          </button>
-          <p className="cta-note">No credit card required.</p>
-        </div>
-      </section>
-
-      <footer className="landing-footer scroll-animate">
-        <div className="footer-container">
-          <div className="footer-content">
-            <div className="footer-section scroll-animate scroll-animate-delay-1">
-              <h3 className="footer-logo">
-                <img className="logo-mark" src={logoMark} alt="JAPA logo" />
-              </h3>
-              <p className="footer-description">
-                Your trusted partner for seamless visa applications. Get
-                personalized recommendations and track your progress with ease.
+          <div className="footer-grid">
+            <div className="footer-brand">
+              <img src={logoMark} alt="JAPA" className="footer-logo" />
+              <p className="footer-tagline">
+                Making migration accessible, organized, and achievable for everyone.
               </p>
               <div className="footer-social">
-                <a href="#" className="social-link" aria-label="Twitter">
-                  <FiTwitter />
+                <a href="#" aria-label="Twitter" className="social-btn">
+                  <FaXTwitter />
                 </a>
-                <a href="#" className="social-link" aria-label="LinkedIn">
-                  <FiLinkedin />
+                <a href="#" aria-label="LinkedIn" className="social-btn">
+                  <FaLinkedinIn />
                 </a>
-                <a href="#" className="social-link" aria-label="Instagram">
-                  <FiInstagram />
-                </a>
-                <a href="#" className="social-link" aria-label="GitHub">
-                  <FiGithub />
+                <a href="#" aria-label="Instagram" className="social-btn">
+                  <FaInstagram />
                 </a>
               </div>
             </div>
 
-            <div className="footer-section scroll-animate scroll-animate-delay-2">
-              <h4 className="footer-title">Quick Links</h4>
-              <ul className="footer-links">
-                <li>
-                  <Link to="/">Home</Link>
-                </li>
-                <li>
-                  <Link to="/login">Login</Link>
-                </li>
-                <li>
-                  <Link to="/register">Sign Up</Link>
-                </li>
-                {isAuthenticated && (
-                  <li>
-                    <Link to="/home">Dashboard</Link>
-                  </li>
-                )}
-              </ul>
+            <div className="footer-links-group">
+              <h4>Product</h4>
+              <Link to="/services">Services</Link>
+              <a href="#features">Features</a>
+              <a href="#how-it-works">How It Works</a>
+              <Link to="/faq">FAQ</Link>
             </div>
 
-            <div className="footer-section scroll-animate scroll-animate-delay-3">
-              <h4 className="footer-title">Support</h4>
-              <ul className="footer-links">
-                <li>
-                  <a href="#">Help Center</a>
-                </li>
-                <li>
-                  <Link to="/faq">FAQ</Link>
-                </li>
-                <li>
-                  <a href="#">Contact Us</a>
-                </li>
-                <li>
-                  <a href="#">Privacy Policy</a>
-                </li>
-              </ul>
+            <div className="footer-links-group">
+              <h4>Company</h4>
+              <a href="#">About Us</a>
+              <a href="#">Careers</a>
+              <a href="#">Blog</a>
+              <a href="#">Contact</a>
             </div>
 
-            <div className="footer-section scroll-animate scroll-animate-delay-4">
-              <h4 className="footer-title">Contact</h4>
-              <ul className="footer-contact">
-                <li>
-                  <FiMail />
-                  <span>support@japa.com</span>
-                </li>
-                <li>
-                  <FiPhone />
-                  <span>+1 (555) 123-4567</span>
-                </li>
-                <li>
-                  <FiMapPin />
-                  <span>123 Travel Street, Global City</span>
-                </li>
-              </ul>
+            <div className="footer-links-group">
+              <h4>Get in Touch</h4>
+              <a href="mailto:support@japa.com" className="footer-contact-item">
+                <FiMail />
+                <span>support@japa.com</span>
+              </a>
+              <a href="#" className="footer-contact-item">
+                <FiMapPin />
+                <span>Global • Remote-first</span>
+              </a>
             </div>
           </div>
 
-          <div className="footer-bottom scroll-animate scroll-animate-delay-5">
-            <p>&copy; {new Date().getFullYear()} Japa. All rights reserved.</p>
-            <div className="footer-bottom-links">
-              <a href="#">Terms of Service</a>
-              <span>•</span>
+          <div className="footer-bottom">
+            <p>© {new Date().getFullYear()} JAPA. All rights reserved.</p>
+            <div className="footer-legal">
               <a href="#">Privacy Policy</a>
-              <span>•</span>
+              <a href="#">Terms of Service</a>
               <a href="#">Cookie Policy</a>
             </div>
           </div>

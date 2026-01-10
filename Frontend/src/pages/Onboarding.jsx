@@ -49,10 +49,10 @@ const Onboarding = () => {
   useEffect(() => {
     const fetchExistingData = async () => {
       try {
-        const response = await profileAPI.getProfile();
-        if (response.data && response.data.data) {
-          const transformedData = transformToFormFormat(response.data.data);
-          setFormData(transformedData);
+        const profile = await profileAPI.getProfile();
+        if (profile?.onboarding_data) {
+          const transformedData = transformToFormFormat(profile.onboarding_data);
+          setFormData(transformedData || {});
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -366,12 +366,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.deadline_hard === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.deadline_hard === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("deadline_hard", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.deadline_hard === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.deadline_hard === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.deadline_hard === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -380,12 +380,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.deadline_hard === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.deadline_hard === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("deadline_hard", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.deadline_hard === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.deadline_hard === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.deadline_hard === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -410,12 +410,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.willing_to_consider_alternatives === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.willing_to_consider_alternatives === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("willing_to_consider_alternatives", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.willing_to_consider_alternatives === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.willing_to_consider_alternatives === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.willing_to_consider_alternatives === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -424,12 +424,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.willing_to_consider_alternatives === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.willing_to_consider_alternatives === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("willing_to_consider_alternatives", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.willing_to_consider_alternatives === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.willing_to_consider_alternatives === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.willing_to_consider_alternatives === false && <Check className="w-3 h-3 text-white" />}
                               </div>
                     <span className="font-medium text-sm">No</span>
@@ -495,12 +495,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_academic_transcripts === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_academic_transcripts === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_academic_transcripts", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_academic_transcripts === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_academic_transcripts === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_academic_transcripts === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -509,12 +509,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_academic_transcripts === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_academic_transcripts === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_academic_transcripts", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_academic_transcripts === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_academic_transcripts === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_academic_transcripts === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -528,12 +528,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_admission_offer === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_admission_offer === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_admission_offer", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_admission_offer === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_admission_offer === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_admission_offer === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -542,12 +542,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_admission_offer === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_admission_offer === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_admission_offer", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_admission_offer === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_admission_offer === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_admission_offer === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -646,12 +646,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.is_self_employed === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.is_self_employed === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("is_self_employed", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.is_self_employed === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.is_self_employed === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.is_self_employed === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -660,12 +660,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.is_self_employed === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.is_self_employed === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("is_self_employed", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.is_self_employed === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.is_self_employed === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.is_self_employed === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -679,12 +679,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.is_business_owner === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.is_business_owner === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("is_business_owner", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.is_business_owner === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.is_business_owner === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.is_business_owner === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -693,12 +693,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.is_business_owner === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.is_business_owner === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("is_business_owner", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.is_business_owner === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.is_business_owner === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.is_business_owner === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -728,12 +728,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.employer_willing_to_sponsor === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.employer_willing_to_sponsor === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("employer_willing_to_sponsor", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.employer_willing_to_sponsor === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.employer_willing_to_sponsor === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.employer_willing_to_sponsor === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -742,12 +742,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.employer_willing_to_sponsor === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.employer_willing_to_sponsor === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("employer_willing_to_sponsor", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.employer_willing_to_sponsor === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.employer_willing_to_sponsor === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.employer_willing_to_sponsor === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -761,12 +761,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_job_offer_international === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_job_offer_international === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_job_offer_international", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_job_offer_international === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_job_offer_international === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_job_offer_international === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -775,12 +775,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_job_offer_international === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_job_offer_international === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_job_offer_international", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_job_offer_international === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_job_offer_international === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_job_offer_international === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -842,12 +842,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_prior_visa_applications === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_prior_visa_applications === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_prior_visa_applications", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_prior_visa_applications === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_prior_visa_applications === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_prior_visa_applications === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -856,12 +856,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_prior_visa_applications === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_prior_visa_applications === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_prior_visa_applications", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_prior_visa_applications === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_prior_visa_applications === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_prior_visa_applications === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -886,12 +886,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_active_visas === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_active_visas === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_active_visas", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_active_visas === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_active_visas === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_active_visas === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -900,12 +900,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_active_visas === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_active_visas === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_active_visas", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_active_visas === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_active_visas === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_active_visas === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -960,12 +960,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_overstays === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_overstays === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_overstays", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_overstays === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_overstays === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_overstays === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -974,12 +974,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_overstays === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_overstays === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_overstays", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_overstays === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_overstays === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_overstays === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -1004,12 +1004,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.criminal_records === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.criminal_records === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("criminal_records", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.criminal_records === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.criminal_records === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.criminal_records === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -1018,12 +1018,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.criminal_records === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.criminal_records === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("criminal_records", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.criminal_records === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.criminal_records === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.criminal_records === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -1037,12 +1037,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_relatives_in_destination === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_relatives_in_destination === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_relatives_in_destination", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_relatives_in_destination === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_relatives_in_destination === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_relatives_in_destination === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -1051,12 +1051,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_relatives_in_destination === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_relatives_in_destination === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_relatives_in_destination", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_relatives_in_destination === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_relatives_in_destination === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_relatives_in_destination === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -1138,12 +1138,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_property === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_property === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_property", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_property === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_property === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_property === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -1152,12 +1152,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_property === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_property === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_property", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_property === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_property === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_property === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -1222,12 +1222,12 @@ const Onboarding = () => {
                   <div
                     className={cn(
                       "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                      formData.has_special_needs === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                      formData.has_special_needs === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                     )}
                     onClick={() => handleChange("has_special_needs", true)}
                   >
                     <div className="flex items-center gap-2">
-                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_special_needs === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_special_needs === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                         {formData.has_special_needs === true && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <span className="font-medium text-sm">Yes</span>
@@ -1236,12 +1236,12 @@ const Onboarding = () => {
                   <div
                     className={cn(
                       "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                      formData.has_special_needs === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                      formData.has_special_needs === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                     )}
                     onClick={() => handleChange("has_special_needs", false)}
                   >
                     <div className="flex items-center gap-2">
-                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_special_needs === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_special_needs === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                         {formData.has_special_needs === false && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <span className="font-medium text-sm">No</span>
@@ -1255,12 +1255,12 @@ const Onboarding = () => {
                   <div
                     className={cn(
                       "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                      formData.has_medical_conditions === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                      formData.has_medical_conditions === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                     )}
                     onClick={() => handleChange("has_medical_conditions", true)}
                   >
                     <div className="flex items-center gap-2">
-                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_medical_conditions === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_medical_conditions === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                         {formData.has_medical_conditions === true && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <span className="font-medium text-sm">Yes</span>
@@ -1269,12 +1269,12 @@ const Onboarding = () => {
                   <div
                     className={cn(
                       "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                      formData.has_medical_conditions === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                      formData.has_medical_conditions === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                     )}
                     onClick={() => handleChange("has_medical_conditions", false)}
                   >
                     <div className="flex items-center gap-2">
-                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_medical_conditions === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_medical_conditions === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                         {formData.has_medical_conditions === false && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <span className="font-medium text-sm">No</span>
@@ -1290,12 +1290,12 @@ const Onboarding = () => {
                   <div
                     className={cn(
                       "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                      formData.has_invitation === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                      formData.has_invitation === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                     )}
                     onClick={() => handleChange("has_invitation", true)}
                   >
                     <div className="flex items-center gap-2">
-                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_invitation === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_invitation === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                         {formData.has_invitation === true && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <span className="font-medium text-sm">Yes</span>
@@ -1304,12 +1304,12 @@ const Onboarding = () => {
                   <div
                     className={cn(
                       "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                      formData.has_invitation === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                      formData.has_invitation === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                     )}
                     onClick={() => handleChange("has_invitation", false)}
                   >
                     <div className="flex items-center gap-2">
-                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_invitation === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_invitation === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                         {formData.has_invitation === false && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <span className="font-medium text-sm">No</span>
@@ -1323,12 +1323,12 @@ const Onboarding = () => {
                   <div
                     className={cn(
                       "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                      formData.sponsor_in_destination === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                      formData.sponsor_in_destination === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                     )}
                     onClick={() => handleChange("sponsor_in_destination", true)}
                   >
                     <div className="flex items-center gap-2">
-                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.sponsor_in_destination === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.sponsor_in_destination === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                         {formData.sponsor_in_destination === true && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <span className="font-medium text-sm">Yes</span>
@@ -1337,12 +1337,12 @@ const Onboarding = () => {
                   <div
                     className={cn(
                       "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                      formData.sponsor_in_destination === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                      formData.sponsor_in_destination === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                     )}
                     onClick={() => handleChange("sponsor_in_destination", false)}
                   >
                     <div className="flex items-center gap-2">
-                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.sponsor_in_destination === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                      <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.sponsor_in_destination === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                         {formData.sponsor_in_destination === false && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <span className="font-medium text-sm">No</span>
@@ -1455,12 +1455,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_birth_certificate === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_birth_certificate === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_birth_certificate", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_birth_certificate === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_birth_certificate === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_birth_certificate === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -1469,12 +1469,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_birth_certificate === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_birth_certificate === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_birth_certificate", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_birth_certificate === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_birth_certificate === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_birth_certificate === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -1488,12 +1488,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_financial_statements === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_financial_statements === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_financial_statements", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_financial_statements === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_financial_statements === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_financial_statements === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -1502,12 +1502,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_financial_statements === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_financial_statements === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_financial_statements", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_financial_statements === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_financial_statements === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_financial_statements === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -1521,12 +1521,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_police_clearance === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_police_clearance === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_police_clearance", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_police_clearance === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_police_clearance === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_police_clearance === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -1535,12 +1535,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_police_clearance === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_police_clearance === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_police_clearance", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_police_clearance === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_police_clearance === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_police_clearance === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -1554,12 +1554,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_medical_exam === true ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_medical_exam === true ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_medical_exam", true)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_medical_exam === true ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_medical_exam === true ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_medical_exam === true && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">Yes</span>
@@ -1568,12 +1568,12 @@ const Onboarding = () => {
                 <div
                   className={cn(
                     "flex flex-1 items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer",
-                    formData.has_medical_exam === false ? "border-[#32d74b] bg-[#32d74b]/10 text-[#32d74b]" : "border-black/[0.08] bg-white hover:border-[#32d74b]/30"
+                    formData.has_medical_exam === false ? "border-[#ff6b4a] bg-[#ff6b4a]/10 text-[#ff6b4a]" : "border-white/[0.08] bg-white/5 hover:border-[#ff6b4a]/30 text-white/60"
                   )}
                   onClick={() => handleChange("has_medical_exam", false)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_medical_exam === false ? "border-[#32d74b] bg-[#32d74b]" : "border-black/20")}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", formData.has_medical_exam === false ? "border-[#ff6b4a] bg-[#ff6b4a]" : "border-white/20")}>
                       {formData.has_medical_exam === false && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="font-medium text-sm">No</span>
@@ -1961,7 +1961,7 @@ const Onboarding = () => {
                 <Button
                       onClick={handleSubmit}
                       disabled={submitting}
-                  className="rounded-xl bg-gradient-to-r from-[#32d74b] to-[#4ade80] hover:opacity-90"
+                  className="rounded-xl bg-gradient-to-r from-[#ff6b4a] to-[#ff8066] hover:opacity-90"
                 >
                   {submitting ? "Processing..." : "Complete Onboarding"}
                   {!submitting && <Check className="w-4 h-4 ml-2" />}

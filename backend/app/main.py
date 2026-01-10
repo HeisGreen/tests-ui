@@ -19,7 +19,7 @@ from app.models import (
     Base, User, UserProfile, Recommendation, Document, ChecklistProgress, ChecklistCache,
     TravelAgentProfile, Conversation, Message, UserRole
 )
-from app.migrations import ensure_role_column
+from app.migrations import ensure_role_column, ensure_profile_picture_column
 from app.schemas import (
     IntakeCreate,
     IntakeData,
@@ -56,6 +56,9 @@ from app.schemas import (
     ConversationResponse,
     MessageCreate,
     MessageResponse,
+    ChatRequest,
+    ChatResponse,
+    ChatMessage,
 )
 
 # Setup logging for recommendations
@@ -76,6 +79,7 @@ from app.oauth import verify_google_token
 # Create database tables
 Base.metadata.create_all(bind=engine)
 ensure_role_column(engine)
+ensure_profile_picture_column(engine)
 
 # Single in-memory store so intakes persist across requests during runtime
 store = IntakeStore()
@@ -211,6 +215,10 @@ def update_current_user_info(
     
     if user_update.name:
         current_user.name = user_update.name
+    
+    # Update profile picture URL if provided
+    if user_update.profile_picture_url is not None:
+        current_user.profile_picture_url = user_update.profile_picture_url
     
     db.commit()
     db.refresh(current_user)
@@ -2049,3 +2057,139 @@ def delete_document(
     db.delete(document)
     db.commit()
     return None
+
+
+# ============================================================================
+# AI CHATBOT ENDPOINT
+# ============================================================================
+
+JAPA_KNOWLEDGE_BASE = """
+You are JAPA Assistant, a friendly and knowledgeable AI chatbot for JAPA - an AI-powered migration assistance platform.
+
+## About JAPA
+JAPA is an innovative AI-powered migration assistant that helps users navigate their immigration journey with clarity and confidence. The name "JAPA" comes from Nigerian slang meaning "to leave" or "to relocate", reflecting our mission to help people successfully migrate to new countries.
+
+## Core Features
+
+### 1. AI Migration Pathway Matching (Available)
+- Personalized visa and immigration routes based on user's background
+- Analyzes 50+ eligibility factors including nationality, education, work experience, and financial situation
+- Provides side-by-side comparison of different visa options
+- Shows clear eligibility signals and next steps
+- Covers 195+ countries and 500+ visa programs
+
+### 2. Smart Document Management (Available)
+- Country-specific document checklists with deadline tracking
+- Upload, organize, and manage visa-related documents in one place
+- Reminders and missing-document tracking
+- Secure encrypted storage for all documents
+- Documents categorized by type with expiration date tracking
+
+### 3. Task & Timeline Tracking (Available)
+- Milestone-based task lists for visa applications
+- Deadline reminders and progress tracking
+- A single timeline showing the entire migration journey
+- Checklist items with estimated durations
+
+### 4. Expert & Lawyer Connections (Available)
+- Connect with verified travel agents who specialize in migration
+- Filter agents by country, destination expertise, experience level, and specialization
+- In-app messaging with travel agents
+- Case summaries that can be shared with professionals
+
+### 5. AI Application & Interview Coaching (Coming Soon)
+- SOP (Statement of Purpose) and form guidance with examples
+- Interview question practice
+- Feedback on clarity and completeness of applications
+
+## How JAPA Works (Four Steps)
+1. **Build Your Profile**: Complete an intelligent questionnaire with your background, skills, and migration goals
+2. **Get Matched**: AI cross-references your profile against global visa programs to find best options
+3. **Plan Your Journey**: Receive a personalized roadmap with checklists, timelines, and guidance
+4. **Move Forward**: Execute your plan with tools and resources at every step
+
+## Target Users
+- Students looking for study abroad pathways
+- Professionals seeking work visa routes
+- Entrepreneurs interested in business immigration
+- Families exploring family sponsorship options
+- Talented individuals with exceptional abilities
+- Digital nomads looking for remote work visas
+
+## Important Disclaimers
+- JAPA provides guidance and recommendations, NOT legal advice
+- We do NOT guarantee visa approvals or eligibility
+- Immigration policies change frequently - always verify with official sources
+- For legal matters, complex cases, or when legal judgment is required, we recommend consulting with a qualified immigration lawyer
+- Your data stays secure and private
+
+## Pricing
+- JAPA offers a FREE tier that includes basic recommendations and document management
+- No credit card required to get started
+- Premium features may be available for advanced guidance
+
+## Contact
+- Support: support@japa.com
+- Response time: 24-48 hours for support inquiries
+
+## Communication Guidelines
+- Be friendly, helpful, and encouraging
+- Provide accurate information about JAPA's features
+- Always remind users that JAPA doesn't provide legal advice when discussing immigration matters
+- Guide users on how to use the platform effectively
+- If asked about specific immigration rules or visa requirements, provide general guidance but recommend checking official sources
+- Be conversational and approachable
+- Use "you" and "your" to address users directly
+"""
+
+
+@app.post("/chat", response_model=ChatResponse)
+def chat_with_assistant(
+    request: ChatRequest,
+    settings: Settings = Depends(get_settings),
+):
+    """
+    Public chatbot endpoint - accessible by anyone (no authentication required).
+    Answers questions about JAPA and provides migration guidance.
+    """
+    # Build conversation history for OpenAI
+    messages = [
+        {"role": "system", "content": JAPA_KNOWLEDGE_BASE},
+    ]
+    
+    # Add conversation history if provided
+    if request.conversation_history:
+        for msg in request.conversation_history:
+            messages.append({"role": msg.role, "content": msg.content})
+    
+    # Add current user message
+    messages.append({"role": "user", "content": request.message})
+    
+    # Get OpenAI client
+    client = get_openai_client(settings)
+    
+    try:
+        completion = client.chat.completions.create(
+            model=settings.openai_model,
+            messages=messages,
+            temperature=0.7,
+            max_tokens=1000,
+            timeout=30,
+        )
+        response_content = completion.choices[0].message.content or "I apologize, but I couldn't generate a response. Please try again."
+    except Exception as exc:
+        logger.error(f"OpenAI chat request failed: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Chat service temporarily unavailable. Please try again.",
+        ) from exc
+    
+    # Build updated conversation history
+    updated_history = request.conversation_history or []
+    updated_history.append(ChatMessage(role="user", content=request.message))
+    updated_history.append(ChatMessage(role="assistant", content=response_content))
+    
+    return ChatResponse(
+        response=response_content,
+        conversation_history=updated_history
+    )

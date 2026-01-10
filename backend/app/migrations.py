@@ -47,3 +47,25 @@ def ensure_role_column(engine: Engine) -> None:
     with engine.begin() as conn:
         conn.execute(text(alter_sql), {"default": UserRole.USER.value})
 
+
+def ensure_profile_picture_column(engine: Engine) -> None:
+    """
+    Ensure the `users.profile_picture_url` column exists.
+
+    This function is safe to call multiple times and is idempotent.
+    """
+    inspector = inspect(engine)
+    if "users" not in inspector.get_table_names():
+        return
+
+    columns = [col["name"] for col in inspector.get_columns("users")]
+    if "profile_picture_url" in columns:
+        return
+
+    alter_sql = (
+        "ALTER TABLE users\n"
+        "ADD COLUMN IF NOT EXISTS profile_picture_url VARCHAR NULL;"
+    )
+    with engine.begin() as conn:
+        conn.execute(text(alter_sql))
+

@@ -121,6 +121,16 @@
   color: white;
   font-weight: 600;
   font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.user-avatar-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+  flex-shrink: 0;
 }
 
 .user-info {
@@ -174,6 +184,14 @@
   color: white;
   font-weight: 600;
   font-size: 0.9rem;
+}
+
+.user-avatar-small-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
 }
 
 /* Main Content */

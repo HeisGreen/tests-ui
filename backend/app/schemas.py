@@ -193,6 +193,7 @@ class UserResponse(BaseModel):
     name: str
     role: Optional[str] = "USER"
     is_active: bool
+    profile_picture_url: Optional[str] = None
     created_at: datetime
 
     model_config = {
@@ -214,6 +215,7 @@ class UserResponse(BaseModel):
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
+    profile_picture_url: Optional[str] = None
 
 
 class Token(BaseModel):
@@ -527,3 +529,19 @@ class UserResponseWithRole(BaseModel):
             if isinstance(value, datetime):
                 data[key] = value.isoformat()
         return data
+
+
+# Chatbot Schemas
+class ChatMessage(BaseModel):
+    role: str  # "user" or "assistant"
+    content: str
+
+
+class ChatRequest(BaseModel):
+    message: str
+    conversation_history: Optional[List[ChatMessage]] = None
+
+
+class ChatResponse(BaseModel):
+    response: str
+    conversation_history: List[ChatMessage]

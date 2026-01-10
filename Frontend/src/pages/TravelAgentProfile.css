@@ -45,6 +45,13 @@
   gap: 1.5rem;
 }
 
+.profile-avatar-container {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+}
+
 .profile-avatar-large {
   width: 100px;
   height: 100px;
@@ -57,6 +64,142 @@
   font-size: 2.5rem;
   font-weight: 700;
   flex-shrink: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profile-avatar-large.uploading {
+  opacity: 0.5;
+}
+
+.profile-avatar-large-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e0e0e0;
+  transition: opacity 0.3s ease;
+}
+
+.profile-avatar-large-img.uploading {
+  opacity: 0.5;
+}
+
+.avatar-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+}
+
+.avatar-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.avatar-edit-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #007bff;
+  border: 3px solid white;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.avatar-edit-btn:hover {
+  background: #0056b3;
+  transform: scale(1.1);
+}
+
+.avatar-edit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.avatar-edit-btn svg {
+  font-size: 0.9rem;
+}
+
+.avatar-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.btn-upload-photo-small {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  color: #333;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-upload-photo-small:hover {
+  background: #e8e8e8;
+  border-color: #ccc;
+}
+
+.btn-upload-photo-small:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-remove-photo-small {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #fff5f5;
+  border: 1px solid #ffcdd2;
+  border-radius: 8px;
+  color: #dc3545;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-remove-photo-small:hover {
+  background: #ffebee;
+  border-color: #f5c6cb;
+}
+
+.btn-remove-photo-small:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.photo-error {
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
 }
 
 .profile-header-info h1 {

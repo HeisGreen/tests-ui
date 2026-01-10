@@ -1,26 +1,19 @@
 /**
- * Progress Sidebar Styles
- * Maps to: on-design.json -> ui_sidebar
- * Light gradient background, vertical stepper
+ * Progress Sidebar Styles - Dark Theme
+ * Premium dark SaaS style matching the design system
  */
 
 .kastamer-sidebar {
-  width: 320px;
-  background: linear-gradient(180deg, #E8F0F5 0%, #F0F5F8 50%, #F5F8FA 100%);
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 1rem 1.25rem;
+  width: 300px;
+  background: rgba(24, 24, 27, 0.6);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1rem 1rem;
   flex-shrink: 0;
   position: sticky;
   top: 70px;
   height: calc(100vh - 70px);
   overflow-y: visible;
-  border-radius: 0 24px 24px 0;
-  margin: 0;
-  box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.06),
-    0 1px 3px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
 }
@@ -37,21 +30,24 @@
 .kastamer-sidebar-steps {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  padding-right: 0.25rem;
 }
 
-.kastamer-sidebar-content::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.8) 50%, transparent 100%);
-  pointer-events: none;
+.kastamer-sidebar-steps::-webkit-scrollbar {
+  width: 4px;
+}
+
+.kastamer-sidebar-steps::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kastamer-sidebar-steps::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
 }
 
 .kastamer-sidebar-step {
@@ -59,62 +55,20 @@
   align-items: flex-start;
   gap: 0.75rem;
   position: relative;
-  padding: 0.5rem;
-  border-radius: 12px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-left: -0.5rem;
-  margin-right: -0.5rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-}
-
-.kastamer-sidebar-step::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: linear-gradient(180deg, var(--onboarding-accent) 0%, transparent 100%);
-  border-radius: 0 2px 2px 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.kastamer-sidebar-step:hover {
-  background: rgba(255, 255, 255, 0.5);
-  transform: translateX(4px);
-}
-
-.kastamer-sidebar-step.active {
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.8) 0%, 
-    rgba(50, 215, 75, 0.05) 50%,
-    rgba(99, 102, 241, 0.05) 100%);
-  box-shadow: 
-    0 6px 24px rgba(0, 0, 0, 0.1),
-    0 4px 16px rgba(50, 215, 75, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 0 0 1px rgba(50, 215, 75, 0.2);
-  transform: translateX(6px);
-}
-
-.kastamer-sidebar-step.active::after {
-  opacity: 1;
-  background: linear-gradient(180deg, 
-    var(--onboarding-accent) 0%, 
-    rgba(99, 102, 241, 0.6) 50%,
-    transparent 100%);
-  box-shadow: 0 0 15px rgba(50, 215, 75, 0.5);
 }
 
 .kastamer-sidebar-step::before {
   content: '';
   position: absolute;
   left: 17px;
-  top: 40px;
-  bottom: -0.5rem;
+  top: 38px;
+  bottom: -0.25rem;
   width: 2px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, transparent 100%);
+  background: rgba(255, 255, 255, 0.06);
   z-index: 0;
   border-radius: 2px;
 }
@@ -124,79 +78,63 @@
 }
 
 .kastamer-sidebar-step.completed::before {
-  background: linear-gradient(180deg, var(--onboarding-accent) 0%, rgba(50, 215, 75, 0.3) 100%);
+  background: rgba(255, 107, 74, 0.3);
+}
+
+.kastamer-sidebar-step:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.kastamer-sidebar-step.active {
+  background: rgba(255, 107, 74, 0.1);
+  border: 1px solid rgba(255, 107, 74, 0.2);
+}
+
+.kastamer-sidebar-step.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: #ff6b4a;
+  border-radius: 0 2px 2px 0;
 }
 
 .kastamer-sidebar-step-indicator {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.8);
-  color: var(--onboarding-text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(250, 250, 250, 0.4);
   font-size: 0.75rem;
   font-weight: 600;
   position: relative;
   z-index: 1;
   flex-shrink: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .kastamer-sidebar-step.active .kastamer-sidebar-step-indicator {
-  background: linear-gradient(135deg, 
-    var(--onboarding-accent) 0%, 
-    #28c143 30%,
-    #6366f1 70%,
-    var(--onboarding-accent) 100%);
-  background-size: 200% 200%;
-  animation: pulseGlow 2s ease-in-out infinite, gradientMove 3s ease infinite;
+  background: linear-gradient(135deg, #ff6b4a 0%, #ff8066 100%);
   color: #FFFFFF;
-  box-shadow: 
-    0 6px 24px rgba(50, 215, 75, 0.4),
-    0 4px 16px rgba(99, 102, 241, 0.3),
-    0 0 0 4px rgba(50, 215, 75, 0.15),
-    0 0 0 8px rgba(99, 102, 241, 0.1);
-  transform: scale(1.05);
-  border-color: rgba(50, 215, 75, 0.4);
-}
-
-@keyframes gradientMove {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 
-      0 4px 16px rgba(50, 215, 75, 0.3),
-      0 0 0 4px rgba(50, 215, 75, 0.1);
-  }
-  50% {
-    box-shadow: 
-      0 4px 20px rgba(50, 215, 75, 0.4),
-      0 0 0 6px rgba(50, 215, 75, 0.15);
-  }
+  box-shadow: 0 4px 16px rgba(255, 107, 74, 0.4);
+  border-color: transparent;
 }
 
 .kastamer-sidebar-step.completed .kastamer-sidebar-step-indicator {
-  background: linear-gradient(135deg, var(--onboarding-accent) 0%, var(--accent-strong) 100%);
+  background: linear-gradient(135deg, #ff6b4a 0%, #e85d3a 100%);
   color: #FFFFFF;
-  box-shadow: 
-    0 2px 8px rgba(50, 215, 75, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  border-color: rgba(50, 215, 75, 0.3);
+  border-color: transparent;
 }
 
 .kastamer-sidebar-checkmark {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: bold;
   display: flex;
   align-items: center;
@@ -204,7 +142,7 @@
 }
 
 .kastamer-sidebar-icon {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -213,166 +151,127 @@
 .kastamer-sidebar-step-content {
   flex: 1;
   padding-top: 0.125rem;
+  min-width: 0;
 }
 
 .kastamer-sidebar-step-label {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  color: var(--onboarding-text-primary);
-  margin-bottom: 0.125rem;
+  color: rgba(250, 250, 250, 0.6);
+  margin-bottom: 0;
   letter-spacing: -0.01em;
   transition: color 0.3s ease;
   line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .kastamer-sidebar-step.active .kastamer-sidebar-step-label {
-  color: var(--onboarding-accent);
+  color: #ff6b4a;
+}
+
+.kastamer-sidebar-step.completed .kastamer-sidebar-step-label {
+  color: rgba(250, 250, 250, 0.8);
 }
 
 .kastamer-sidebar-step-description {
-  font-size: 0.75rem;
-  color: #666666;
+  font-size: 0.7rem;
+  color: rgba(250, 250, 250, 0.4);
   line-height: 1.4;
-  margin-top: 0.25rem;
-  opacity: 0.85;
-}
-
-.kastamer-sidebar-step.active .kastamer-sidebar-step-description {
-  opacity: 1;
-  color: #555555;
+  margin-top: 0.125rem;
+  display: none; /* Hidden for compact design */
 }
 
 /* Sidebar Footer */
 .kastamer-sidebar-footer {
   margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   flex-shrink: 0;
 }
 
 .kastamer-sidebar-user-info {
-  margin-bottom: 0.75rem;
-  padding: 0.625rem 0.875rem;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.8) 0%, 
-    rgba(255, 255, 255, 0.6) 100%);
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: 0.5rem;
 }
 
 .kastamer-sidebar-user-icon {
-  font-size: 1rem;
-  color: #32d74b;
+  font-size: 0.875rem;
+  color: #ff6b4a;
   flex-shrink: 0;
 }
 
 .kastamer-sidebar-user-email {
-  font-size: 0.875rem;
-  color: #333333;
-  font-weight: 600;
+  font-size: 0.75rem;
+  color: rgba(250, 250, 250, 0.7);
+  font-weight: 500;
   display: block;
   word-break: break-word;
-  line-height: 1.4;
-  letter-spacing: -0.01em;
+  line-height: 1.3;
   flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .kastamer-sidebar-actions {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
 }
 
 .kastamer-sidebar-action-link {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
-  padding: 0.625rem 0.875rem;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  color: #555555;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: rgba(250, 250, 250, 0.6);
   text-decoration: none;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
   cursor: pointer;
   font-family: inherit;
   font-weight: 500;
-  position: relative;
-  overflow: hidden;
-}
-
-.kastamer-sidebar-action-link::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, 
-    rgba(50, 215, 75, 0.1) 0%, 
-    rgba(99, 102, 241, 0.08) 100%);
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  border-radius: 10px;
 }
 
 .kastamer-sidebar-action-link:hover {
-  background: rgba(255, 255, 255, 0.9);
-  color: #32d74b;
-  border-color: rgba(50, 215, 75, 0.2);
-  transform: translateY(-1px);
-  box-shadow: 
-    0 4px 12px rgba(50, 215, 75, 0.15),
-    0 2px 6px rgba(50, 215, 75, 0.1);
-}
-
-.kastamer-sidebar-action-link:hover::before {
-  opacity: 1;
+  background: rgba(255, 107, 74, 0.1);
+  color: #ff6b4a;
+  border-color: rgba(255, 107, 74, 0.2);
 }
 
 .kastamer-sidebar-action-link svg {
-  font-size: 1rem;
+  font-size: 0.875rem;
   transition: transform 0.25s ease;
-  position: relative;
-  z-index: 1;
 }
 
 .kastamer-sidebar-action-link:hover svg {
   transform: scale(1.1);
-  color: #32d74b;
-}
-
-.kastamer-sidebar-action-link span {
-  position: relative;
-  z-index: 1;
+  color: #ff6b4a;
 }
 
 .kastamer-sidebar-logout {
-  color: #666666;
-  border-color: rgba(0, 0, 0, 0.08);
-}
-
-.kastamer-sidebar-logout::before {
-  background: linear-gradient(135deg, 
-    rgba(220, 53, 69, 0.1) 0%, 
-    rgba(220, 53, 69, 0.05) 100%);
+  color: rgba(250, 250, 250, 0.5);
 }
 
 .kastamer-sidebar-logout:hover {
-  background: rgba(255, 255, 255, 0.9);
-  color: #dc3545;
-  border-color: rgba(220, 53, 69, 0.3);
-  box-shadow: 
-    0 4px 12px rgba(220, 53, 69, 0.15),
-    0 2px 6px rgba(220, 53, 69, 0.1);
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
 }
 
 .kastamer-sidebar-logout:hover svg {
-  color: #dc3545;
+  color: #ef4444;
 }
 
 /* Responsive */
@@ -380,33 +279,35 @@
   .kastamer-sidebar {
     width: 100%;
     border-right: none;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 0 0 24px 24px;
-    padding: 1.5rem;
-    margin: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 1rem;
     top: 70px;
     height: auto;
-    max-height: 300px;
-    box-shadow: 
-      0 4px 20px rgba(0, 0, 0, 0.06),
-      0 1px 3px rgba(0, 0, 0, 0.04);
+    max-height: none;
   }
   
   .kastamer-sidebar-content {
     flex-direction: row;
     overflow-x: auto;
-    gap: 1.5rem;
+    gap: 1rem;
+    padding-bottom: 0.5rem;
   }
   
   .kastamer-sidebar-steps {
     flex-direction: row;
+    gap: 0.5rem;
   }
   
   .kastamer-sidebar-step {
-    min-width: 150px;
+    min-width: 120px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0.5rem;
   }
   
-  .kastamer-sidebar-step::before {
+  .kastamer-sidebar-step::before,
+  .kastamer-sidebar-step::after {
     display: none;
   }
   
@@ -418,4 +319,3 @@
     display: none;
   }
 }
-

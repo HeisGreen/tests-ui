@@ -1,163 +1,173 @@
-import React, { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
   FiHome,
   FiUser,
   FiFileText,
-  FiCheckSquare,
   FiLogOut,
   FiMail,
-  FiPhone,
   FiMapPin,
-  FiGithub,
-  FiTwitter,
-  FiLinkedin,
-  FiInstagram,
   FiMessageCircle,
+  FiCompass,
+  FiChevronDown,
 } from "react-icons/fi";
-import { initScrollAnimationsForElement } from "../utils/scrollAnimation";
+import { FaXTwitter, FaLinkedinIn, FaInstagram } from "react-icons/fa6";
 import logoMark from "../assets/japa-logo.png";
 import "./Layout.css";
 
 function Layout({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const footer = document.querySelector(".footer");
-    if (footer) {
-      initScrollAnimationsForElement(footer);
-    }
-  }, []);
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
+  const isActive = (path) => location.pathname === path;
+
+  // Get initials for avatar fallback
+  const getInitials = (name) => {
+    if (!name) return "?";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const navItems = [
+    { to: "/home", icon: FiHome, label: "Home" },
+    { to: "/recommendation", icon: FiCompass, label: "Get Recommendation" },
+    { to: "/messages", icon: FiMessageCircle, label: "Messages" },
+    { to: "/documents", icon: FiFileText, label: "Documents" },
+  ];
+
   return (
-    <div className="layout">
-      <nav className="navbar">
-        <div className="nav-container">
-          <Link to="/home" className="logo">
-            <img className="logo-mark" src={logoMark} alt="JAPA logo" />
+    <div className="layout-dark">
+      {/* Ambient Background */}
+      <div className="layout-ambient">
+        <div className="layout-orb layout-orb-1"></div>
+        <div className="layout-orb layout-orb-2"></div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="navbar-dark">
+        <div className="nav-container-dark">
+          <Link to="/home" className="nav-logo-dark">
+            <img src={logoMark} alt="JAPA" className="nav-logo-img" />
           </Link>
-          <div className="nav-links">
-            <Link to="/home" className="nav-link">
-              <FiHome /> Home
-            </Link>
-            <Link to="/recommendation" className="nav-link">
-              Get Recommendation
-            </Link>
-            <Link to="/messages" className="nav-link">
-              <FiMessageCircle /> Messages
-            </Link>
-            <Link to="/documents" className="nav-link">
-              <FiFileText /> Documents
-            </Link>
-            <Link to="/profile" className="nav-link">
-              <FiUser /> Profile
-            </Link>
-            <button onClick={handleLogout} className="nav-link logout-btn">
-              <FiLogOut /> Logout
-            </button>
+          
+          <div className="nav-links-dark">
+            {navItems.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`nav-link-dark ${isActive(item.to) ? "active" : ""}`}
+              >
+                <item.icon />
+                <span>{item.label}</span>
+              </Link>
+            ))}
+            
+            {/* User Profile Dropdown */}
+            <div className="nav-profile-dropdown">
+              <Link 
+                to="/profile" 
+                className={`nav-profile-trigger ${isActive("/profile") ? "active" : ""}`}
+              >
+                {user?.profile_picture_url ? (
+                  <img 
+                    src={user.profile_picture_url} 
+                    alt={user.name} 
+                    className="nav-profile-avatar"
+                  />
+                ) : (
+                  <div className="nav-profile-avatar-placeholder">
+                    {getInitials(user?.name)}
+                  </div>
+                )}
+                <span className="nav-profile-name">{user?.name?.split(" ")[0] || "Profile"}</span>
+                <FiChevronDown className="nav-profile-chevron" />
+              </Link>
+              
+              <div className="nav-profile-menu">
+                <Link to="/profile" className="nav-profile-menu-item">
+                  <FiUser />
+                  <span>Profile Settings</span>
+                </Link>
+                <button onClick={handleLogout} className="nav-profile-menu-item logout">
+                  <FiLogOut />
+                  <span>Logout</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </nav>
-      <main className="main-content">{children}</main>
-      <footer className="footer scroll-animate">
-        <div className="footer-container">
-          <div className="footer-content">
-            <div className="footer-section scroll-animate scroll-animate-delay-1">
-              <h3 className="footer-logo">
-                <img className="logo-mark" src={logoMark} alt="JAPA logo" />
-              </h3>
-              <p className="footer-description">
-                Your trusted partner for seamless visa applications. Get
-                personalized recommendations and track your progress with ease.
+
+      {/* Main Content */}
+      <main className="main-content-dark">{children}</main>
+
+      {/* Footer */}
+      <footer className="footer-dark">
+        <div className="footer-container-dark">
+          <div className="footer-grid-dark">
+            <div className="footer-brand-dark">
+              <img src={logoMark} alt="JAPA" className="footer-logo-dark" />
+              <p className="footer-tagline-dark">
+                Making migration accessible, organized, and achievable for everyone.
               </p>
-              <div className="footer-social">
-                <a href="#" className="social-link" aria-label="Twitter">
-                  <FiTwitter />
+              <div className="footer-social-dark">
+                <a href="#" aria-label="Twitter" className="social-btn-dark">
+                  <FaXTwitter />
                 </a>
-                <a href="#" className="social-link" aria-label="LinkedIn">
-                  <FiLinkedin />
+                <a href="#" aria-label="LinkedIn" className="social-btn-dark">
+                  <FaLinkedinIn />
                 </a>
-                <a href="#" className="social-link" aria-label="Instagram">
-                  <FiInstagram />
-                </a>
-                <a href="#" className="social-link" aria-label="GitHub">
-                  <FiGithub />
+                <a href="#" aria-label="Instagram" className="social-btn-dark">
+                  <FaInstagram />
                 </a>
               </div>
             </div>
 
-            <div className="footer-section scroll-animate scroll-animate-delay-2">
-              <h4 className="footer-title">Quick Links</h4>
-              <ul className="footer-links">
-                <li>
-                  <Link to="/home">Home</Link>
-                </li>
-                <li>
-                  <Link to="/recommendation">Get Recommendation</Link>
-                </li>
-                <li>
-                  <Link to="/messages">Messages</Link>
-                </li>
-                <li>
-                  <Link to="/documents">Documents</Link>
-                </li>
-                <li>
-                  <Link to="/profile">Profile</Link>
-                </li>
-              </ul>
+            <div className="footer-links-group-dark">
+              <h4>Navigation</h4>
+              <Link to="/home">Home</Link>
+              <Link to="/recommendation">Get Recommendation</Link>
+              <Link to="/messages">Messages</Link>
+              <Link to="/documents">Documents</Link>
             </div>
 
-            <div className="footer-section scroll-animate scroll-animate-delay-3">
-              <h4 className="footer-title">Support</h4>
-              <ul className="footer-links">
-                <li>
-                  <a href="#">Help Center</a>
-                </li>
-                <li>
-                  <Link to="/faq">FAQ</Link>
-                </li>
-                <li>
-                  <a href="#">Contact Us</a>
-                </li>
-                <li>
-                  <a href="#">Privacy Policy</a>
-                </li>
-              </ul>
+            <div className="footer-links-group-dark">
+              <h4>Support</h4>
+              <a href="#">Help Center</a>
+              <Link to="/faq">FAQ</Link>
+              <a href="#">Contact Us</a>
+              <a href="#">Privacy Policy</a>
             </div>
 
-            <div className="footer-section scroll-animate scroll-animate-delay-4">
-              <h4 className="footer-title">Contact</h4>
-              <ul className="footer-contact">
-                <li>
-                  <FiMail />
-                  <span>support@japa.com</span>
-                </li>
-                <li>
-                  <FiPhone />
-                  <span>+1 (555) 123-4567</span>
-                </li>
-                <li>
-                  <FiMapPin />
-                  <span>123 Travel Street, Global City</span>
-                </li>
-              </ul>
+            <div className="footer-links-group-dark">
+              <h4>Contact</h4>
+              <a href="mailto:support@japa.com" className="footer-contact-item-dark">
+                <FiMail />
+                <span>support@japa.com</span>
+              </a>
+              <a href="#" className="footer-contact-item-dark">
+                <FiMapPin />
+                <span>Global • Remote-first</span>
+              </a>
             </div>
           </div>
 
-          <div className="footer-bottom scroll-animate scroll-animate-delay-5">
-            <p>&copy; {new Date().getFullYear()} Japa. All rights reserved.</p>
-            <div className="footer-bottom-links">
+          <div className="footer-bottom-dark">
+            <p>© {new Date().getFullYear()} JAPA. All rights reserved.</p>
+            <div className="footer-legal-dark">
               <a href="#">Terms of Service</a>
-              <span>•</span>
               <a href="#">Privacy Policy</a>
-              <span>•</span>
               <a href="#">Cookie Policy</a>
             </div>
           </div>

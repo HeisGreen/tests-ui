@@ -22,6 +22,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     role = Column(SQLEnum(UserRole, name=ROLE_ENUM_NAME), default=UserRole.USER, nullable=False, index=True)
     is_active = Column(Boolean, default=True)
+    profile_picture_url = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
